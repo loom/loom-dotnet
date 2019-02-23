@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loom.EventSourcing.Contract
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loom.Messaging.Contracts", "Loom.Messaging.Contracts\Loom.Messaging.Contracts.csproj", "{2BE6AF73-D8F9-40BD-AB4F-A6ED8D2299FD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loom.EventSourcing", "Loom.EventSourcing\Loom.EventSourcing.csproj", "{1A66E5C2-24C3-4061-B106-C30E1401A0F2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{2BE6AF73-D8F9-40BD-AB4F-A6ED8D2299FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2BE6AF73-D8F9-40BD-AB4F-A6ED8D2299FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2BE6AF73-D8F9-40BD-AB4F-A6ED8D2299FD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1A66E5C2-24C3-4061-B106-C30E1401A0F2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1A66E5C2-24C3-4061-B106-C30E1401A0F2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1A66E5C2-24C3-4061-B106-C30E1401A0F2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1A66E5C2-24C3-4061-B106-C30E1401A0F2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
