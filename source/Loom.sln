@@ -3,11 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.421
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loom.EventSourcing.Contracts", "Loom.EventSourcing.Contracts\Loom.EventSourcing.Contracts.csproj", "{DA4BE9BE-C7F4-4C94-B4D6-BD35C72055F0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Loom.EventSourcing.Contracts", "Loom.EventSourcing.Contracts\Loom.EventSourcing.Contracts.csproj", "{DA4BE9BE-C7F4-4C94-B4D6-BD35C72055F0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loom.Messaging.Contracts", "Loom.Messaging.Contracts\Loom.Messaging.Contracts.csproj", "{2BE6AF73-D8F9-40BD-AB4F-A6ED8D2299FD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Loom.Messaging.Contracts", "Loom.Messaging.Contracts\Loom.Messaging.Contracts.csproj", "{2BE6AF73-D8F9-40BD-AB4F-A6ED8D2299FD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loom.EventSourcing", "Loom.EventSourcing\Loom.EventSourcing.csproj", "{1A66E5C2-24C3-4061-B106-C30E1401A0F2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Loom.EventSourcing", "Loom.EventSourcing\Loom.EventSourcing.csproj", "{1A66E5C2-24C3-4061-B106-C30E1401A0F2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loom.Tests", "Loom.Tests\Loom.Tests.csproj", "{7AC000D6-2389-48CD-87CA-8A8E760BFAB8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +29,10 @@ Global
 		{1A66E5C2-24C3-4061-B106-C30E1401A0F2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1A66E5C2-24C3-4061-B106-C30E1401A0F2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1A66E5C2-24C3-4061-B106-C30E1401A0F2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7AC000D6-2389-48CD-87CA-8A8E760BFAB8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7AC000D6-2389-48CD-87CA-8A8E760BFAB8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7AC000D6-2389-48CD-87CA-8A8E760BFAB8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7AC000D6-2389-48CD-87CA-8A8E760BFAB8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
