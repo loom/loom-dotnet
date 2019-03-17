@@ -9,4 +9,8 @@
     <PackageReference Include="System.Collections.Immutable" Version="1.5.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Loom.EventSourcing.Contracts\Loom.EventSourcing.Contracts.csproj" />
+  </ItemGroup>
+
 </Project>
