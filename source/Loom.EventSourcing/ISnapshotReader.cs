@@ -6,6 +6,6 @@
     public interface ISnapshotReader<T>
     {
         // TODO: Change return type to Task<T?>.
-        Task<T> TryRestoreSnapshot(Guid sourceId);
+        Task<T> TryRestoreSnapshot(Guid streamId);
     }
 }

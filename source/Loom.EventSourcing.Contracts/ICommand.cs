@@ -5,7 +5,7 @@
 
     public interface ICommand : IPartitioned
     {
-        Guid TargetId { get; }
+        Guid StreamId { get; }
 
         dynamic Payload { get; }
 

@@ -7,8 +7,8 @@
     public interface IEventReader
     {
         Task<IEnumerable<object>> QueryEventPayloads(
-            Guid sourceId, int afterVersion);
+            Guid streamId, int afterVersion);
     }
 
-    // TODO: Implement Task<IEnumerable<object>> QueryEventPayloads(Guid sourceId) method.
+    // TODO: Implement Task<IEnumerable<object>> QueryEventPayloads(Guid streamId) method.
 }

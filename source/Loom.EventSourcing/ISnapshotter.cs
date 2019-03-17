@@ -5,6 +5,6 @@
 
     public interface ISnapshotter
     {
-        Task TakeSnapshot(Guid sourceId);
+        Task TakeSnapshot(Guid streamId);
     }
 }

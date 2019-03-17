@@ -5,7 +5,7 @@
 
     public interface IEvent : IVersioned, IPartitioned
     {
-        Guid SourceId { get; }
+        Guid StreamId { get; }
 
         DateTime RaisedAt { get; }
 
