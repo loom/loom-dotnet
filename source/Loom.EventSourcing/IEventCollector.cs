@@ -10,7 +10,7 @@
         // TODO: Change type of parameter 'parentId' to string?.
         Task Collect(
             Guid streamId,
-            int firstVersion,
+            long firstVersion,
             IEnumerable<object> eventPayloads,
             string operationId,
             string contributor,

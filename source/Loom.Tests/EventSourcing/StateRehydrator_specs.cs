@@ -16,10 +16,10 @@
         {
             public State() => (Version, Value) = (default, default);
 
-            public State(int version, int value)
+            public State(long version, int value)
                 => (Version, Value) = (version, value);
 
-            public int Version { get; }
+            public long Version { get; }
 
             public int Value { get; }
         }
@@ -93,7 +93,7 @@
             IEventReader eventReader =
                 new DelegatingEventReader(
                     (id, after) => id == streamId
-                    ? Task.FromResult(payloads.Skip(after))
+                    ? Task.FromResult(payloads.Skip((int)after))
                     : Task.FromResult(Enumerable.Empty<object>()));
 
             IEventHandler<State> eventHandler = new EventHandler();
