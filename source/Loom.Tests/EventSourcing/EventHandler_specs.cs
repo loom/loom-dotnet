@@ -1,6 +1,8 @@
 ﻿namespace Loom.EventSourcing
 {
     using System;
+    using System.Collections.Generic;
+    using System.Linq;
     using AutoFixture;
     using FluentAssertions;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -10,26 +12,26 @@
     {
         public class State
         {
-            public State(int value) => Value = value;
+            public State(string value) => Value = value;
 
-            public int Value { get; }
+            public string Value { get; }
+        }
+
+        public class Appended
+        {
+            public Appended(string value) => Value = value;
+
+            public string Value { get; }
         }
 
         public class EventHandler : EventHandler<State>
         {
-            private State Handle(State state, ValueAdded eventPayload)
-                => new State(value: state.Value + eventPayload.Value);
+            private State Handle(State state, Appended appended)
+                => new State(state.Value + appended.Value);
         }
 
-        public class UnknownEventPayload
+        public class UnknownEvent
         {
-        }
-
-        public class ValueAdded
-        {
-            public ValueAdded(int value) => Value = value;
-
-            public int Value { get; }
         }
 
         [TestMethod]
@@ -40,34 +42,36 @@
         }
 
         [TestMethod]
-        public void given_unknown_event_payload_type_then_Handle_throws_exception()
+        public void given_unknown_event_then_Handle_throws_exception()
         {
             // Arrange
             IEventHandler<State> sut = new EventHandler();
             State state = new Fixture().Create<State>();
-            object eventPayload = new UnknownEventPayload();
+            IEnumerable<object> events = new[] { new UnknownEvent() };
 
             // Act
-            Action action = () => sut.Handle(state, eventPayload);
+            Action action = () => sut.HandleEvents(state, events);
 
             // Assert
             action.Should().Throw<InvalidOperationException>();
         }
 
         [TestMethod]
-        public void given_known_event_payload_then_Handle_invokes_handler_correctly()
+        public void given_known_events_Handle_invokes_handler_correctly()
         {
             // Arrange
             IEventHandler<State> sut = new EventHandler();
             var builder = new Fixture();
-            State state = builder.Create<State>();
-            ValueAdded eventPayload = builder.Create<ValueAdded>();
+            string seed = builder.Create<string>();
+            var state = new State(seed);
+            IEnumerable<Appended> events = builder.CreateMany<Appended>();
 
             // Act
-            State actual = sut.Handle(state, eventPayload);
+            State actual = sut.HandleEvents(state, events);
 
             // Assert
-            actual.Value.Should().Be(state.Value + eventPayload.Value);
+            string expected = events.Aggregate(seed, (v, e) => v + e.Value);
+            actual.Value.Should().Be(expected);
         }
     }
 }

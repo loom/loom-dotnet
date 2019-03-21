@@ -16,7 +16,7 @@
             public int Value { get; }
         }
 
-        public class UnknownCommandPayload
+        public class UnknownCommand
         {
         }
 
@@ -33,8 +33,8 @@
 
         public class EventProducer : EventProducer<State>
         {
-            private IEnumerable<object> ProduceEventPayloads(
-                State state, DecreaseValueTwice commandPayload)
+            private IEnumerable<object> ProduceEvents(
+                State state, DecreaseValueTwice command)
             {
                 int seed = state.Value;
                 yield return new ValueChanged(seed - 1);
@@ -50,31 +50,30 @@
         }
 
         [TestMethod]
-        public void given_unknown_command_payload_type_then_ProduceEventPayloads_throws_exception()
+        public void given_unknown_command_then_ProduceEvents_throws_exception()
         {
             // Arrange
             IEventProducer<State> sut = new EventProducer();
             State state = new Fixture().Create<State>();
-            object commandPayload = new UnknownCommandPayload();
+            object command = new UnknownCommand();
 
             // Act
-            Action action = () => sut.ProduceEventPayloads(state, commandPayload);
+            Action action = () => sut.ProduceEvents(state, command);
 
             // Assert
             action.Should().Throw<InvalidOperationException>();
         }
 
         [TestMethod]
-        public void given_known_command_payload_then_ProduceEventPayloads_returns_event_payloads_correctly()
+        public void given_known_command_then_ProduceEvents_returns_events_correctly()
         {
             // Arrange
             IEventProducer<State> sut = new EventProducer();
             State state = new Fixture().Create<State>();
-            object commandPayload = new DecreaseValueTwice();
+            object command = new DecreaseValueTwice();
 
             // Act
-            IEnumerable<object> actual =
-                sut.ProduceEventPayloads(state, commandPayload);
+            IEnumerable<object> actual = sut.ProduceEvents(state, command);
 
             // Assert
             actual.Should().BeEquivalentTo(

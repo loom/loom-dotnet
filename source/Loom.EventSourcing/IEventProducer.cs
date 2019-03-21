@@ -4,7 +4,6 @@
 
     public interface IEventProducer<T>
     {
-        IEnumerable<object> ProduceEventPayloads(
-            T state, object commandPayload);
+        IEnumerable<object> ProduceEvents(T state, object command);
     }
 }

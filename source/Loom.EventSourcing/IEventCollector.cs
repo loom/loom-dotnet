@@ -11,7 +11,7 @@
         Task Collect(
             Guid streamId,
             long firstVersion,
-            IEnumerable<object> eventPayloads,
+            IEnumerable<object> events,
             string operationId,
             string contributor,
             string parentId);

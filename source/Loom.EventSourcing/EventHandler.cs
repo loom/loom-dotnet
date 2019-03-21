@@ -17,7 +17,7 @@
                 | BindingFlags.Public
                 | BindingFlags.NonPublic;
 
-            IEnumerable<(Type eventPayloadType, MethodInfo handler)> query =
+            IEnumerable<(Type eventType, MethodInfo handler)> query =
                 from method in GetType().GetMethods(bindingFlags)
 
                 where method.Name == "Handle"
@@ -29,31 +29,33 @@
                 let stateParam = parameters[0]
                 where stateParam.ParameterType == typeof(T)
 
-                let eventPayloadParam = parameters[1]
-                let eventPayloadType = eventPayloadParam.ParameterType
-                where eventPayloadType != typeof(object)
+                let eventType = parameters[1].ParameterType
+                where eventType != typeof(IEnumerable<object>)
 
-                select (eventPayloadType, handler: method);
+                select (eventType, handler: method);
 
             _handlers = query.ToImmutableDictionary(
-                keySelector: t => t.eventPayloadType,
+                keySelector: t => t.eventType,
                 elementSelector: t => t.handler);
         }
 
-        T IEventHandler<T>.Handle(T state, object eventPayload)
+        private T Handle(T state, object @event)
         {
-            Type eventPayloadType = eventPayload.GetType();
-            _handlers.TryGetValue(eventPayloadType, out MethodInfo handler);
+            Type eventType = @event.GetType();
+            _handlers.TryGetValue(eventType, out MethodInfo handler);
             switch (handler)
             {
                 case MethodInfo _:
-                    object[] arguments = new[] { state, eventPayload };
+                    object[] arguments = new[] { state, @event };
                     return (T)handler.Invoke(this, arguments);
 
                 default:
-                    string message = $"Cannot handle the event of type {eventPayloadType}";
+                    string message = $"Cannot handle the event of type {eventType}";
                     throw new InvalidOperationException(message);
             }
         }
+
+        T IEventHandler<T>.HandleEvents(T state, IEnumerable<object> events)
+            => events.Aggregate(state, Handle);
     }
 }

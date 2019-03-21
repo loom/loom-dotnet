@@ -1,9 +1,9 @@
 ﻿namespace Loom.EventSourcing
 {
+    using System.Collections.Generic;
+
     public interface IEventHandler<T>
     {
-        T Handle(T state, object eventPayload);
+        T HandleEvents(T state, IEnumerable<object> events);
     }
-
-    // TODO: Implement T HandleRange(T state, IEnumerable<object> eventPayloads) method.
 }

@@ -17,10 +17,10 @@
                 | BindingFlags.Public
                 | BindingFlags.NonPublic;
 
-            IEnumerable<(Type commandPayloadType, MethodInfo producer)> query =
+            IEnumerable<(Type commandType, MethodInfo producer)> query =
                 from method in GetType().GetMethods(bindingFlags)
 
-                where method.Name == "ProduceEventPayloads"
+                where method.Name == "ProduceEvents"
                 where method.ReturnType == typeof(IEnumerable<object>)
 
                 let parameters = method.GetParameters()
@@ -29,36 +29,35 @@
                 let stateParam = parameters[0]
                 where stateParam.ParameterType == typeof(T)
 
-                let commandPayloadParam = parameters[1]
-                let commandPayloadType = commandPayloadParam.ParameterType
-                where commandPayloadType != typeof(object)
+                let commandType = parameters[1].ParameterType
+                where commandType != typeof(object)
 
-                select (commandPayloadType, producer: method);
+                select (commandType, producer: method);
 
             _producers = query.ToImmutableDictionary(
-                keySelector: t => t.commandPayloadType,
+                keySelector: t => t.commandType,
                 elementSelector: t => t.producer);
         }
 
-        IEnumerable<object> IEventProducer<T>.ProduceEventPayloads(
-            T state, object commandPayload)
+        IEnumerable<object> IEventProducer<T>.ProduceEvents(
+            T state, object command)
         {
-            Type commandPayloadType = commandPayload.GetType();
-            switch (GetProducer(commandPayloadType))
+            Type commandType = command.GetType();
+            switch (GetProducer(commandType))
             {
                 case MethodInfo producer:
-                    object[] arguments = new[] { state, commandPayload };
+                    object[] arguments = new[] { state, command };
                     return (IEnumerable<object>)producer.Invoke(this, arguments);
 
                 default:
-                    string message = $"Cannot process the command of type {commandPayloadType}";
+                    string message = $"Cannot process the command of type {commandType}";
                     throw new InvalidOperationException(message);
             }
         }
 
-        private MethodInfo GetProducer(Type commandPayloadType)
+        private MethodInfo GetProducer(Type commandType)
         {
-            _producers.TryGetValue(commandPayloadType, out MethodInfo producer);
+            _producers.TryGetValue(commandType, out MethodInfo producer);
             return producer;
         }
     }

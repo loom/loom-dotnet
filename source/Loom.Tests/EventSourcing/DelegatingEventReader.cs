@@ -14,7 +14,7 @@
             _function = function;
         }
 
-        public Task<IEnumerable<object>> QueryEventPayloads(
+        public Task<IEnumerable<object>> QueryEvents(
             Guid streamId, long afterVersion)
         {
             return _function.Invoke(streamId, afterVersion);

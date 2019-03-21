@@ -33,11 +33,11 @@
 
         public class EventHandler : EventHandler<State>
         {
-            public State Handle(State state, ValueAdded eventPayload)
+            public State Handle(State state, ValueAdded valueAdded)
             {
                 return new State(
                     state.Version + 1,
-                    state.Value + eventPayload.Amount);
+                    state.Value + valueAdded.Amount);
             }
         }
 
@@ -87,13 +87,13 @@
 
             var gen = new Generator<ValueAdded>(new Fixture());
 
-            var payloads = new List<object>(
+            var events = new List<object>(
                 gen.Where(x => x.Amount >= 0).Take(10));
 
             IEventReader eventReader =
                 new DelegatingEventReader(
                     (id, after) => id == streamId
-                    ? Task.FromResult(payloads.Skip((int)after))
+                    ? Task.FromResult(events.Skip((int)after))
                     : Task.FromResult(Enumerable.Empty<object>()));
 
             IEventHandler<State> eventHandler = new EventHandler();
@@ -101,7 +101,7 @@
             var sut = new StateRehydrator<State>(
                 snapshotReader, eventReader, eventHandler);
 
-            var expected = payloads.Aggregate(new State(), eventHandler.Handle);
+            State expected = eventHandler.HandleEvents(new State(), events);
 
             // Act
             State actual = await sut.TryRehydrateState(streamId);
@@ -165,13 +165,13 @@
 
             var gen = new Generator<ValueAdded>(builder);
 
-            var payloads = new List<object>(
+            var events = new List<object>(
                 gen.Where(x => x.Amount >= 0).Take(10));
 
             IEventReader eventReader =
                 new DelegatingEventReader(
                     (id, after) => (id == streamId && after == snapshot.Version)
-                    ? Task.FromResult(payloads.AsEnumerable())
+                    ? Task.FromResult(events.AsEnumerable())
                     : Task.FromResult(Enumerable.Empty<object>()));
 
             IEventHandler<State> eventHandler = new EventHandler();
@@ -179,7 +179,7 @@
             var sut = new StateRehydrator<State>(
                 snapshotReader, eventReader, eventHandler);
 
-            var expected = payloads.Aggregate(snapshot, eventHandler.Handle);
+            State expected = eventHandler.HandleEvents(snapshot, events);
 
             // Act
             State actual = await sut.TryRehydrateState(streamId);

@@ -33,23 +33,23 @@
 
         private async Task<T> Rehydrate(Guid streamId, T snapshot)
         {
-            switch (await _eventReader.QueryEventPayloads(streamId, afterVersion: snapshot.Version))
+            switch (await _eventReader.QueryEvents(streamId, afterVersion: snapshot.Version))
             {
-                case var payloads when payloads.Any() == false: return snapshot;
-                case var payloads: return FoldLeft(snapshot, payloads);
+                case var events when events.Any() == false: return snapshot;
+                case var events: return FoldLeft(snapshot, events);
             }
         }
 
         private async Task<T> TryRehydrate(Guid streamId)
         {
-            switch (await _eventReader.QueryEventPayloads(streamId, afterVersion: default))
+            switch (await _eventReader.QueryEvents(streamId, afterVersion: default))
             {
-                case var payloads when payloads.Any() == false: return default;
-                case var payloads: return FoldLeft(new T(), payloads);
+                case var events when events.Any() == false: return default;
+                case var events: return FoldLeft(new T(), events);
             }
         }
 
-        private T FoldLeft(T seed, IEnumerable<object> payloads)
-            => payloads.Aggregate(seed, _eventHandler.Handle);
+        private T FoldLeft(T seed, IEnumerable<object> events)
+            => _eventHandler.HandleEvents(seed, events);
     }
 }
