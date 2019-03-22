@@ -15,9 +15,9 @@
         }
 
         public Task<IEnumerable<object>> QueryEvents(
-            Guid streamId, long afterVersion)
+            Guid streamId, long fromVersion)
         {
-            return _function.Invoke(streamId, afterVersion);
+            return _function.Invoke(streamId, fromVersion);
         }
     }
 }

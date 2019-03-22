@@ -6,7 +6,7 @@
 
     public interface IEventReader
     {
-        Task<IEnumerable<object>> QueryEvents(Guid streamId, long afterVersion);
+        Task<IEnumerable<object>> QueryEvents(Guid streamId, long fromVersion);
     }
 
     // TODO: Implement Task<IEnumerable<object>> QueryEvents(Guid streamId) method.

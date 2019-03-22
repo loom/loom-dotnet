@@ -56,11 +56,11 @@
 
             ISnapshotReader<State> snapshotReader =
                 new DelegatingSnapshotReader<State>(
-                    id => Task.FromResult<State>(default));
+                    stream => Task.FromResult<State>(default));
 
             IEventReader eventReader =
                 new DelegatingEventReader(
-                    (id, after) =>
+                    (stream, from) =>
                     Task.FromResult(Enumerable.Empty<object>()));
 
             IEventHandler<State> eventHandler = new EventHandler();
@@ -83,7 +83,7 @@
 
             ISnapshotReader<State> snapshotReader =
                 new DelegatingSnapshotReader<State>(
-                    id => Task.FromResult<State>(default));
+                    stream => Task.FromResult<State>(default));
 
             var gen = new Generator<ValueAdded>(new Fixture());
 
@@ -92,8 +92,8 @@
 
             IEventReader eventReader =
                 new DelegatingEventReader(
-                    (id, after) => id == streamId
-                    ? Task.FromResult(events.Skip((int)after))
+                    (stream, from) => stream == streamId
+                    ? Task.FromResult(events.Skip((int)from - 1))
                     : Task.FromResult(Enumerable.Empty<object>()));
 
             IEventHandler<State> eventHandler = new EventHandler();
@@ -124,13 +124,13 @@
 
             ISnapshotReader<State> snapshotReader =
                 new DelegatingSnapshotReader<State>(
-                    id => id == streamId
+                    stream => stream == streamId
                     ? Task.FromResult(snapshot)
                     : Task.FromResult<State>(default));
 
             IEventReader eventReader =
                 new DelegatingEventReader(
-                    (id, after) =>
+                    (stream, from) =>
                     Task.FromResult(Enumerable.Empty<object>()));
 
             IEventHandler<State> eventHandler = new EventHandler();
@@ -159,7 +159,7 @@
 
             ISnapshotReader<State> snapshotReader =
                 new DelegatingSnapshotReader<State>(
-                    id => id == streamId
+                    stream => stream == streamId
                     ? Task.FromResult(snapshot)
                     : Task.FromResult<State>(default));
 
@@ -170,7 +170,8 @@
 
             IEventReader eventReader =
                 new DelegatingEventReader(
-                    (id, after) => (id == streamId && after == snapshot.Version)
+                    (stream, from) => 
+                    stream == streamId && from == snapshot.Version + 1
                     ? Task.FromResult(events.AsEnumerable())
                     : Task.FromResult(Enumerable.Empty<object>()));
 
