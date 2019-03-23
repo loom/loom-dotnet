@@ -15,6 +15,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Loom.EventSourcing.EntityFr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Loom.Messaging", "Loom.Messaging\Loom.Messaging.csproj", "{BF8E33B2-5B9C-4A6C-8037-82046BB42F89}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Loom.Tests.Dependency", "Loom.Tests.Dependency\Loom.Tests.Dependency.csproj", "{8821A419-F519-472C-9DF5-541E31C5241A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +47,10 @@ Global
 		{BF8E33B2-5B9C-4A6C-8037-82046BB42F89}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BF8E33B2-5B9C-4A6C-8037-82046BB42F89}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BF8E33B2-5B9C-4A6C-8037-82046BB42F89}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8821A419-F519-472C-9DF5-541E31C5241A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8821A419-F519-472C-9DF5-541E31C5241A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8821A419-F519-472C-9DF5-541E31C5241A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8821A419-F519-472C-9DF5-541E31C5241A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
