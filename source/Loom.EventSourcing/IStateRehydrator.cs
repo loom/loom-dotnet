@@ -4,6 +4,7 @@
     using System.Threading.Tasks;
 
     public interface IStateRehydrator<T>
+        where T : IVersioned
     {
         // TODO: Change return type to Task<T?>.
         Task<T> TryRehydrateState(Guid streamId);
