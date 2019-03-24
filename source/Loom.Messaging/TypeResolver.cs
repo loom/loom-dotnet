@@ -40,6 +40,8 @@
         public string ResolveTypeName(Type type)
             => _typeNameResolvingStrategy.ResolveTypeName(type);
 
+        public string ResolveTypeName<T>() => ResolveTypeName(typeof(T));
+
         // TODO: Change return type to Type?.
         public Type TryResolveType(string typeName)
             => _typeResolvingStrategy.TryResolveType(_types.Value, typeName);

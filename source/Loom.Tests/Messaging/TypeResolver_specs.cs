@@ -15,11 +15,13 @@
             typeof(TypeResolver).Should().BeSealed();
         }
 
+        private Type GetTypeFromReferencedAssembly() => typeof(ReferencedType);
+
         [TestMethod]
         public void ResolveTypeName_delegates_correctly()
         {
             // Arrange
-            Type type = typeof(ReferencedType);
+            Type type = GetTypeFromReferencedAssembly();
 
             var sut = new TypeResolver(
                 new DelegatingTypeNameResolvingStrategy(t => t.FullName),
@@ -36,7 +38,7 @@
         public void TryResolveType_delegates_correctly()
         {
             // Arrange
-            Type type = typeof(ReferencedType);
+            Type type = GetTypeFromReferencedAssembly();
 
             var typeResolvingStrategy = new DelegatingTypeResolvingStrategy(
                 (types, typeName) => types.Single(t => t.FullName == typeName));

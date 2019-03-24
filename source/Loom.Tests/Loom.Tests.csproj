@@ -10,6 +10,8 @@
   <ItemGroup>
     <PackageReference Include="AutoFixture" Version="4.8.0" />
     <PackageReference Include="FluentAssertions" Version="5.6.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="2.2.3" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="2.2.3" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.0.0" />
     <PackageReference Include="Moq" Version="4.10.1" />
     <PackageReference Include="MSTest.TestAdapter" Version="1.4.0" />
@@ -17,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Loom.EventSourcing\Loom.EventSourcing.csproj" />
+    <ProjectReference Include="..\Loom.EventSourcing.EntityFrameworkCore\Loom.EventSourcing.EntityFrameworkCore.csproj" />
     <ProjectReference Include="..\Loom.Messaging\Loom.Messaging.csproj" />
     <ProjectReference Include="..\Loom.Tests.Dependency\Loom.Tests.Dependency.csproj" />
   </ItemGroup>
