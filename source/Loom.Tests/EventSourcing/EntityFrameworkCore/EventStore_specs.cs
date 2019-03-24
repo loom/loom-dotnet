@@ -165,6 +165,40 @@
         }
 
         [TestMethod]
+        public async Task CollectEvents_sets_RaisedTimeUtc_property_correctly()
+        {
+            // Arrange
+            DbContextOptions options = new DbContextOptionsBuilder()
+                .UseInMemoryDatabase(databaseName: $"{Guid.NewGuid()}")
+                .Options;
+
+            var sut = new EventStore(
+                () => new EventStoreContext(options),
+                new TypeResolver(
+                    new FullNameTypeNameResolvingStrategy(),
+                    new FullNameTypeResolvingStrategy()));
+
+            var streamId = Guid.NewGuid();
+            Event1 evt = new Fixture().Create<Event1>();
+
+            DateTime nearby = DateTime.UtcNow;
+
+            // Act
+            await sut.CollectEvents(streamId, firstVersion: 1, new[] { evt });
+
+            // Assert
+            using (var context = new EventStoreContext(options))
+            {
+                IQueryable<DateTime> query = from e in context.StreamEvents
+                                             where e.StreamId == streamId
+                                             select e.RaisedTimeUtc;
+                DateTime actual = await query.SingleOrDefaultAsync();
+                actual.Kind.Should().Be(DateTimeKind.Utc);
+                actual.Should().BeCloseTo(nearby, precision: 1000);
+            }
+        }
+
+        [TestMethod]
         public void sut_implements_IEventReader()
         {
             typeof(EventStore).Should().Implement<IEventReader>();

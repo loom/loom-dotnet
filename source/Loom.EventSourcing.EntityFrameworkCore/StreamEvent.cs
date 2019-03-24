@@ -9,10 +9,15 @@
         }
 
         public StreamEvent(
-            Guid streamId, long version, string eventType, string eventData)
+            Guid streamId,
+            long version,
+            DateTime raisedTimeUtc,
+            string eventType,
+            string eventData)
         {
             StreamId = streamId;
             Version = version;
+            RaisedTimeUtc = raisedTimeUtc;
             EventType = eventType;
             EventData = eventData;
         }
@@ -22,6 +27,8 @@
         public Guid StreamId { get; private set; }
 
         public long Version { get; private set; }
+
+        public DateTime RaisedTimeUtc { get; private set; }
 
         public string EventType { get; private set; }
 

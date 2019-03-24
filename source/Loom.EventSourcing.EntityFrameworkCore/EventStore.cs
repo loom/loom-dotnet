@@ -33,6 +33,7 @@
                 new StreamEvent(
                     streamId,
                     version: firstVersion + index,
+                    raisedTimeUtc: DateTime.UtcNow,
                     eventType: _typeResolver.ResolveTypeName(source.GetType()),
                     eventData: JsonConvert.SerializeObject(source));
         }

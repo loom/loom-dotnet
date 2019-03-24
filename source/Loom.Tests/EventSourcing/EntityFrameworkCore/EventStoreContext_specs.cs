@@ -74,7 +74,8 @@
                 using (var context = new EventStoreContext(options))
                 {
                     context.StreamEvents.Add(
-                        new StreamEvent(streamId, version, "Empty", "{}"));
+                        new StreamEvent(
+                            streamId, version, DateTime.UtcNow, "Empty", "{}"));
                     await context.SaveChangesAsync();
                 }
 
@@ -82,7 +83,8 @@
                 using (var context = new EventStoreContext(options))
                 {
                     context.StreamEvents.Add(
-                        new StreamEvent(streamId, version, "Empty", "{}"));
+                        new StreamEvent(
+                            streamId, version, DateTime.UtcNow, "Empty", "{}"));
                     Func<Task> action = () => context.SaveChangesAsync();
                     action.Should().Throw<DbUpdateException>();
                 }
@@ -109,6 +111,7 @@
                 var streamEvent = new StreamEvent(
                     streamId: Guid.NewGuid(),
                     version: 1,
+                    raisedTimeUtc: DateTime.UtcNow,
                     eventType: null,
                     eventData: "{}");
 
@@ -144,6 +147,7 @@
                 var streamEvent = new StreamEvent(
                     streamId: Guid.NewGuid(),
                     version: 1,
+                    raisedTimeUtc: DateTime.UtcNow,
                     eventType: "Empty",
                     eventData: null);
 
