@@ -50,7 +50,7 @@
                     return (T)handler.Invoke(this, arguments);
 
                 default:
-                    string message = $"Cannot handle the event of type {eventType}";
+                    string message = $"Cannot handle the event of type {eventType}.";
                     throw new InvalidOperationException(message);
             }
         }

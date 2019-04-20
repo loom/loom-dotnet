@@ -50,7 +50,7 @@
                     return (IEnumerable<object>)producer.Invoke(this, arguments);
 
                 default:
-                    string message = $"Cannot process the command of type {commandType}";
+                    string message = $"Cannot process the command of type {commandType}.";
                     throw new InvalidOperationException(message);
             }
         }
