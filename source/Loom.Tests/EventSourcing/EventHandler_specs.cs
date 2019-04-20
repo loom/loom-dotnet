@@ -42,7 +42,7 @@
         }
 
         [TestMethod]
-        public void given_unknown_event_then_Handle_throws_exception()
+        public void given_unknown_event_then_HandleEvents_throws_exception()
         {
             // Arrange
             IEventHandler<State> sut = new EventHandler();
@@ -57,14 +57,14 @@
         }
 
         [TestMethod]
-        public void given_known_events_Handle_invokes_handler_correctly()
+        public void given_known_event_then_HandleEvents_invokes_handler_correctly()
         {
             // Arrange
             IEventHandler<State> sut = new EventHandler();
             var builder = new Fixture();
             string seed = builder.Create<string>();
             var state = new State(seed);
-            IEnumerable<Appended> events = builder.CreateMany<Appended>();
+            IEnumerable<Appended> events = new[] { builder.Create<Appended>() };
 
             // Act
             State actual = sut.HandleEvents(state, events);
