@@ -7,7 +7,7 @@
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
-    public class EventProducer_specs
+    public class ConventionalEventProducer_specs
     {
         public class State
         {
@@ -31,7 +31,7 @@
             public int Value { get; }
         }
 
-        public class EventProducer : EventProducer<State>
+        public class EventProducer : ConventionalEventProducer<State>
         {
             private IEnumerable<object> ProduceEvents(
                 State state, DecreaseValueTwice command)
@@ -45,7 +45,7 @@
         [TestMethod]
         public void sut_implements_IEventProducerT()
         {
-            Type sut = typeof(EventProducer<State>);
+            Type sut = typeof(ConventionalEventProducer<State>);
             sut.Should().Implement<IEventProducer<State>>();
         }
 

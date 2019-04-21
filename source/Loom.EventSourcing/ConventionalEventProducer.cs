@@ -6,11 +6,11 @@
     using System.Linq;
     using System.Reflection;
 
-    public class EventProducer<T> : IEventProducer<T>
+    public abstract class ConventionalEventProducer<T> : IEventProducer<T>
     {
         private readonly ImmutableDictionary<Type, MethodInfo> _producers;
 
-        protected EventProducer()
+        protected ConventionalEventProducer()
         {
             const BindingFlags bindingFlags
                 = BindingFlags.Instance
@@ -50,7 +50,7 @@
                     return (IEnumerable<object>)producer.Invoke(this, arguments);
 
                 default:
-                    string message = $"Cannot process the command of type {commandType}.";
+                    string message = $"Cannot execute the command of type {commandType}.";
                     throw new InvalidOperationException(message);
             }
         }
