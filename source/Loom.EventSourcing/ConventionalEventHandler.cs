@@ -6,11 +6,11 @@
     using System.Linq;
     using System.Reflection;
 
-    public abstract class EventHandler<T> : IEventHandler<T>
+    public abstract class ConventionalEventHandler<T> : IEventHandler<T>
     {
         private readonly ImmutableDictionary<Type, MethodInfo> _handlers;
 
-        protected EventHandler()
+        protected ConventionalEventHandler()
         {
             const BindingFlags bindingFlags
                 = BindingFlags.Instance
@@ -20,7 +20,7 @@
             IEnumerable<(Type eventType, MethodInfo handler)> query =
                 from method in GetType().GetMethods(bindingFlags)
 
-                where method.Name == "Handle"
+                where method.Name == "HandleEvent"
                 where method.ReturnType == typeof(T)
 
                 let parameters = method.GetParameters()

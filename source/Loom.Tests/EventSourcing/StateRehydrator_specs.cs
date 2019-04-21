@@ -31,9 +31,9 @@
             public int Amount { get; }
         }
 
-        public class EventHandler : EventHandler<State>
+        public class EventHandler : ConventionalEventHandler<State>
         {
-            public State Handle(State state, ValueAdded valueAdded)
+            public State HandleEvent(State state, ValueAdded valueAdded)
             {
                 return new State(
                     state.Version + 1,

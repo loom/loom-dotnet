@@ -8,7 +8,7 @@
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
-    public class EventHandler_specs
+    public class ConventionalEventHandler_specs
     {
         public class State
         {
@@ -24,9 +24,9 @@
             public string Value { get; }
         }
 
-        public class EventHandler : EventHandler<State>
+        public class EventHandler : ConventionalEventHandler<State>
         {
-            private State Handle(State state, Appended appended)
+            private State HandleEvent(State state, Appended appended)
                 => new State(state.Value + appended.Value);
         }
 
@@ -37,7 +37,7 @@
         [TestMethod]
         public void sut_implements_IEventHandlerT()
         {
-            Type sut = typeof(EventHandler<State>);
+            Type sut = typeof(ConventionalEventHandler<State>);
             sut.Should().Implement<IEventHandler<State>>();
         }
 
