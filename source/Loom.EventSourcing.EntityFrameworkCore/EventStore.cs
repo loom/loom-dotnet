@@ -26,7 +26,7 @@
             using (EventStoreContext context = _contextFactory.Invoke())
             {
                 context.StreamEvents.AddRange(events.Select(SerializeEvent));
-                await context.SaveChangesAsync();
+                await context.SaveChangesAsync().ConfigureAwait(false);
             }
 
             StreamEvent SerializeEvent(object source, int index) =>
@@ -51,7 +51,7 @@
                     orderby e.Version ascending
                     select e;
 
-                return from e in await query.ToListAsync()
+                return from e in await query.ToListAsync().ConfigureAwait(false)
                        let value = e.EventData
                        let type = _typeResolver.TryResolveType(e.EventType)
                        select JsonConvert.DeserializeObject(value, type);

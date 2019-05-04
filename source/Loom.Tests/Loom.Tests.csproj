@@ -19,6 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Loom.EventSourcing.Azure\Loom.EventSourcing.Azure.csproj" />
     <ProjectReference Include="..\Loom.EventSourcing.EntityFrameworkCore\Loom.EventSourcing.EntityFrameworkCore.csproj" />
     <ProjectReference Include="..\Loom.Messaging\Loom.Messaging.csproj" />
     <ProjectReference Include="..\Loom.Tests.Dependency\Loom.Tests.Dependency.csproj" />

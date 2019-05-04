@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.421
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28803.202
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Loom.EventSourcing.Contracts", "Loom.EventSourcing.Contracts\Loom.EventSourcing.Contracts.csproj", "{DA4BE9BE-C7F4-4C94-B4D6-BD35C72055F0}"
 EndProject
@@ -16,6 +16,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Loom.Messaging", "Loom.Messaging\Loom.Messaging.csproj", "{BF8E33B2-5B9C-4A6C-8037-82046BB42F89}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Loom.Tests.Dependency", "Loom.Tests.Dependency\Loom.Tests.Dependency.csproj", "{8821A419-F519-472C-9DF5-541E31C5241A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loom.EventSourcing.Azure", "Loom.EventSourcing.Azure\Loom.EventSourcing.Azure.csproj", "{11B0A108-8303-4202-87D1-6FD50E7A12AE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +53,10 @@ Global
 		{8821A419-F519-472C-9DF5-541E31C5241A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8821A419-F519-472C-9DF5-541E31C5241A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8821A419-F519-472C-9DF5-541E31C5241A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{11B0A108-8303-4202-87D1-6FD50E7A12AE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{11B0A108-8303-4202-87D1-6FD50E7A12AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{11B0A108-8303-4202-87D1-6FD50E7A12AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{11B0A108-8303-4202-87D1-6FD50E7A12AE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
