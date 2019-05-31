@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.Collections.Immutable;
     using System.Linq;
+    using System.Reflection;
 
     public sealed class TypeResolver
     {
@@ -29,8 +30,16 @@
         {
             AppDomain appDomain = AppDomain.CurrentDomain;
 
-            IEnumerable<Type> query =
+            // TODO: Remove the code to bypass the damn error after it fixed.
+            // https://github.com/microsoft/vstest/issues/2008
+            string filter = "Microsoft.VisualStudio.TraceDataCollector";
+            IEnumerable<Assembly> assemblies =
                 from assembly in appDomain.GetAssemblies()
+                where assembly.FullName.StartsWith(filter) == false
+                select assembly;
+
+            IEnumerable<Type> query =
+                from assembly in assemblies
                 from type in assembly.GetTypes()
                 select type;
 
