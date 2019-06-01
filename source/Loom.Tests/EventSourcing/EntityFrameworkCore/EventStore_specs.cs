@@ -93,7 +93,7 @@
                             {
                                 e.Version,
                                 e.EventType,
-                                e.EventData,
+                                e.Payload,
                             };
 
                 var actual = await query.SingleOrDefaultAsync();
@@ -102,7 +102,7 @@
                 {
                     Version = version,
                     EventType = typeResolver.ResolveTypeName<Event1>(),
-                    EventData = JsonConvert.SerializeObject(evt),
+                    Payload = JsonConvert.SerializeObject(evt),
                 });
             }
         }
@@ -141,7 +141,7 @@
                             {
                                 e.Version,
                                 e.EventType,
-                                e.EventData,
+                                e.Payload,
                             };
 
                 var actual = await query.ToListAsync();
@@ -152,13 +152,13 @@
                     {
                         Version = firstVersion,
                         EventType = typeResolver.ResolveTypeName<Event1>(),
-                        EventData = JsonConvert.SerializeObject(evt1)
+                        Payload = JsonConvert.SerializeObject(evt1)
                     },
                     new
                     {
                         Version = firstVersion + 1,
                         EventType = typeResolver.ResolveTypeName<Event2>(),
-                        EventData = JsonConvert.SerializeObject(evt2)
+                        Payload = JsonConvert.SerializeObject(evt2)
                     },
                 });
             }
@@ -222,7 +222,7 @@
 
             (Event1 evt1, Event2 evt2) =
                 new Fixture().Create<(Event1, Event2)>();
-            var events = new object[] { evt1, evt2 };
+            object[] events = new object[] { evt1, evt2 };
 
             await sut.CollectEvents(streamId, firstVersion: 1, events);
 
@@ -252,7 +252,7 @@
 
             (Event1 evt1, Event2 evt2) =
                 new Fixture().Create<(Event1, Event2)>();
-            var events = new object[] { evt1, evt2 };
+            object[] events = new object[] { evt1, evt2 };
 
             await sut.CollectEvents(streamId, firstVersion: 1, events);
 

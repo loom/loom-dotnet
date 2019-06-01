@@ -23,7 +23,7 @@
             entity.HasKey(e => e.Sequence);
             entity.HasIndex(e => new { e.StreamId, e.Version }).IsUnique();
             entity.Property(e => e.EventType).IsRequired();
-            entity.Property(e => e.EventData).IsRequired();
+            entity.Property(e => e.Payload).IsRequired();
         }
     }
 }

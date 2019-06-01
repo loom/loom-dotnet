@@ -38,7 +38,7 @@
                     streamId,
                     version: firstVersion + index,
                     eventType: _typeResolver.ResolveTypeName(source.GetType()),
-                    eventData: SerializeObject(source, _jsonSettings)));
+                    payload: SerializeObject(source, _jsonSettings)));
 
             var batch = new TableBatchOperation();
             foreach (StreamEvent streamEvent in query)
@@ -73,7 +73,7 @@
         private object DeserializeEvent(StreamEvent streamEvent)
         {
             return DeserializeObject(
-                value: streamEvent.EventData,
+                value: streamEvent.Payload,
                 type: _typeResolver.TryResolveType(streamEvent.EventType),
                 settings: _jsonSettings);
         }

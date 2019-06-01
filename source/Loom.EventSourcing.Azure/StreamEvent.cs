@@ -10,18 +10,18 @@
     {
         public string EventType { get; set; }
 
-        public string EventData { get; set; }
+        public string Payload { get; set; }
 
         public StreamEvent()
         {
         }
 
         public StreamEvent(
-            Guid streamId, long version, string eventType, string eventData)
+            Guid streamId, long version, string eventType, string payload)
             : base(partitionKey: $"{streamId}", rowKey: FormatVersion(version))
         {
             EventType = eventType;
-            EventData = eventData;
+            Payload = payload;
         }
 
         private static string FormatVersion(long version) => $"{version:D19}";

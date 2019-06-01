@@ -113,7 +113,7 @@
                     version: 1,
                     raisedTimeUtc: DateTime.UtcNow,
                     eventType: null,
-                    eventData: "{}");
+                    payload: "{}");
 
                 using (var context = new EventStoreContext(options))
                 {
@@ -128,7 +128,7 @@
         }
 
         [TestMethod]
-        public async Task sut_has_guard_for_StreamEvent_against_null_EventData()
+        public async Task sut_has_guard_for_StreamEvent_against_null_Payload()
         {
             // Arrange
             using (var connection = new SqliteConnection("DataSource=:memory:"))
@@ -149,7 +149,7 @@
                     version: 1,
                     raisedTimeUtc: DateTime.UtcNow,
                     eventType: "Empty",
-                    eventData: null);
+                    payload: null);
 
                 using (var context = new EventStoreContext(options))
                 {

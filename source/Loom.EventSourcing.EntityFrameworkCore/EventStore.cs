@@ -35,7 +35,7 @@
                     version: firstVersion + index,
                     raisedTimeUtc: DateTime.UtcNow,
                     eventType: _typeResolver.ResolveTypeName(source.GetType()),
-                    eventData: JsonConvert.SerializeObject(source));
+                    payload: JsonConvert.SerializeObject(source));
         }
 
         public async Task<IEnumerable<object>> QueryEvents(
@@ -52,7 +52,7 @@
                     select e;
 
                 return from e in await query.ToListAsync().ConfigureAwait(false)
-                       let value = e.EventData
+                       let value = e.Payload
                        let type = _typeResolver.TryResolveType(e.EventType)
                        select JsonConvert.DeserializeObject(value, type);
             }

@@ -13,13 +13,13 @@
             long version,
             DateTime raisedTimeUtc,
             string eventType,
-            string eventData)
+            string payload)
         {
             StreamId = streamId;
             Version = version;
             RaisedTimeUtc = raisedTimeUtc;
             EventType = eventType;
-            EventData = eventData;
+            Payload = payload;
         }
 
         public long Sequence { get; private set; }
@@ -32,6 +32,6 @@
 
         public string EventType { get; private set; }
 
-        public string EventData { get; private set; }
+        public string Payload { get; private set; }
     }
 }
