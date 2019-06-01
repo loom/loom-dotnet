@@ -4,11 +4,11 @@
 
     public class StreamCommand<T>
     {
-        public StreamCommand(Guid streamId, T data)
-            => (StreamId, Data) = (streamId, data);
+        public StreamCommand(Guid streamId, T payload)
+            => (StreamId, Payload) = (streamId, payload);
 
         public Guid StreamId { get; }
 
-        public T Data { get; }
+        public T Payload { get; }
     }
 }
