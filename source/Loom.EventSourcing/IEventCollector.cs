@@ -6,7 +6,11 @@
 
     public interface IEventCollector
     {
-        Task CollectEvents(
-            Guid streamId, long firstVersion, IEnumerable<object> events);
+        Task CollectEvents(string operationId,
+                           string contributor,
+                           string parentId,
+                           Guid streamId,
+                           long startVersion,
+                           IEnumerable<object> events);
     }
 }

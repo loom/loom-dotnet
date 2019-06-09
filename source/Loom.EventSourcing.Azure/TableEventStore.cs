@@ -30,13 +30,17 @@
             };
         }
 
-        public Task CollectEvents(
-            Guid streamId, long firstVersion, IEnumerable<object> events)
+        public Task CollectEvents(string operationId,
+                                  string contributor,
+                                  string parentId,
+                                  Guid streamId,
+                                  long startVersion,
+                                  IEnumerable<object> events)
         {
             IEnumerable<StreamEvent> query = events.Select((source, index) =>
                 new StreamEvent(
                     streamId,
-                    version: firstVersion + index,
+                    version: startVersion + index,
                     eventType: _typeResolver.ResolveTypeName(source.GetType()),
                     payload: SerializeObject(source, _jsonSettings)));
 

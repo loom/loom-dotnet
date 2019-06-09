@@ -20,8 +20,12 @@
             _typeResolver = typeResolver;
         }
 
-        public async Task CollectEvents(
-            Guid streamId, long firstVersion, IEnumerable<object> events)
+        public async Task CollectEvents(string operationId,
+                                        string contributor,
+                                        string parentId,
+                                        Guid streamId,
+                                        long startVersion,
+                                        IEnumerable<object> events)
         {
             using (EventStoreContext context = _contextFactory.Invoke())
             {
@@ -32,7 +36,7 @@
             StreamEvent SerializeEvent(object source, int index) =>
                 new StreamEvent(
                     streamId,
-                    version: firstVersion + index,
+                    version: startVersion + index,
                     raisedTimeUtc: DateTime.UtcNow,
                     eventType: _typeResolver.ResolveTypeName(source.GetType()),
                     payload: JsonConvert.SerializeObject(source));

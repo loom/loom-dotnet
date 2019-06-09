@@ -82,7 +82,12 @@
             (Event1 evt, long version) = new Fixture().Create<(Event1, long)>();
 
             // Act
-            await sut.CollectEvents(streamId, version, new[] { evt });
+            await sut.CollectEvents(operationId: default,
+                                    contributor: default,
+                                    parentId: default,
+                                    streamId,
+                                    startVersion: version,
+                                    events: new[] { evt });
 
             // Assert
             using (var context = new EventStoreContext(options))
@@ -124,12 +129,16 @@
                 typeResolver);
 
             var streamId = Guid.NewGuid();
-            (Event1 evt1, Event2 evt2, long firstVersion) =
+            (Event1 evt1, Event2 evt2, long startVersion) =
                 new Fixture().Create<(Event1, Event2, long)>();
 
             // Act
-            object[] events = new object[] { evt1, evt2 };
-            await sut.CollectEvents(streamId, firstVersion, events);
+            await sut.CollectEvents(operationId: default,
+                                    contributor: default,
+                                    parentId: default,
+                                    streamId,
+                                    startVersion,
+                                    events: new object[] { evt1, evt2 });
 
             // Assert
             using (var context = new EventStoreContext(options))
@@ -150,13 +159,13 @@
                 {
                     new
                     {
-                        Version = firstVersion,
+                        Version = startVersion,
                         EventType = typeResolver.ResolveTypeName<Event1>(),
                         Payload = JsonConvert.SerializeObject(evt1)
                     },
                     new
                     {
-                        Version = firstVersion + 1,
+                        Version = startVersion + 1,
                         EventType = typeResolver.ResolveTypeName<Event2>(),
                         Payload = JsonConvert.SerializeObject(evt2)
                     },
@@ -184,7 +193,12 @@
             DateTime nearby = DateTime.UtcNow;
 
             // Act
-            await sut.CollectEvents(streamId, firstVersion: 1, new[] { evt });
+            await sut.CollectEvents(operationId: default,
+                                    contributor: default,
+                                    parentId: default,
+                                    streamId,
+                                    startVersion: 1,
+                                    events: new[] { evt });
 
             // Assert
             using (var context = new EventStoreContext(options))
@@ -224,7 +238,12 @@
                 new Fixture().Create<(Event1, Event2)>();
             object[] events = new object[] { evt1, evt2 };
 
-            await sut.CollectEvents(streamId, firstVersion: 1, events);
+            await sut.CollectEvents(operationId: default,
+                                    contributor: default,
+                                    parentId: default,
+                                    streamId,
+                                    startVersion: 1,
+                                    events);
 
             // Act
             IEnumerable<object> actual = await
@@ -254,7 +273,12 @@
                 new Fixture().Create<(Event1, Event2)>();
             object[] events = new object[] { evt1, evt2 };
 
-            await sut.CollectEvents(streamId, firstVersion: 1, events);
+            await sut.CollectEvents(operationId: default,
+                                    contributor: default,
+                                    parentId: default,
+                                    streamId,
+                                    startVersion: 1,
+                                    events);
 
             // Act
             IEnumerable<object> actual = await
@@ -282,10 +306,20 @@
                 new Fixture().Create<(Event1, Event2)>();
 
             var streamId = Guid.NewGuid();
-            await sut.CollectEvents(streamId, 1, new[] { evt1 });
+            await sut.CollectEvents(operationId: default,
+                                    contributor: default,
+                                    parentId: default,
+                                    streamId,
+                                    startVersion: 1,
+                                    events: new[] { evt1 });
 
             var otherStreamId = Guid.NewGuid();
-            await sut.CollectEvents(otherStreamId, 2, new[] { evt2 });
+            await sut.CollectEvents(operationId: default,
+                                    contributor: default,
+                                    parentId: default,
+                                    otherStreamId,
+                                    startVersion: 2,
+                                    events: new[] { evt2 });
 
             // Act
             IEnumerable<object> actual = await
@@ -314,8 +348,20 @@
             object[] events = new object[] { evt1, evt2 };
 
             var streamId = Guid.NewGuid();
-            await sut.CollectEvents(streamId, 2, new[] { evt2 });
-            await sut.CollectEvents(streamId, 1, new[] { evt1 });
+
+            await sut.CollectEvents(operationId: default,
+                                    contributor: default,
+                                    parentId: default,
+                                    streamId,
+                                    startVersion: 2,
+                                    events: new[] { evt2 });
+
+            await sut.CollectEvents(operationId: default,
+                                    contributor: default,
+                                    parentId: default,
+                                    streamId,
+                                    startVersion: 1,
+                                    events: new[] { evt1 });
 
             // Act
             IEnumerable<object> actual = await

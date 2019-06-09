@@ -90,7 +90,12 @@
             // Arrange
             var sut = new TableEventStore(EventStoreTable, TypeResolver);
             Guid streamId = NewGuid();
-            await sut.CollectEvents(streamId, firstVersion: 1, events);
+            await sut.CollectEvents(operationId: default,
+                                    contributor: default,
+                                    parentId: default,
+                                    streamId,
+                                    startVersion: 1,
+                                    events);
 
             // Act
             IEnumerable<object> actual = await
@@ -109,10 +114,21 @@
             var sut = new TableEventStore(EventStoreTable, TypeResolver);
 
             Guid streamId = NewGuid();
-            int firstVersion = 1;
+            int startVersion = 1;
 
-            await sut.CollectEvents(streamId, firstVersion, events);
-            await sut.CollectEvents(streamId: NewGuid(), firstVersion, events);
+            await sut.CollectEvents(operationId: default,
+                                    contributor: default,
+                                    parentId: default,
+                                    streamId,
+                                    startVersion,
+                                    events);
+
+            await sut.CollectEvents(operationId: default,
+                                    contributor: default,
+                                    parentId: default,
+                                    streamId: NewGuid(),
+                                    startVersion,
+                                    events);
 
             // Act
             IEnumerable<object> actual = await
@@ -130,7 +146,12 @@
             // Arrange
             var sut = new TableEventStore(EventStoreTable, TypeResolver);
             Guid streamId = NewGuid();
-            await sut.CollectEvents(streamId, firstVersion: 1, events);
+            await sut.CollectEvents(operationId: default,
+                                    contributor: default,
+                                    parentId: default,
+                                    streamId,
+                                    startVersion: 1,
+                                    events);
 
             // Act
             IEnumerable<object> actual = await
@@ -148,10 +169,20 @@
             Guid streamId = NewGuid();
             int version = 1;
             object[] events = new[] { new Event4(NewGuid()) };
-            await sut.CollectEvents(streamId, version, events);
+            await sut.CollectEvents(operationId: default,
+                                    contributor: default,
+                                    parentId: default,
+                                    streamId,
+                                    startVersion: version,
+                                    events);
 
             // Act
-            Func<Task> action = () => sut.CollectEvents(streamId, version, events);
+            Func<Task> action = () => sut.CollectEvents(operationId: default,
+                                                        contributor: default,
+                                                        parentId: default,
+                                                        streamId,
+                                                        startVersion: version,
+                                                        events);
 
             // Assert
             await action.Should().ThrowAsync<StorageException>();
