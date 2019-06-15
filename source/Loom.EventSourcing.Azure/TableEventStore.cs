@@ -4,23 +4,26 @@
     using System.Collections.Generic;
     using System.Collections.Immutable;
     using System.Linq;
+    using System.Reflection;
     using System.Threading.Tasks;
     using Loom.Messaging;
     using Microsoft.Azure.Cosmos.Table;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Serialization;
-    using static Newtonsoft.Json.JsonConvert;
 
     public class TableEventStore : IEventCollector, IEventReader
     {
         private readonly CloudTable _table;
         private readonly TypeResolver _typeResolver;
+        private readonly IMessageBus _eventBus;
         private readonly JsonSerializerSettings _jsonSettings;
 
-        public TableEventStore(CloudTable table, TypeResolver typeResolver)
+        public TableEventStore(
+            CloudTable table, TypeResolver typeResolver, IMessageBus eventBus)
         {
             _table = table;
             _typeResolver = typeResolver;
+            _eventBus = eventBus;
             _jsonSettings = new JsonSerializerSettings
             {
                 ContractResolver = new DefaultContractResolver
@@ -37,46 +40,129 @@
                                   long startVersion,
                                   IEnumerable<object> events)
         {
-            IEnumerable<StreamEvent> query = events.Select((source, index) =>
-                new StreamEvent(
-                    streamId,
-                    version: startVersion + index,
-                    eventType: _typeResolver.ResolveTypeName(source.GetType()),
-                    payload: SerializeObject(source, _jsonSettings)));
+            return CollectEvents(transaction: Guid.NewGuid(),
+                                 operationId,
+                                 contributor,
+                                 parentId,
+                                 streamId,
+                                 startVersion,
+                                 events.ToImmutableArray());
+        }
 
-            var batch = new TableBatchOperation();
-            foreach (StreamEvent streamEvent in query)
+        private async Task CollectEvents(Guid transaction,
+                                         string operationId,
+                                         string contributor,
+                                         string parentId,
+                                         Guid streamId,
+                                         long startVersion,
+                                         ImmutableArray<object> events)
+        {
+            await SaveQueueTicket();
+            await SaveStreamEvents();
+            await PublishStreamEvents();
+
+            Task SaveQueueTicket()
             {
-                batch.Insert(streamEvent);
+                var queueTicket = new QueueTicket(streamId, startVersion, events.Length, transaction);
+                return _table.ExecuteAsync(TableOperation.Insert(queueTicket));
             }
 
-            return _table.ExecuteBatchAsync(batch);
+            Task SaveStreamEvents()
+            {
+                var batch = new TableBatchOperation();
+                for (int i = 0; i < events.Length; i++)
+                {
+                    long version = startVersion + i;
+                    batch.Insert(GenerateStreamEvent(version, events[i]));
+                }
+                return _table.ExecuteBatchAsync(batch);
+            }
+
+            StreamEvent GenerateStreamEvent(long version, object source)
+            {
+                return new StreamEvent(
+                    streamId,
+                    version,
+                    eventType: _typeResolver.ResolveTypeName(source.GetType()),
+                    payload: JsonConvert.SerializeObject(source, _jsonSettings),
+                    messageId: $"{Guid.NewGuid()}",
+                    operationId,
+                    contributor,
+                    parentId,
+                    transaction);
+            }
+
+            async Task PublishStreamEvents()
+            {
+                TableQuery<QueueTicket> query = QueueTicket.CreateQuery(streamId).OrderBy("RowKey");
+                foreach (QueueTicket queueTicket in await ExecuteQuery(query))
+                {
+                    await this.PublishStreamEvents(queueTicket);
+                    await _table.ExecuteAsync(TableOperation.Delete(queueTicket));
+                }
+            }
+        }
+
+        private async Task PublishStreamEvents(QueueTicket queueTicket)
+        {
+            TableQuery<StreamEvent> query = StreamEvent.CreateQuery(queueTicket);
+            IEnumerable<StreamEvent> streamEvents = await ExecuteQuery(query);
+            await _eventBus.Send(streamEvents.Select(GenerateMessage));
+        }
+
+        private Message GenerateMessage(StreamEvent streamEvent)
+        {
+            Type type = _typeResolver.TryResolveType(streamEvent.EventType);
+
+            ConstructorInfo constructor = typeof(StreamEvent<>)
+                .MakeGenericType(type)
+                .GetTypeInfo()
+                .GetConstructor(new[] { typeof(Guid), typeof(long), type });
+
+            object[] arguments = new object[]
+            {
+                streamEvent.StreamId,
+                streamEvent.Version,
+                JsonConvert.DeserializeObject(streamEvent.Payload, type, _jsonSettings)
+            };
+
+            return new Message(
+                streamEvent.MessageId,
+                streamEvent.OperationId,
+                streamEvent.Contributor,
+                streamEvent.ParentId,
+                constructor.Invoke(arguments));
         }
 
         public async Task<IEnumerable<object>> QueryEvents(
             Guid streamId, long fromVersion)
         {
-            TableQuery<StreamEvent> query =
-                StreamEvent.CreateQuery(streamId, fromVersion);
+            TableQuery<StreamEvent> query = StreamEvent.CreateQuery(streamId, fromVersion);
+            IEnumerable<StreamEvent> streamEvents = await ExecuteQuery(query);
+            return streamEvents.Select(DeserializeEvent).ToImmutableArray();
+        }
 
-            var events = new List<object>();
+        private async Task<IEnumerable<T>> ExecuteQuery<T>(TableQuery<T> query)
+             where T : ITableEntity, new()
+        {
+            var results = new List<T>();
+
             TableContinuationToken continuation = default;
             do
             {
-                TableQuerySegment<StreamEvent> segment = await _table
-                    .ExecuteQuerySegmentedAsync(query, continuation)
-                    .ConfigureAwait(false);
-                events.AddRange(segment.Select(DeserializeEvent));
+                TableQuerySegment<T> segment = await
+                    _table.ExecuteQuerySegmentedAsync(query, continuation);
+                results.AddRange(segment);
                 continuation = segment.ContinuationToken;
             }
             while (continuation != default);
 
-            return events.ToImmutableList();
+            return results.ToImmutableList();
         }
 
         private object DeserializeEvent(StreamEvent streamEvent)
         {
-            return DeserializeObject(
+            return JsonConvert.DeserializeObject(
                 value: streamEvent.Payload,
                 type: _typeResolver.TryResolveType(streamEvent.EventType),
                 settings: _jsonSettings);
