@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+<RuleSet Name="Analyzer Rules for Loom.Tests.*" ToolsVersion="15.0">
+  <Include Path="Loom.ruleset" Action="Default" />
+</RuleSet>

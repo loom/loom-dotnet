@@ -4,6 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>Loom</RootNamespace>
     <LangVersion>latest</LangVersion>
+    <CodeAnalysisRuleSet>..\RuleSets\Loom.Tests.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 
 </Project>
