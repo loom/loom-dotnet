@@ -87,7 +87,7 @@
     <Rule Id="CA1200" Action="Warning" /> <!-- Avoid using cref tags with a prefix -->
     <Rule Id="CA1507" Action="Warning" /> <!-- Use nameof to express symbol names -->
     <Rule Id="CA1821" Action="Warning" /> <!-- Remove empty Finalizers -->
-    <Rule Id="CA2200" Action="Warning" /> <!-- Rethrow to preserve stack details. -->
+    <Rule Id="CA2200" Action="Warning" /> <!-- Rethrow to preserve stack details -->
     <Rule Id="CA2234" Action="Warning" /> <!-- Pass system uri objects instead of strings -->
   </Rules>
   <Rules AnalyzerId="Microsoft.CodeQuality.VisualBasic.Analyzers" RuleNamespace="Microsoft.CodeQuality.VisualBasic.Analyzers">
@@ -99,7 +99,7 @@
     <Rule Id="CA1200" Action="Warning" /> <!-- Avoid using cref tags with a prefix -->
     <Rule Id="CA1507" Action="Warning" /> <!-- Use nameof to express symbol names -->
     <Rule Id="CA1821" Action="Warning" /> <!-- Remove empty Finalizers -->
-    <Rule Id="CA2200" Action="Warning" /> <!-- Rethrow to preserve stack details. -->
+    <Rule Id="CA2200" Action="Warning" /> <!-- Rethrow to preserve stack details -->
     <Rule Id="CA2218" Action="Warning" /> <!-- Override GetHashCode on overriding Equals -->
     <Rule Id="CA2224" Action="Warning" /> <!-- Override Equals on overloading operator equals -->
     <Rule Id="CA2234" Action="Warning" /> <!-- Pass system uri objects instead of strings -->
@@ -114,7 +114,7 @@
     <Rule Id="CA1813" Action="Warning" /> <!-- Avoid unsealed attributes -->
     <Rule Id="CA1816" Action="Warning" /> <!-- Dispose methods should call SuppressFinalize -->
     <Rule Id="CA1820" Action="Warning" /> <!-- Test for empty strings using string length -->
-    <Rule Id="CA1826" Action="Warning" /> <!-- Do not use Enumerable methods on indexable collections. Instead use the collection directly -->
+    <Rule Id="CA1826" Action="Warning" /> <!-- Do not use Enumerable methods on indexable collections. Instead use the collection directly. -->
     <Rule Id="CA2000" Action="Warning" /> <!-- Dispose objects before losing scope -->
     <Rule Id="CA2002" Action="Warning" /> <!-- Do not lock on objects with weak identity -->
     <Rule Id="CA2008" Action="Warning" /> <!-- Do not create tasks without passing a TaskScheduler -->
@@ -189,7 +189,7 @@
     <Rule Id="CA1309" Action="Warning" /> <!-- Use ordinal stringcomparison -->
     <Rule Id="CA1810" Action="Warning" /> <!-- Initialize reference type static fields inline -->
     <Rule Id="CA1824" Action="Warning" /> <!-- Mark assemblies with NeutralResourcesLanguageAttribute -->
-    <Rule Id="CA1825" Action="Warning" /> <!-- Avoid zero-length array allocations. -->
+    <Rule Id="CA1825" Action="Warning" /> <!-- Avoid zero-length array allocations -->
     <Rule Id="CA2010" Action="Warning" /> <!-- Always consume the value returned by methods marked with PreserveSigAttribute -->
     <Rule Id="CA2201" Action="Warning" /> <!-- Do not raise reserved exception types -->
     <Rule Id="CA2207" Action="Warning" /> <!-- Initialize value type static fields inline -->
@@ -198,7 +198,7 @@
     <Rule Id="CA1309" Action="Warning" /> <!-- Use ordinal stringcomparison -->
     <Rule Id="CA1810" Action="Warning" /> <!-- Initialize reference type static fields inline -->
     <Rule Id="CA1824" Action="Warning" /> <!-- Mark assemblies with NeutralResourcesLanguageAttribute -->
-    <Rule Id="CA1825" Action="Warning" /> <!-- Avoid zero-length array allocations. -->
+    <Rule Id="CA1825" Action="Warning" /> <!-- Avoid zero-length array allocations -->
     <Rule Id="CA2010" Action="Warning" /> <!-- Always consume the value returned by methods marked with PreserveSigAttribute -->
     <Rule Id="CA2201" Action="Warning" /> <!-- Do not raise reserved exception types -->
     <Rule Id="CA2207" Action="Warning" /> <!-- Initialize value type static fields inline -->
@@ -210,13 +210,25 @@
     <Rule Id="CA3147" Action="Warning" /> <!-- Mark Verb Handlers With Validate Antiforgery Token -->
   </Rules>
   <Rules AnalyzerId="Microsoft.NetFramework.CSharp.Analyzers" RuleNamespace="Microsoft.NetFramework.CSharp.Analyzers">
-    <Rule Id="CA3076" Action="Warning" /> <!-- Insecure XSLT script processing. -->
+    <Rule Id="CA3076" Action="Warning" /> <!-- Insecure XSLT script processing -->
     <Rule Id="CA3077" Action="Warning" /> <!-- Insecure Processing in API Design, XmlDocument and XmlTextReader -->
   </Rules>
   <Rules AnalyzerId="Microsoft.NetFramework.VisualBasic.Analyzers" RuleNamespace="Microsoft.NetFramework.VisualBasic.Analyzers">
-    <Rule Id="CA3076" Action="Warning" /> <!-- Insecure XSLT script processing. -->
+    <Rule Id="CA3076" Action="Warning" /> <!-- Insecure XSLT script processing -->
     <Rule Id="CA3077" Action="Warning" /> <!-- Insecure Processing in API Design, XmlDocument and XmlTextReader -->
   </Rules>
   <Rules AnalyzerId="StyleCop.Analyzers" RuleNamespace="StyleCop.Analyzers">
+    <Rule Id="SA0001" Action="None" /> <!-- XML comment analysis is disabled due to project configuration -->
+    <Rule Id="SA1028" Action="Error" /> <!-- Code should not contain trailing whitespace -->
+    <Rule Id="SA1101" Action="None" /> <!-- Prefix local calls with this -->
+    <Rule Id="SA1102" Action="None" /> <!-- Query clause should follow previous clause -->
+    <Rule Id="SA1116" Action="None" /> <!-- Split parameters must start on line after declaration -->
+    <Rule Id="SA1201" Action="Error" /> <!-- Elements must appear in the correct order -->
+    <Rule Id="SA1202" Action="None" /> <!-- Elements must be ordered by access -->
+    <Rule Id="SA1204" Action="None" /> <!-- Static elements must appear before instance elements -->
+    <Rule Id="SA1309" Action="None" /> <!-- Field names must not begin with underscore -->
+    <Rule Id="SA1413" Action="Error" /> <!-- Use trailing commas in multi-mine initializers -->
+    <Rule Id="SA1600" Action="None" /> <!-- Elements must be documented -->
+    <Rule Id="SA1633" Action="None" /> <!-- File must have header -->
   </Rules>
 </RuleSet>

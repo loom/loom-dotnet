@@ -341,13 +341,13 @@
             calls[0].Select(x => x.Data).Should().BeEquivalentTo(new object[]
             {
                 new StreamEvent<Event1>(streamId, startVersion + 0, event1),
-                new StreamEvent<Event2>(streamId, startVersion + 1, event2)
+                new StreamEvent<Event2>(streamId, startVersion + 1, event2),
             }, c => c.WithStrictOrdering());
 
             calls[1].Select(x => x.Data).Should().BeEquivalentTo(new object[]
             {
                 new StreamEvent<Event3>(streamId, startVersion + 2, event3),
-                new StreamEvent<Event4>(streamId, startVersion + 3, event4)
+                new StreamEvent<Event4>(streamId, startVersion + 3, event4),
             }, c => c.WithStrictOrdering());
         }
 
@@ -391,13 +391,13 @@
             calls[0].Select(x => x.Data).Should().BeEquivalentTo(new object[]
             {
                 new StreamEvent<Event1>(streamId, startVersion + 0, event1),
-                new StreamEvent<Event2>(streamId, startVersion + 1, event2)
+                new StreamEvent<Event2>(streamId, startVersion + 1, event2),
             }, c => c.WithStrictOrdering());
 
             calls[1].Select(x => x.Data).Should().BeEquivalentTo(new object[]
             {
                 new StreamEvent<Event3>(streamId, startVersion + 2, event3),
-                new StreamEvent<Event4>(streamId, startVersion + 3, event4)
+                new StreamEvent<Event4>(streamId, startVersion + 3, event4),
             }, c => c.WithStrictOrdering());
         }
 

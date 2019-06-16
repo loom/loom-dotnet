@@ -6,24 +6,6 @@
 
     internal class StreamEvent : TableEntity
     {
-        public Guid StreamId { get; set; }
-
-        public long Version { get; set; }
-
-        public string EventType { get; set; }
-
-        public string Payload { get; set; }
-
-        public string MessageId { get; set; }
-
-        public string OperationId { get; set; }
-
-        public string Contributor { get; set; }
-
-        public string ParentId { get; set; }
-
-        public Guid Transaction { get; set; }
-
         public StreamEvent()
         {
         }
@@ -49,6 +31,24 @@
             ParentId = parentId;
             Transaction = transaction;
         }
+
+        public Guid StreamId { get; set; }
+
+        public long Version { get; set; }
+
+        public string EventType { get; set; }
+
+        public string Payload { get; set; }
+
+        public string MessageId { get; set; }
+
+        public string OperationId { get; set; }
+
+        public string Contributor { get; set; }
+
+        public string ParentId { get; set; }
+
+        public Guid Transaction { get; set; }
 
         private static string FormatVersion(long version) => $"{version:D19}";
 

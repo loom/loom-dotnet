@@ -161,13 +161,13 @@
                     {
                         Version = startVersion,
                         EventType = typeResolver.ResolveTypeName<Event1>(),
-                        Payload = JsonConvert.SerializeObject(evt1)
+                        Payload = JsonConvert.SerializeObject(evt1),
                     },
                     new
                     {
                         Version = startVersion + 1,
                         EventType = typeResolver.ResolveTypeName<Event2>(),
-                        Payload = JsonConvert.SerializeObject(evt2)
+                        Payload = JsonConvert.SerializeObject(evt2),
                     },
                 });
             }

@@ -29,7 +29,7 @@
                 ContractResolver = new DefaultContractResolver
                 {
                     NamingStrategy = new CamelCaseNamingStrategy(),
-                }
+                },
             };
         }
 
@@ -75,6 +75,7 @@
                     long version = startVersion + i;
                     batch.Insert(GenerateStreamEvent(version, events[i]));
                 }
+
                 return _table.ExecuteBatchAsync(batch);
             }
 
@@ -123,7 +124,7 @@
             {
                 streamEvent.StreamId,
                 streamEvent.Version,
-                JsonConvert.DeserializeObject(streamEvent.Payload, type, _jsonSettings)
+                JsonConvert.DeserializeObject(streamEvent.Payload, type, _jsonSettings),
             };
 
             return new Message(

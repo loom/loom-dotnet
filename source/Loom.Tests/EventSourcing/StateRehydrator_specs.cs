@@ -170,7 +170,7 @@
 
             IEventReader eventReader =
                 new DelegatingEventReader(
-                    (stream, from) => 
+                    (stream, from) =>
                     stream == streamId && from == snapshot.Version + 1
                     ? Task.FromResult(events.AsEnumerable())
                     : Task.FromResult(Enumerable.Empty<object>()));
