@@ -11,6 +11,7 @@
   <ItemGroup>
     <PackageReference Include="AutoFixture" Version="4.8.0" />
     <PackageReference Include="FluentAssertions" Version="5.6.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.3" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="2.2.3" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="2.2.3" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.0.0" />

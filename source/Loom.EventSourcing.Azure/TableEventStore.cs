@@ -57,9 +57,9 @@
                                          long startVersion,
                                          ImmutableArray<object> events)
         {
-            await SaveQueueTicket();
-            await SaveStreamEvents();
-            await PublishStreamEvents();
+            await SaveQueueTicket().ConfigureAwait(continueOnCapturedContext: false);
+            await SaveStreamEvents().ConfigureAwait(continueOnCapturedContext: false);
+            await PublishStreamEvents().ConfigureAwait(continueOnCapturedContext: false);
 
             Task SaveQueueTicket()
             {
@@ -96,10 +96,10 @@
             async Task PublishStreamEvents()
             {
                 TableQuery<QueueTicket> query = QueueTicket.CreateQuery(streamId).OrderBy("RowKey");
-                foreach (QueueTicket queueTicket in await ExecuteQuery(query))
+                foreach (QueueTicket queueTicket in await ExecuteQuery(query).ConfigureAwait(continueOnCapturedContext: false))
                 {
-                    await this.PublishStreamEvents(queueTicket);
-                    await _table.ExecuteAsync(TableOperation.Delete(queueTicket));
+                    await this.PublishStreamEvents(queueTicket).ConfigureAwait(continueOnCapturedContext: false);
+                    await _table.ExecuteAsync(TableOperation.Delete(queueTicket)).ConfigureAwait(continueOnCapturedContext: false);
                 }
             }
         }
@@ -107,8 +107,8 @@
         private async Task PublishStreamEvents(QueueTicket queueTicket)
         {
             TableQuery<StreamEvent> query = StreamEvent.CreateQuery(queueTicket);
-            IEnumerable<StreamEvent> streamEvents = await ExecuteQuery(query);
-            await _eventBus.Send(streamEvents.Select(GenerateMessage));
+            IEnumerable<StreamEvent> streamEvents = await ExecuteQuery(query).ConfigureAwait(continueOnCapturedContext: false);
+            await _eventBus.Send(streamEvents.Select(GenerateMessage)).ConfigureAwait(continueOnCapturedContext: false);
         }
 
         private Message GenerateMessage(StreamEvent streamEvent)
@@ -139,7 +139,7 @@
             Guid streamId, long fromVersion)
         {
             TableQuery<StreamEvent> query = StreamEvent.CreateQuery(streamId, fromVersion);
-            IEnumerable<StreamEvent> streamEvents = await ExecuteQuery(query);
+            IEnumerable<StreamEvent> streamEvents = await ExecuteQuery(query).ConfigureAwait(continueOnCapturedContext: false);
             return streamEvents.Select(DeserializeEvent).ToImmutableArray();
         }
 
@@ -151,8 +151,7 @@
             TableContinuationToken continuation = default;
             do
             {
-                TableQuerySegment<T> segment = await
-                    _table.ExecuteQuerySegmentedAsync(query, continuation);
+                TableQuerySegment<T> segment = await _table.ExecuteQuerySegmentedAsync(query, continuation).ConfigureAwait(continueOnCapturedContext: false);
                 results.AddRange(segment);
                 continuation = segment.ContinuationToken;
             }

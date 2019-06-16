@@ -19,8 +19,8 @@
         public async Task<T> TryRestoreSnapshot(Guid streamId)
         {
             CloudBlockBlob blob = GetBlobReference(streamId);
-            return await blob.ExistsAsync()
-                 ? await RestoreSnapshot(blob)
+            return await blob.ExistsAsync().ConfigureAwait(continueOnCapturedContext: false)
+                 ? await RestoreSnapshot(blob).ConfigureAwait(continueOnCapturedContext: false)
                  : default;
         }
 
@@ -31,10 +31,12 @@
 
         private static async Task<T> RestoreSnapshot(CloudBlockBlob blob)
         {
-            var stream = new MemoryStream();
-            await blob.DownloadToStreamAsync(stream);
-            string content = Encoding.UTF8.GetString(stream.ToArray());
-            return JsonConvert.DeserializeObject<T>(content);
+            using (var stream = new MemoryStream())
+            {
+                await blob.DownloadToStreamAsync(stream).ConfigureAwait(continueOnCapturedContext: false);
+                string content = Encoding.UTF8.GetString(stream.ToArray());
+                return JsonConvert.DeserializeObject<T>(content);
+            }
         }
     }
 }

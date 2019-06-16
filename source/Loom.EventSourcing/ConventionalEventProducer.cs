@@ -39,6 +39,9 @@
                 elementSelector: t => t.producer);
         }
 
+#pragma warning disable CA1033 // Interface methods should be callable by child types
+
+        // This method is not for child types but for the framework.
         IEnumerable<object> IEventProducer<T>.ProduceEvents(
             T state, object command)
         {
@@ -54,6 +57,8 @@
                     throw new InvalidOperationException(message);
             }
         }
+
+#pragma warning restore CA1033 // Interface methods should be callable by child types
 
         private MethodInfo GetProducer(Type commandType)
         {

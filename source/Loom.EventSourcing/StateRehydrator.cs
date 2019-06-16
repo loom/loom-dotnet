@@ -24,17 +24,17 @@
 
         public async Task<T> TryRehydrateState(Guid streamId)
         {
-            switch (await _snapshotReader.TryRestoreSnapshot(streamId))
+            switch (await _snapshotReader.TryRestoreSnapshot(streamId).ConfigureAwait(continueOnCapturedContext: false))
             {
-                case T snapshot: return await Rehydrate(streamId, snapshot);
-                default: return await TryRehydrate(streamId);
+                case T snapshot: return await Rehydrate(streamId, snapshot).ConfigureAwait(continueOnCapturedContext: false);
+                default: return await TryRehydrate(streamId).ConfigureAwait(continueOnCapturedContext: false);
             }
         }
 
         private async Task<T> Rehydrate(Guid streamId, T snapshot)
         {
             long fromVersion = snapshot.Version + 1;
-            switch (await _eventReader.QueryEvents(streamId, fromVersion))
+            switch (await _eventReader.QueryEvents(streamId, fromVersion).ConfigureAwait(continueOnCapturedContext: false))
             {
                 case var events when events.Any() == false: return snapshot;
                 case var events: return FoldLeft(snapshot, events);
@@ -43,7 +43,7 @@
 
         private async Task<T> TryRehydrate(Guid streamId)
         {
-            switch (await _eventReader.QueryEvents(streamId, fromVersion: 1))
+            switch (await _eventReader.QueryEvents(streamId, fromVersion: 1).ConfigureAwait(continueOnCapturedContext: false))
             {
                 case var events when events.Any() == false: return default;
                 case var events: return FoldLeft(new T(), events);

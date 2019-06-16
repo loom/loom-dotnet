@@ -55,7 +55,12 @@
             }
         }
 
+#pragma warning disable CA1033 // Interface methods should be callable by child types
+
+        // This method is not for child types but for the framework.
         T IEventHandler<T>.HandleEvents(T state, IEnumerable<object> events)
             => events.Aggregate(state, Handle);
+
+#pragma warning restore CA1033 // Interface methods should be callable by child types
     }
 }

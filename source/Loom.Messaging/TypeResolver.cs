@@ -8,15 +8,10 @@
 
     public sealed class TypeResolver
     {
-        private static readonly Lazy<ImmutableArray<Type>> _types;
+        private static readonly Lazy<ImmutableArray<Type>> _types = new Lazy<ImmutableArray<Type>>(GetAllTypes);
 
         private readonly ITypeNameResolvingStrategy _typeNameResolvingStrategy;
         private readonly ITypeResolvingStrategy _typeResolvingStrategy;
-
-        static TypeResolver()
-        {
-            _types = new Lazy<ImmutableArray<Type>>(GetAllTypes);
-        }
 
         public TypeResolver(
             ITypeNameResolvingStrategy typeNameResolvingStrategy,
@@ -35,7 +30,7 @@
             string filter = "Microsoft.VisualStudio.TraceDataCollector";
             IEnumerable<Assembly> assemblies =
                 from assembly in appDomain.GetAssemblies()
-                where assembly.FullName.StartsWith(filter) == false
+                where assembly.FullName.StartsWith(filter, StringComparison.Ordinal) == false
                 select assembly;
 
             IEnumerable<Type> query =
