@@ -129,10 +129,8 @@
 
             return new Message(
                 streamEvent.MessageId,
-                streamEvent.OperationId,
-                streamEvent.Contributor,
-                streamEvent.ParentId,
-                constructor.Invoke(arguments));
+                constructor.Invoke(arguments),
+                new TracingProperties(streamEvent.OperationId, streamEvent.Contributor, streamEvent.ParentId));
         }
 
         public async Task<IEnumerable<object>> QueryEvents(

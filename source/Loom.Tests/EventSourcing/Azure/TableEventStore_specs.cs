@@ -236,9 +236,9 @@
 
             call.Should()
                 .HaveCount(events.Length)
-                .And.OnlyContain(x => x.OperationId == operationId)
-                .And.OnlyContain(x => x.Contributor == contributor)
-                .And.OnlyContain(x => x.ParentId == parentId);
+                .And.OnlyContain(x => x.TracingProperties.OperationId == operationId)
+                .And.OnlyContain(x => x.TracingProperties.Contributor == contributor)
+                .And.OnlyContain(x => x.TracingProperties.ParentId == parentId);
 
             VerifyData(call[0].Data, startVersion + 0, event1);
             VerifyData(call[1].Data, startVersion + 1, event2);
