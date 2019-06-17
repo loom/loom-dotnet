@@ -87,24 +87,15 @@
 
         [TestMethod]
         [DynamicData(nameof(Events), DynamicDataSourceType.Property)]
-        public async Task QueryEvents_restores_events_correctly(
-            List<object> events)
+        public async Task QueryEvents_restores_events_correctly(List<object> events)
         {
             // Arrange
-            var sut = new TableEventStore(EventStoreTable,
-                                          TypeResolver,
-                                          eventBus: Mock.Of<IMessageBus>());
+            var sut = new TableEventStore(EventStoreTable, TypeResolver, eventBus: Mock.Of<IMessageBus>());
             Guid streamId = NewGuid();
-            await sut.CollectEvents(operationId: default,
-                                    contributor: default,
-                                    parentId: default,
-                                    streamId,
-                                    startVersion: 1,
-                                    events);
+            await sut.CollectEvents(streamId, startVersion: 1, events);
 
             // Act
-            IEnumerable<object> actual = await
-                sut.QueryEvents(streamId, fromVersion: 1);
+            IEnumerable<object> actual = await sut.QueryEvents(streamId, fromVersion: 1);
 
             // Assert
             actual.Should().BeEquivalentTo(events, c => c.WithStrictOrdering());
@@ -112,34 +103,19 @@
 
         [TestMethod]
         [DynamicData(nameof(Events), DynamicDataSourceType.Property)]
-        public async Task QueryEvents_filters_events_by_stream_id(
-            List<object> events)
+        public async Task QueryEvents_filters_events_by_stream_id(List<object> events)
         {
             // Arrange
-            var sut = new TableEventStore(EventStoreTable,
-                                          TypeResolver,
-                                          eventBus: Mock.Of<IMessageBus>());
+            var sut = new TableEventStore(EventStoreTable, TypeResolver, eventBus: Mock.Of<IMessageBus>());
 
             Guid streamId = NewGuid();
             int startVersion = 1;
 
-            await sut.CollectEvents(operationId: default,
-                                    contributor: default,
-                                    parentId: default,
-                                    streamId,
-                                    startVersion,
-                                    events);
-
-            await sut.CollectEvents(operationId: default,
-                                    contributor: default,
-                                    parentId: default,
-                                    streamId: NewGuid(),
-                                    startVersion,
-                                    events);
+            await sut.CollectEvents(streamId, startVersion, events);
+            await sut.CollectEvents(streamId: NewGuid(), startVersion, events);
 
             // Act
-            IEnumerable<object> actual = await
-                sut.QueryEvents(streamId, fromVersion: 1);
+            IEnumerable<object> actual = await sut.QueryEvents(streamId, fromVersion: 1);
 
             // Assert
             actual.Should().BeEquivalentTo(events, c => c.WithStrictOrdering());
@@ -151,50 +127,29 @@
             List<object> events)
         {
             // Arrange
-            var sut = new TableEventStore(EventStoreTable,
-                                          TypeResolver,
-                                          eventBus: Mock.Of<IMessageBus>());
+            var sut = new TableEventStore(EventStoreTable, TypeResolver, eventBus: Mock.Of<IMessageBus>());
             Guid streamId = NewGuid();
-            await sut.CollectEvents(operationId: default,
-                                    contributor: default,
-                                    parentId: default,
-                                    streamId,
-                                    startVersion: 1,
-                                    events);
+            await sut.CollectEvents(streamId, startVersion: 1, events);
 
             // Act
-            IEnumerable<object> actual = await
-                sut.QueryEvents(streamId, fromVersion: 2);
+            IEnumerable<object> actual = await sut.QueryEvents(streamId, fromVersion: 2);
 
             // Assert
-            actual.Should().BeEquivalentTo(events.Skip(1),
-                                           c => c.WithStrictOrdering());
+            actual.Should().BeEquivalentTo(events.Skip(1), c => c.WithStrictOrdering());
         }
 
         [TestMethod]
         public async Task CollectEvents_controls_concurrency()
         {
             // Arrange
-            var sut = new TableEventStore(EventStoreTable,
-                                          TypeResolver,
-                                          eventBus: Mock.Of<IMessageBus>());
+            var sut = new TableEventStore(EventStoreTable, TypeResolver, eventBus: Mock.Of<IMessageBus>());
             Guid streamId = NewGuid();
             int version = 1;
             object[] events = new[] { new Event4(NewGuid()) };
-            await sut.CollectEvents(operationId: default,
-                                    contributor: default,
-                                    parentId: default,
-                                    streamId,
-                                    startVersion: version,
-                                    events);
+            await sut.CollectEvents(streamId, startVersion: version, events);
 
             // Act
-            Func<Task> action = () => sut.CollectEvents(operationId: default,
-                                                        contributor: default,
-                                                        parentId: default,
-                                                        streamId,
-                                                        startVersion: version,
-                                                        events);
+            Func<Task> action = () => sut.CollectEvents(streamId, startVersion: version, events);
 
             // Assert
             await action.Should().ThrowAsync<StorageException>();
@@ -205,29 +160,25 @@
         {
             // Arrange
             var spy = new MessageBusSpy();
-            var sut = new TableEventStore(
-                EventStoreTable, TypeResolver, eventBus: spy);
+            var sut = new TableEventStore(EventStoreTable, TypeResolver, eventBus: spy);
 
             var builder = new Fixture();
 
-            string operationId = builder.Create<string>();
-            string contributor = builder.Create<string>();
-            string parentId = builder.Create<string>();
             Guid streamId = NewGuid();
+
             int startVersion = builder.Create<int>();
+
             Event1 event1 = builder.Create<Event1>();
             Event2 event2 = builder.Create<Event2>();
             Event3 event3 = builder.Create<Event3>();
             Event4 event4 = builder.Create<Event4>();
+
             object[] events = new object[] { event1, event2, event3, event4 };
 
+            TracingProperties tracingProperties = builder.Create<TracingProperties>();
+
             // Act
-            await sut.CollectEvents(operationId,
-                                    contributor,
-                                    parentId,
-                                    streamId,
-                                    startVersion,
-                                    events);
+            await sut.CollectEvents(streamId, startVersion, events, tracingProperties);
 
             // Assert
             spy.Calls.Should().ContainSingle();
@@ -236,18 +187,14 @@
 
             call.Should()
                 .HaveCount(events.Length)
-                .And.OnlyContain(x => x.TracingProperties.OperationId == operationId)
-                .And.OnlyContain(x => x.TracingProperties.Contributor == contributor)
-                .And.OnlyContain(x => x.TracingProperties.ParentId == parentId);
+                .And.OnlyContain(x => x.TracingProperties == tracingProperties);
 
             VerifyData(call[0].Data, startVersion + 0, event1);
             VerifyData(call[1].Data, startVersion + 1, event2);
             VerifyData(call[2].Data, startVersion + 2, event3);
             VerifyData(call[3].Data, startVersion + 3, event4);
 
-            void VerifyData<T>(object source,
-                               long expectedVersion,
-                               T expectedPayload)
+            void VerifyData<T>(object source, long expectedVersion, T expectedPayload)
             {
                 source.Should().BeOfType<StreamEvent<T>>();
                 var data = (StreamEvent<T>)source;
@@ -262,8 +209,7 @@
         {
             // Arrange
             var spy = new MessageBusSpy();
-            var sut = new TableEventStore(
-                EventStoreTable, TypeResolver, eventBus: spy);
+            var sut = new TableEventStore(EventStoreTable, TypeResolver, eventBus: spy);
 
             Guid streamId = NewGuid();
             int version = new Fixture().Create<int>();
@@ -273,12 +219,7 @@
             await EventStoreTable.ExecuteAsync(operation);
 
             // Act
-            Func<Task> action = () => sut.CollectEvents(operationId: default,
-                                                        contributor: default,
-                                                        parentId: default,
-                                                        streamId,
-                                                        version,
-                                                        new[] { new object() });
+            Func<Task> action = () => sut.CollectEvents(streamId, version, new[] { new object() });
 
             // Assert
             await action.Should().ThrowAsync<StorageException>();
@@ -290,17 +231,15 @@
         {
             // Arrange
             IMessageBus stub = Mock.Of<IMessageBus>();
-            var sut = new TableEventStore(
-                EventStoreTable, TypeResolver, eventBus: stub);
-
-            Guid streamId = NewGuid();
-            int startVersion = new Fixture().Create<int>();
+            var sut = new TableEventStore(EventStoreTable, TypeResolver, eventBus: stub);
 
             var builder = new Fixture();
-            Event1 event1 = builder.Create<Event1>();
-            Event2 event2 = builder.Create<Event2>();
-            Event3 event3 = builder.Create<Event3>();
-            Event4 event4 = builder.Create<Event4>();
+            Guid streamId = NewGuid();
+            int startVersion = builder.Create<int>();
+            Event1 evt1 = builder.Create<Event1>();
+            Event2 evt2 = builder.Create<Event2>();
+            Event3 evt3 = builder.Create<Event3>();
+            Event4 evt4 = builder.Create<Event4>();
 
             Mock.Get(stub)
                 .Setup(x => x.Send(It.IsAny<IEnumerable<Message>>()))
@@ -308,12 +247,7 @@
 
             try
             {
-                await sut.CollectEvents(operationId: default,
-                                        contributor: default,
-                                        parentId: default,
-                                        streamId,
-                                        startVersion,
-                                        new object[] { event1, event2 });
+                await sut.CollectEvents(streamId, startVersion, new object[] { evt1, evt2 });
             }
             catch
             {
@@ -326,12 +260,7 @@
                 .Returns(Task.CompletedTask);
 
             // Act
-            await sut.CollectEvents(operationId: default,
-                                    contributor: default,
-                                    parentId: default,
-                                    streamId,
-                                    startVersion + 2,
-                                    new object[] { event3, event4 });
+            await sut.CollectEvents(streamId, startVersion + 2, new object[] { evt3, evt4 });
 
             // Assert
             var calls = spy.Calls.ToImmutableArray();
@@ -340,14 +269,14 @@
 
             calls[0].Select(x => x.Data).Should().BeEquivalentTo(new object[]
             {
-                new StreamEvent<Event1>(streamId, startVersion + 0, event1),
-                new StreamEvent<Event2>(streamId, startVersion + 1, event2),
+                new StreamEvent<Event1>(streamId, startVersion + 0, evt1),
+                new StreamEvent<Event2>(streamId, startVersion + 1, evt2),
             }, c => c.WithStrictOrdering());
 
             calls[1].Select(x => x.Data).Should().BeEquivalentTo(new object[]
             {
-                new StreamEvent<Event3>(streamId, startVersion + 2, event3),
-                new StreamEvent<Event4>(streamId, startVersion + 3, event4),
+                new StreamEvent<Event3>(streamId, startVersion + 2, evt3),
+                new StreamEvent<Event4>(streamId, startVersion + 3, evt4),
             }, c => c.WithStrictOrdering());
         }
 
@@ -356,32 +285,19 @@
         {
             // Arrange
             var spy = new MessageBusSpy();
-            var sut = new TableEventStore(
-                EventStoreTable, TypeResolver, eventBus: spy);
-
-            Guid streamId = NewGuid();
-            int startVersion = new Fixture().Create<int>();
+            var sut = new TableEventStore(EventStoreTable, TypeResolver, eventBus: spy);
 
             var builder = new Fixture();
-            Event1 event1 = builder.Create<Event1>();
-            Event2 event2 = builder.Create<Event2>();
-            Event3 event3 = builder.Create<Event3>();
-            Event4 event4 = builder.Create<Event4>();
+            Guid streamId = NewGuid();
+            int startVersion = builder.Create<int>();
+            Event1 evt1 = builder.Create<Event1>();
+            Event2 evt2 = builder.Create<Event2>();
+            Event3 evt3 = builder.Create<Event3>();
+            Event4 evt4 = builder.Create<Event4>();
 
             // Act
-            await sut.CollectEvents(operationId: default,
-                                    contributor: default,
-                                    parentId: default,
-                                    streamId,
-                                    startVersion,
-                                    new object[] { event1, event2 });
-
-            await sut.CollectEvents(operationId: default,
-                                    contributor: default,
-                                    parentId: default,
-                                    streamId,
-                                    startVersion + 2,
-                                    new object[] { event3, event4 });
+            await sut.CollectEvents(streamId, startVersion, new object[] { evt1, evt2 });
+            await sut.CollectEvents(streamId, startVersion + 2, new object[] { evt3, evt4 });
 
             // Assert
             var calls = spy.Calls.ToImmutableArray();
@@ -390,14 +306,14 @@
 
             calls[0].Select(x => x.Data).Should().BeEquivalentTo(new object[]
             {
-                new StreamEvent<Event1>(streamId, startVersion + 0, event1),
-                new StreamEvent<Event2>(streamId, startVersion + 1, event2),
+                new StreamEvent<Event1>(streamId, startVersion + 0, evt1),
+                new StreamEvent<Event2>(streamId, startVersion + 1, evt2),
             }, c => c.WithStrictOrdering());
 
             calls[1].Select(x => x.Data).Should().BeEquivalentTo(new object[]
             {
-                new StreamEvent<Event3>(streamId, startVersion + 2, event3),
-                new StreamEvent<Event4>(streamId, startVersion + 3, event4),
+                new StreamEvent<Event3>(streamId, startVersion + 2, evt3),
+                new StreamEvent<Event4>(streamId, startVersion + 3, evt4),
             }, c => c.WithStrictOrdering());
         }
 
@@ -406,33 +322,21 @@
         {
             // Arrange
             var spy = new MessageBusSpy();
-            var sut = new TableEventStore(
-                EventStoreTable, TypeResolver, eventBus: spy);
-
-            Guid streamId = NewGuid();
-            int startVersion = new Fixture().Create<int>();
+            var sut = new TableEventStore(EventStoreTable, TypeResolver, eventBus: spy);
 
             var builder = new Fixture();
-            Event1 event1 = builder.Create<Event1>();
-            Event2 event2 = builder.Create<Event2>();
-            Event3 event3 = builder.Create<Event3>();
-            Event4 event4 = builder.Create<Event4>();
+            Guid streamId = NewGuid();
+            int startVersion = builder.Create<int>();
+            Event1 evt1 = builder.Create<Event1>();
+            Event2 evt2 = builder.Create<Event2>();
+            Event3 evt3 = builder.Create<Event3>();
+            Event4 evt4 = builder.Create<Event4>();
 
             // Act
-            await sut.CollectEvents(operationId: default,
-                                    contributor: default,
-                                    parentId: default,
-                                    streamId,
-                                    startVersion,
-                                    new object[] { event1, event2 });
+            await sut.CollectEvents(streamId, startVersion, new object[] { evt1, evt2 });
+            await sut.CollectEvents(streamId, startVersion + 2, new object[] { evt3, evt4 });
 
-            await sut.CollectEvents(operationId: default,
-                                    contributor: default,
-                                    parentId: default,
-                                    streamId,
-                                    startVersion + 2,
-                                    new object[] { event3, event4 });
-
+            // Assert
             spy.Calls.SelectMany(x => x).Select(x => x.Id).Should().OnlyHaveUniqueItems();
         }
 
@@ -442,15 +346,13 @@
             // Arrange
             var messages = new ConcurrentQueue<Message>();
             IMessageBus stub = Mock.Of<IMessageBus>();
+            var sut = new TableEventStore(EventStoreTable, TypeResolver, eventBus: stub);
+
             Guid streamId = NewGuid();
-            int startVersion = new Fixture().Create<int>();
-
-            var sut = new TableEventStore(
-                EventStoreTable, TypeResolver, eventBus: stub);
-
             var builder = new Fixture();
-            Event1 event1 = builder.Create<Event1>();
-            Event2 event2 = builder.Create<Event2>();
+            int startVersion = builder.Create<int>();
+            Event1 evt1 = builder.Create<Event1>();
+            Event2 evt2 = builder.Create<Event2>();
 
             // Act
             Mock.Get(stub)
@@ -460,12 +362,7 @@
 
             try
             {
-                await sut.CollectEvents(operationId: default,
-                                        contributor: default,
-                                        parentId: default,
-                                        streamId,
-                                        startVersion,
-                                        new[] { event1 });
+                await sut.CollectEvents(streamId, startVersion, new[] { evt1 });
             }
             catch
             {
@@ -476,12 +373,7 @@
                 .Callback<IEnumerable<Message>>(x => x.ForEach(messages.Enqueue))
                 .Returns(Task.CompletedTask);
 
-            await sut.CollectEvents(operationId: default,
-                                    contributor: default,
-                                    parentId: default,
-                                    streamId,
-                                    startVersion + 2,
-                                    new[] { event2 });
+            await sut.CollectEvents(streamId, startVersion + 2, new[] { evt2 });
 
             // Assert
             messages.Should().HaveCount(3);

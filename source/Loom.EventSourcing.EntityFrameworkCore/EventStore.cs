@@ -13,19 +13,16 @@
         private readonly Func<EventStoreContext> _contextFactory;
         private readonly TypeResolver _typeResolver;
 
-        public EventStore(
-            Func<EventStoreContext> contextFactory, TypeResolver typeResolver)
+        public EventStore(Func<EventStoreContext> contextFactory, TypeResolver typeResolver)
         {
             _contextFactory = contextFactory;
             _typeResolver = typeResolver;
         }
 
-        public async Task CollectEvents(string operationId,
-                                        string contributor,
-                                        string parentId,
-                                        Guid streamId,
+        public async Task CollectEvents(Guid streamId,
                                         long startVersion,
-                                        IEnumerable<object> events)
+                                        IEnumerable<object> events,
+                                        TracingProperties tracingProperties = default)
         {
             using (EventStoreContext context = _contextFactory.Invoke())
             {

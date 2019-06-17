@@ -82,34 +82,22 @@
             (Event1 evt, long version) = new Fixture().Create<(Event1, long)>();
 
             // Act
-            await sut.CollectEvents(operationId: default,
-                                    contributor: default,
-                                    parentId: default,
-                                    streamId,
-                                    startVersion: version,
-                                    events: new[] { evt });
+            await sut.CollectEvents(streamId, startVersion: version, events: new[] { evt });
 
             // Assert
-            using (var context = new EventStoreContext(options))
+            var context = new EventStoreContext(options);
+            var query = from e in context.StreamEvents
+                        where e.StreamId == streamId
+                        select new { e.Version, e.EventType, e.Payload };
+
+            var actual = await query.SingleOrDefaultAsync();
+
+            actual.Should().BeEquivalentTo(new
             {
-                var query = from e in context.StreamEvents
-                            where e.StreamId == streamId
-                            select new
-                            {
-                                e.Version,
-                                e.EventType,
-                                e.Payload,
-                            };
-
-                var actual = await query.SingleOrDefaultAsync();
-
-                actual.Should().BeEquivalentTo(new
-                {
-                    Version = version,
-                    EventType = typeResolver.ResolveTypeName<Event1>(),
-                    Payload = JsonConvert.SerializeObject(evt),
-                });
-            }
+                Version = version,
+                EventType = typeResolver.ResolveTypeName<Event1>(),
+                Payload = JsonConvert.SerializeObject(evt),
+            });
         }
 
         [TestMethod]
@@ -133,44 +121,32 @@
                 new Fixture().Create<(Event1, Event2, long)>();
 
             // Act
-            await sut.CollectEvents(operationId: default,
-                                    contributor: default,
-                                    parentId: default,
-                                    streamId,
-                                    startVersion,
-                                    events: new object[] { evt1, evt2 });
+            await sut.CollectEvents(streamId, startVersion, events: new object[] { evt1, evt2 });
 
             // Assert
-            using (var context = new EventStoreContext(options))
+            var context = new EventStoreContext(options);
+            var query = from e in context.StreamEvents
+                        where e.StreamId == streamId
+                        orderby e.Version ascending
+                        select new { e.Version, e.EventType, e.Payload };
+
+            var actual = await query.ToListAsync();
+
+            actual.Should().BeEquivalentTo(expectations: new object[]
             {
-                var query = from e in context.StreamEvents
-                            where e.StreamId == streamId
-                            orderby e.Version ascending
-                            select new
-                            {
-                                e.Version,
-                                e.EventType,
-                                e.Payload,
-                            };
-
-                var actual = await query.ToListAsync();
-
-                actual.Should().BeEquivalentTo(expectations: new object[]
+                new
                 {
-                    new
-                    {
-                        Version = startVersion,
-                        EventType = typeResolver.ResolveTypeName<Event1>(),
-                        Payload = JsonConvert.SerializeObject(evt1),
-                    },
-                    new
-                    {
-                        Version = startVersion + 1,
-                        EventType = typeResolver.ResolveTypeName<Event2>(),
-                        Payload = JsonConvert.SerializeObject(evt2),
-                    },
-                });
-            }
+                    Version = startVersion,
+                    EventType = typeResolver.ResolveTypeName<Event1>(),
+                    Payload = JsonConvert.SerializeObject(evt1),
+                },
+                new
+                {
+                    Version = startVersion + 1,
+                    EventType = typeResolver.ResolveTypeName<Event2>(),
+                    Payload = JsonConvert.SerializeObject(evt2),
+                },
+            });
         }
 
         [TestMethod]
@@ -193,23 +169,16 @@
             DateTime nearby = DateTime.UtcNow;
 
             // Act
-            await sut.CollectEvents(operationId: default,
-                                    contributor: default,
-                                    parentId: default,
-                                    streamId,
-                                    startVersion: 1,
-                                    events: new[] { evt });
+            await sut.CollectEvents(streamId, startVersion: 1, events: new[] { evt });
 
             // Assert
-            using (var context = new EventStoreContext(options))
-            {
-                IQueryable<DateTime> query = from e in context.StreamEvents
-                                             where e.StreamId == streamId
-                                             select e.RaisedTimeUtc;
-                DateTime actual = await query.SingleOrDefaultAsync();
-                actual.Kind.Should().Be(DateTimeKind.Utc);
-                actual.Should().BeCloseTo(nearby, precision: 1000);
-            }
+            var context = new EventStoreContext(options);
+            IQueryable<DateTime> query = from e in context.StreamEvents
+                                         where e.StreamId == streamId
+                                         select e.RaisedTimeUtc;
+            DateTime actual = await query.SingleOrDefaultAsync();
+            actual.Kind.Should().Be(DateTimeKind.Utc);
+            actual.Should().BeCloseTo(nearby, precision: 1000);
         }
 
         [TestMethod]
@@ -233,21 +202,13 @@
                     new FullNameTypeResolvingStrategy()));
 
             var streamId = Guid.NewGuid();
-
-            (Event1 evt1, Event2 evt2) =
-                new Fixture().Create<(Event1, Event2)>();
+            (Event1 evt1, Event2 evt2) = new Fixture().Create<(Event1, Event2)>();
             object[] events = new object[] { evt1, evt2 };
 
-            await sut.CollectEvents(operationId: default,
-                                    contributor: default,
-                                    parentId: default,
-                                    streamId,
-                                    startVersion: 1,
-                                    events);
+            await sut.CollectEvents(streamId, startVersion: 1, events);
 
             // Act
-            IEnumerable<object> actual = await
-                sut.QueryEvents(streamId, fromVersion: 1);
+            IEnumerable<object> actual = await sut.QueryEvents(streamId, fromVersion: 1);
 
             // Assert
             actual.Should().BeEquivalentTo(events);
@@ -268,21 +229,13 @@
                     new FullNameTypeResolvingStrategy()));
 
             var streamId = Guid.NewGuid();
-
-            (Event1 evt1, Event2 evt2) =
-                new Fixture().Create<(Event1, Event2)>();
+            (Event1 evt1, Event2 evt2) = new Fixture().Create<(Event1, Event2)>();
             object[] events = new object[] { evt1, evt2 };
 
-            await sut.CollectEvents(operationId: default,
-                                    contributor: default,
-                                    parentId: default,
-                                    streamId,
-                                    startVersion: 1,
-                                    events);
+            await sut.CollectEvents(streamId, startVersion: 1, events);
 
             // Act
-            IEnumerable<object> actual = await
-                sut.QueryEvents(streamId, fromVersion: 2);
+            IEnumerable<object> actual = await sut.QueryEvents(streamId, fromVersion: 2);
 
             // Assert
             actual.Should().BeEquivalentTo(evt2);
@@ -302,28 +255,16 @@
                     new FullNameTypeNameResolvingStrategy(),
                     new FullNameTypeResolvingStrategy()));
 
-            (Event1 evt1, Event2 evt2) =
-                new Fixture().Create<(Event1, Event2)>();
+            (Event1 evt1, Event2 evt2) = new Fixture().Create<(Event1, Event2)>();
 
             var streamId = Guid.NewGuid();
-            await sut.CollectEvents(operationId: default,
-                                    contributor: default,
-                                    parentId: default,
-                                    streamId,
-                                    startVersion: 1,
-                                    events: new[] { evt1 });
+            await sut.CollectEvents(streamId, startVersion: 1, events: new[] { evt1 });
 
             var otherStreamId = Guid.NewGuid();
-            await sut.CollectEvents(operationId: default,
-                                    contributor: default,
-                                    parentId: default,
-                                    otherStreamId,
-                                    startVersion: 2,
-                                    events: new[] { evt2 });
+            await sut.CollectEvents(otherStreamId, startVersion: 2, events: new[] { evt2 });
 
             // Act
-            IEnumerable<object> actual = await
-                sut.QueryEvents(streamId, fromVersion: 1);
+            IEnumerable<object> actual = await sut.QueryEvents(streamId, fromVersion: 1);
 
             // Assert
             actual.Should().BeEquivalentTo(evt1);
@@ -343,29 +284,15 @@
                     new FullNameTypeNameResolvingStrategy(),
                     new FullNameTypeResolvingStrategy()));
 
-            (Event1 evt1, Event2 evt2) =
-                new Fixture().Create<(Event1, Event2)>();
+            var streamId = Guid.NewGuid();
+            (Event1 evt1, Event2 evt2) = new Fixture().Create<(Event1, Event2)>();
             object[] events = new object[] { evt1, evt2 };
 
-            var streamId = Guid.NewGuid();
-
-            await sut.CollectEvents(operationId: default,
-                                    contributor: default,
-                                    parentId: default,
-                                    streamId,
-                                    startVersion: 2,
-                                    events: new[] { evt2 });
-
-            await sut.CollectEvents(operationId: default,
-                                    contributor: default,
-                                    parentId: default,
-                                    streamId,
-                                    startVersion: 1,
-                                    events: new[] { evt1 });
+            await sut.CollectEvents(streamId, startVersion: 2, events: new[] { evt2 });
+            await sut.CollectEvents(streamId, startVersion: 1, events: new[] { evt1 });
 
             // Act
-            IEnumerable<object> actual = await
-                sut.QueryEvents(streamId, fromVersion: 1);
+            IEnumerable<object> actual = await sut.QueryEvents(streamId, fromVersion: 1);
 
             // Assert
             actual.Should().BeEquivalentTo(events, c => c.WithStrictOrdering());

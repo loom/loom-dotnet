@@ -2,6 +2,7 @@
 {
     using System;
     using System.Linq;
+    using Loom.Messaging;
     using Microsoft.Azure.Cosmos.Table;
 
     internal class StreamEvent : TableEntity
@@ -49,6 +50,9 @@
         public string ParentId { get; set; }
 
         public Guid Transaction { get; set; }
+
+        [IgnoreProperty]
+        public TracingProperties TracingProperties => new TracingProperties(OperationId, Contributor, ParentId);
 
         private static string FormatVersion(long version) => $"{version:D19}";
 

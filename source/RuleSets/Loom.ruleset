@@ -230,6 +230,8 @@
     <Rule Id="SA1309" Action="None" /> <!-- Field names must not begin with underscore -->
     <Rule Id="SA1407" Action="Error" /> <!-- Arithmetic expressions must declare precedence -->
     <Rule Id="SA1413" Action="Error" /> <!-- Use trailing commas in multi-mine initializers -->
+    <Rule Id="SA1508" Action="Error" /> <!-- Closing braces must not be preceded by blank line -->
+    <Rule Id="SA1513" Action="Error" /> <!-- Closing brace must be followed by blank line -->
     <Rule Id="SA1516" Action="Error" /> <!-- Elements must be separated by blank line -->
     <Rule Id="SA1600" Action="None" /> <!-- Elements must be documented -->
     <Rule Id="SA1633" Action="None" /> <!-- File must have header -->
