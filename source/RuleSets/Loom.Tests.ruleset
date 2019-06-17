@@ -41,7 +41,7 @@
     <Rule Id="CA1501" Action="Error" /> <!-- Avoid excessive inheritance -->
     <Rule Id="CA1502" Action="Error" /> <!-- Avoid excessive complexity -->
     <Rule Id="CA1505" Action="Error" /> <!-- Avoid unmaintainable code -->
-    <Rule Id="CA1506" Action="Error" /> <!-- Avoid excessive class coupling -->
+    <Rule Id="CA1506" Action="None" /> <!-- Avoid excessive class coupling -->
     <Rule Id="CA1508" Action="Info" /> <!-- Avoid dead conditional code -->
     <Rule Id="CA1509" Action="Error" /> <!-- Invalid entry in code metrics rule specification file -->
     <Rule Id="CA1707" Action="None" /> <!-- Identifiers should not contain underscores -->
@@ -57,7 +57,7 @@
     <Rule Id="CA1721" Action="Error" /> <!-- Property names should not match get methods -->
     <Rule Id="CA1724" Action="Error" /> <!-- Type names should not match namespaces -->
     <Rule Id="CA1725" Action="Error" /> <!-- Parameter names should match base declaration -->
-    <Rule Id="CA1801" Action="Error" /> <!-- Review unused parameters -->
+    <Rule Id="CA1801" Action="Info" /> <!-- Review unused parameters -->
     <Rule Id="CA1802" Action="Error" /> <!-- Use literals where appropriate -->
     <Rule Id="CA1806" Action="Error" /> <!-- Do not ignore method results -->
     <Rule Id="CA1812" Action="Error" /> <!-- Avoid uninstantiated internal classes -->
@@ -223,12 +223,15 @@
     <Rule Id="SA1101" Action="None" /> <!-- Prefix local calls with this -->
     <Rule Id="SA1102" Action="None" /> <!-- Query clause should follow previous clause -->
     <Rule Id="SA1116" Action="None" /> <!-- Split parameters must start on line after declaration -->
+    <Rule Id="SA1200" Action="Error" /> <!-- Using directives must be placed correctly -->
     <Rule Id="SA1201" Action="None" /> <!-- Elements must appear in the correct order -->
     <Rule Id="SA1202" Action="None" /> <!-- Elements must be ordered by access -->
     <Rule Id="SA1204" Action="None" /> <!-- Static elements must appear before instance elements -->
     <Rule Id="SA1300" Action="None" /> <!-- Element must begin with upper case letter -->
     <Rule Id="SA1309" Action="None" /> <!-- Field names must not begin with underscore -->
+    <Rule Id="SA1407" Action="Error" /> <!-- Arithmetic expressions must declare precedence -->
     <Rule Id="SA1413" Action="Error" /> <!-- Use trailing commas in multi-mine initializers -->
+    <Rule Id="SA1516" Action="Error" /> <!-- Elements must be separated by blank line -->
     <Rule Id="SA1600" Action="None" /> <!-- Elements must be documented -->
     <Rule Id="SA1633" Action="None" /> <!-- File must have header -->
   </Rules>
