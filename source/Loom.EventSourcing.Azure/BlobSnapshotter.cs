@@ -41,12 +41,12 @@
             return _container.GetBlockBlobReference($"{streamId}.json");
         }
 
-        private static Task SetContent(CloudBlockBlob blob, T state)
+        private static async Task SetContent(CloudBlockBlob blob, T state)
         {
             string content = JsonConvert.SerializeObject(state);
             using (var source = new MemoryStream(_encoding.GetBytes(content)))
             {
-                return blob.UploadFromStreamAsync(source);
+                await blob.UploadFromStreamAsync(source).ConfigureAwait(continueOnCapturedContext: false);
             }
         }
 
