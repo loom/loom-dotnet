@@ -8,6 +8,7 @@
     using System.Threading.Tasks;
     using AutoFixture;
     using FluentAssertions;
+    using FluentAssertions.Equivalency;
     using Loom.Messaging;
     using Microsoft.Azure.Cosmos.Table;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -269,15 +270,15 @@
 
             calls[0].Select(x => x.Data).Should().BeEquivalentTo(new object[]
             {
-                new StreamEvent<Event1>(streamId, startVersion + 0, evt1),
-                new StreamEvent<Event2>(streamId, startVersion + 1, evt2),
-            }, c => c.WithStrictOrdering());
+                new StreamEvent<Event1>(streamId, startVersion + 0, default, evt1),
+                new StreamEvent<Event2>(streamId, startVersion + 1, default, evt2),
+            }, c => c.WithStrictOrdering().Excluding((IMemberInfo m) => m.SelectedMemberInfo.Name == "RaisedTimeUtc"));
 
             calls[1].Select(x => x.Data).Should().BeEquivalentTo(new object[]
             {
-                new StreamEvent<Event3>(streamId, startVersion + 2, evt3),
-                new StreamEvent<Event4>(streamId, startVersion + 3, evt4),
-            }, c => c.WithStrictOrdering());
+                new StreamEvent<Event3>(streamId, startVersion + 2, default, evt3),
+                new StreamEvent<Event4>(streamId, startVersion + 3, default, evt4),
+            }, c => c.WithStrictOrdering().Excluding((IMemberInfo m) => m.SelectedMemberInfo.Name == "RaisedTimeUtc"));
         }
 
         [TestMethod]
@@ -306,15 +307,15 @@
 
             calls[0].Select(x => x.Data).Should().BeEquivalentTo(new object[]
             {
-                new StreamEvent<Event1>(streamId, startVersion + 0, evt1),
-                new StreamEvent<Event2>(streamId, startVersion + 1, evt2),
-            }, c => c.WithStrictOrdering());
+                new StreamEvent<Event1>(streamId, startVersion + 0, default, evt1),
+                new StreamEvent<Event2>(streamId, startVersion + 1, default, evt2),
+            }, c => c.WithStrictOrdering().Excluding((IMemberInfo m) => m.SelectedMemberInfo.Name == "RaisedTimeUtc"));
 
             calls[1].Select(x => x.Data).Should().BeEquivalentTo(new object[]
             {
-                new StreamEvent<Event3>(streamId, startVersion + 2, evt3),
-                new StreamEvent<Event4>(streamId, startVersion + 3, evt4),
-            }, c => c.WithStrictOrdering());
+                new StreamEvent<Event3>(streamId, startVersion + 2, default, evt3),
+                new StreamEvent<Event4>(streamId, startVersion + 3, default, evt4),
+            }, c => c.WithStrictOrdering().Excluding((IMemberInfo m) => m.SelectedMemberInfo.Name == "RaisedTimeUtc"));
         }
 
         [TestMethod]
@@ -373,11 +374,85 @@
                 .Callback<IEnumerable<Message>>(x => x.ForEach(messages.Enqueue))
                 .Returns(Task.CompletedTask);
 
-            await sut.CollectEvents(streamId, startVersion + 2, new[] { evt2 });
+            await sut.CollectEvents(streamId, startVersion + 1, new[] { evt2 });
 
             // Assert
             messages.Should().HaveCount(3);
             messages.Take(2).Select(x => x.Id).Distinct().Should().ContainSingle();
+        }
+
+        [TestMethod]
+        public async Task CollectEvents_sets_RaisedTimeUtc_property_correctly()
+        {
+            // Arrange
+            var spy = new MessageBusSpy();
+            var sut = new TableEventStore(EventStoreTable, TypeResolver, eventBus: spy);
+
+            Guid streamId = NewGuid();
+            int startVersion = 1;
+            Event1 evt = new Fixture().Create<Event1>();
+
+            DateTime nowUtc = DateTime.UtcNow;
+
+            // Act
+            await sut.CollectEvents(streamId, startVersion, new[] { evt });
+
+            // Assert
+            Message message = spy.Calls.SelectMany(x => x).Single();
+            DateTime actual = message.Data.As<StreamEvent<Event1>>().RaisedTimeUtc;
+            actual.Kind.Should().Be(DateTimeKind.Utc);
+            actual.Should().BeCloseTo(nowUtc, precision: 1000);
+        }
+
+        [TestMethod]
+        public async Task CollectEvents_preserves_RaisedTimeUtc_property()
+        {
+            // Arrange
+            var messages = new ConcurrentQueue<Message>();
+            IMessageBus stub = Mock.Of<IMessageBus>();
+            var sut = new TableEventStore(EventStoreTable, TypeResolver, eventBus: stub);
+
+            Guid streamId = NewGuid();
+            var builder = new Fixture();
+            int startVersion = builder.Create<int>();
+            Event1 evt1 = builder.Create<Event1>();
+            Event2 evt2 = builder.Create<Event2>();
+
+            // Act
+            Mock.Get(stub)
+                .Setup(x => x.Send(It.IsAny<IEnumerable<Message>>()))
+                .Callback<IEnumerable<Message>>(x => x.ForEach(messages.Enqueue))
+                .ThrowsAsync(new InvalidOperationException());
+
+            try
+            {
+                await sut.CollectEvents(streamId, startVersion, new[] { evt1 });
+            }
+            catch
+            {
+            }
+
+            await Task.Delay(millisecondsDelay: 100);
+
+            Mock.Get(stub)
+                .Setup(x => x.Send(It.IsAny<IEnumerable<Message>>()))
+                .Callback<IEnumerable<Message>>(x => x.ForEach(messages.Enqueue))
+                .Returns(Task.CompletedTask);
+
+            await sut.CollectEvents(streamId, startVersion + 1, new[] { evt2 });
+
+            // Assert
+            messages.Should()
+                    .HaveCount(3)
+                    .And
+                    .Subject
+                    .Take(2)
+                    .Select(x => x.Data)
+                    .Cast<StreamEvent<Event1>>()
+                    .Select(x => x.RaisedTimeUtc)
+                    .Distinct()
+                    .Should()
+                    .ContainSingle();
         }
     }
 }

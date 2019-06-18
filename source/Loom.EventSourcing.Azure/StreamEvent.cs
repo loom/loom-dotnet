@@ -13,6 +13,7 @@
 
         public StreamEvent(Guid streamId,
                            long version,
+                           DateTime raisedTimeUtc,
                            string eventType,
                            string payload,
                            string messageId,
@@ -24,6 +25,7 @@
         {
             StreamId = streamId;
             Version = version;
+            RaisedTimeUtc = raisedTimeUtc;
             EventType = eventType;
             Payload = payload;
             MessageId = messageId;
@@ -36,6 +38,8 @@
         public Guid StreamId { get; set; }
 
         public long Version { get; set; }
+
+        public DateTime RaisedTimeUtc { get; set; }
 
         public string EventType { get; set; }
 

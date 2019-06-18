@@ -71,6 +71,7 @@
                     var streamEvent = new StreamEvent(
                         streamId,
                         version: startVersion + i,
+                        raisedTimeUtc: DateTime.UtcNow,
                         eventType: _typeResolver.ResolveTypeName(source.GetType()),
                         payload: JsonConvert.SerializeObject(source, _jsonSettings),
                         messageId: $"{Guid.NewGuid()}",
@@ -118,12 +119,13 @@
             ConstructorInfo constructor = typeof(StreamEvent<>)
                 .MakeGenericType(type)
                 .GetTypeInfo()
-                .GetConstructor(new[] { typeof(Guid), typeof(long), type });
+                .GetConstructor(new[] { typeof(Guid), typeof(long), typeof(DateTime), type });
 
             return constructor.Invoke(parameters: new object[]
             {
                 entity.StreamId,
                 entity.Version,
+                entity.RaisedTimeUtc,
                 JsonConvert.DeserializeObject(entity.Payload, type, _jsonSettings),
             });
         }
