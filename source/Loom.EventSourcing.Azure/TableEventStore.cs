@@ -10,7 +10,7 @@
     using Microsoft.Azure.Cosmos.Table;
     using Newtonsoft.Json;
 
-    public class TableEventStore : IEventCollector, IEventReader
+    public class TableEventStore<TEntity> : IEventCollector, IEventReader
     {
         private readonly CloudTable _table;
         private readonly TypeResolver _typeResolver;
@@ -28,14 +28,16 @@
                                   IEnumerable<object> events,
                                   TracingProperties tracingProperties = default)
         {
-            return SaveAndPublish(transaction: Guid.NewGuid(),
+            return SaveAndPublish(entityType: _typeResolver.ResolveTypeName<TEntity>(),
+                                  transaction: Guid.NewGuid(),
                                   streamId,
                                   startVersion,
                                   events.ToImmutableArray(),
                                   tracingProperties);
         }
 
-        private async Task SaveAndPublish(Guid transaction,
+        private async Task SaveAndPublish(string entityType,
+                                          Guid transaction,
                                           Guid streamId,
                                           long startVersion,
                                           ImmutableArray<object> events,
@@ -47,7 +49,7 @@
 
             Task SaveQueueTicket()
             {
-                var queueTicket = new QueueTicket(streamId, startVersion, events.Length, transaction);
+                var queueTicket = new QueueTicket(entityType, streamId, startVersion, events.Length, transaction);
                 return _table.ExecuteAsync(TableOperation.Insert(queueTicket));
             }
 
@@ -60,6 +62,7 @@
                     object source = events[i];
 
                     var streamEvent = new StreamEvent(
+                        entityType,
                         streamId,
                         version: startVersion + i,
                         raisedTimeUtc: DateTime.UtcNow,
@@ -79,7 +82,7 @@
 
             async Task PublishPendingEvents()
             {
-                TableQuery<QueueTicket> query = QueueTicket.CreateQuery(streamId).OrderBy("RowKey");
+                TableQuery<QueueTicket> query = QueueTicket.CreateQuery(entityType, streamId).OrderBy("RowKey");
                 foreach (QueueTicket queueTicket in await ExecuteQuery(query).ConfigureAwait(continueOnCapturedContext: false))
                 {
                     await PublishEvents(queueTicket).ConfigureAwait(continueOnCapturedContext: false);
@@ -124,20 +127,24 @@
         public async Task<IEnumerable<object>> QueryEvents(
             Guid streamId, long fromVersion)
         {
-            TableQuery<StreamEvent> query = StreamEvent.CreateQuery(streamId, fromVersion);
+            string entityType = _typeResolver.ResolveTypeName<TEntity>();
+            TableQuery<StreamEvent> query = StreamEvent.CreateQuery(entityType, streamId, fromVersion);
             IEnumerable<StreamEvent> streamEvents = await ExecuteQuery(query).ConfigureAwait(continueOnCapturedContext: false);
             return streamEvents.Select(DeserializeEvent).ToImmutableArray();
         }
 
-        private async Task<IEnumerable<T>> ExecuteQuery<T>(TableQuery<T> query)
-             where T : ITableEntity, new()
+        private async Task<IEnumerable<TElement>> ExecuteQuery<TElement>(
+            TableQuery<TElement> query)
+            where TElement : ITableEntity, new()
         {
-            var results = new List<T>();
+            var results = new List<TElement>();
 
             TableContinuationToken continuation = default;
             do
             {
-                TableQuerySegment<T> segment = await _table.ExecuteQuerySegmentedAsync(query, continuation).ConfigureAwait(continueOnCapturedContext: false);
+                TableQuerySegment<TElement> segment = await _table
+                    .ExecuteQuerySegmentedAsync(query, continuation)
+                    .ConfigureAwait(continueOnCapturedContext: false);
                 results.AddRange(segment);
                 continuation = segment.ContinuationToken;
             }

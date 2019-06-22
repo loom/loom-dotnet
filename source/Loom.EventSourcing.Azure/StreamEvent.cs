@@ -11,7 +11,8 @@
         {
         }
 
-        public StreamEvent(Guid streamId,
+        public StreamEvent(string entityType,
+                           Guid streamId,
                            long version,
                            DateTime raisedTimeUtc,
                            string eventType,
@@ -21,8 +22,9 @@
                            string contributor,
                            string parentId,
                            Guid transaction)
-            : base(partitionKey: $"{streamId}", rowKey: FormatVersion(version))
+            : base(partitionKey: $"{entityType}:{streamId}", rowKey: FormatVersion(version))
         {
+            EntityType = entityType;
             StreamId = streamId;
             Version = version;
             RaisedTimeUtc = raisedTimeUtc;
@@ -34,6 +36,8 @@
             ParentId = parentId;
             Transaction = transaction;
         }
+
+        public string EntityType { get; set; }
 
         public Guid StreamId { get; set; }
 
@@ -60,10 +64,11 @@
 
         private static string FormatVersion(long version) => $"{version:D19}";
 
-        public static TableQuery<StreamEvent> CreateQuery(Guid streamId, long fromVersion)
+        public static TableQuery<StreamEvent> CreateQuery(
+            string entityType, Guid streamId, long fromVersion)
         {
             string filter = CombineFilters(
-                $"PartitionKey eq '{streamId}'",
+                $"PartitionKey eq '{entityType}:{streamId}'",
                 $"RowKey ge '{FormatVersion(fromVersion)}'");
 
             return new TableQuery<StreamEvent>().Where(filter);
@@ -72,7 +77,7 @@
         public static TableQuery<StreamEvent> CreateQuery(QueueTicket queueTicket)
         {
             string filter = CombineFilters(
-                $"PartitionKey eq '{queueTicket.StreamId}'",
+                $"PartitionKey eq '{queueTicket.EntityType}:{queueTicket.StreamId}'",
                 $"RowKey ge '{queueTicket.StartVersion:D19}'",
                 $"RowKey lt '{queueTicket.StartVersion + queueTicket.EventCount:D19}'",
                 $"Transaction eq guid'{queueTicket.Transaction}'");

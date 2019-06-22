@@ -7,7 +7,8 @@
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
-    public class EntityFrameworkEventStore_specs : EventStoreUnitTests<EntityFrameworkEventStore>
+    public class EntityFrameworkEventStore_specs :
+        EventStoreUnitTests<EntityFrameworkEventStore>
     {
         private static SqliteConnection _connection;
         private static DbContextOptions _options;

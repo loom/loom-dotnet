@@ -1,15 +1,56 @@
 ﻿namespace Loom.EventSourcing.Azure
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Threading.Tasks;
+    using FluentAssertions;
     using Loom.Messaging;
+    using Loom.Testing;
+    using Microsoft.Azure.Cosmos.Table;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
-    public class TableEventStore_specs : EventStoreUnitTests<TableEventStore>
+    public class TableEventStore_specs :
+        EventStoreUnitTests<TableEventStore<Entity1>>
     {
-        protected override TableEventStore GenerateEventStore(
+        protected override TableEventStore<Entity1> GenerateEventStore(
             TypeResolver typeResolver, IMessageBus eventBus)
         {
-            return new TableEventStore(StorageEmulator.EventStoreTable, typeResolver, eventBus);
+            CloudTable table = StorageEmulator.EventStoreTable;
+            return new TableEventStore<Entity1>(table, typeResolver, eventBus);
+        }
+
+        [TestMethod, AutoData]
+        public async Task sut_supports_multiple_entity_types_having_same_stream_id(
+            IMessageBus eventBus, Guid streamId, Event1 evt1, Event2 evt2)
+        {
+            // Arrange
+            CloudTable table = StorageEmulator.EventStoreTable;
+
+            var typeResolver = new TypeResolver(
+                new FullNameTypeNameResolvingStrategy(),
+                new FullNameTypeResolvingStrategy());
+
+            var store1 = new TableEventStore<Entity1>(table, typeResolver, eventBus);
+            var store2 = new TableEventStore<Entity2>(table, typeResolver, eventBus);
+
+            int startVersion = 1;
+
+            // Act
+            Func<Task> action = async () =>
+            {
+                await store1.CollectEvents(streamId, startVersion, new[] { evt1 });
+                await store2.CollectEvents(streamId, startVersion, new[] { evt2 });
+            };
+
+            // Assert
+            await action.Should().NotThrowAsync();
+
+            IEnumerable<object> actual1 = await store1.QueryEvents(streamId, fromVersion: 1);
+            actual1.Should().BeEquivalentTo(evt1);
+
+            IEnumerable<object> actual2 = await store2.QueryEvents(streamId, fromVersion: 1);
+            actual2.Should().BeEquivalentTo(evt2);
         }
     }
 }

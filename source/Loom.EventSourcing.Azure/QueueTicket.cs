@@ -9,18 +9,22 @@
         {
         }
 
-        public QueueTicket(Guid streamId,
+        public QueueTicket(string entityType,
+                           Guid streamId,
                            long startVersion,
                            long eventCount,
                            Guid transaction)
-            : base(partitionKey: $"~{streamId}",
-                   rowKey: $"{startVersion:D19}-{transaction}")
+            : base(partitionKey: $"~{entityType}:{streamId}",
+                   rowKey: $"{startVersion:D19}:{transaction}")
         {
+            EntityType = entityType;
             StreamId = streamId;
             StartVersion = startVersion;
             EventCount = eventCount;
             Transaction = transaction;
         }
+
+        public string EntityType { get; set; }
 
         public Guid StreamId { get; set; }
 
@@ -30,9 +34,9 @@
 
         public Guid Transaction { get; set; }
 
-        public static TableQuery<QueueTicket> CreateQuery(Guid streamId)
+        public static TableQuery<QueueTicket> CreateQuery(string entityType, Guid streamId)
         {
-            string filter = $"PartitionKey eq '~{streamId}'";
+            string filter = $"PartitionKey eq '~{entityType}:{streamId}'";
             return new TableQuery<QueueTicket>().Where(filter);
         }
     }
