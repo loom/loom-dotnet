@@ -2,7 +2,9 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.Immutable;
     using System.Linq;
+    using System.Reflection;
     using System.Threading.Tasks;
     using Loom.Messaging;
     using Microsoft.EntityFrameworkCore;
@@ -12,31 +14,141 @@
     {
         private readonly Func<EventStoreContext> _contextFactory;
         private readonly TypeResolver _typeResolver;
+        private readonly IMessageBus _eventBus;
 
-        public EventStore(Func<EventStoreContext> contextFactory, TypeResolver typeResolver)
+        public EventStore(Func<EventStoreContext> contextFactory, TypeResolver typeResolver, IMessageBus eventBus)
         {
             _contextFactory = contextFactory;
             _typeResolver = typeResolver;
+            _eventBus = eventBus;
         }
 
-        public async Task CollectEvents(Guid streamId,
-                                        long startVersion,
-                                        IEnumerable<object> events,
-                                        TracingProperties tracingProperties = default)
+        public Task CollectEvents(Guid streamId,
+                                  long startVersion,
+                                  IEnumerable<object> events,
+                                  TracingProperties tracingProperties = default)
         {
-            using (EventStoreContext context = _contextFactory.Invoke())
+            return SaveAndPublish(transaction: Guid.NewGuid(),
+                                  streamId,
+                                  startVersion,
+                                  events.ToImmutableArray(),
+                                  tracingProperties);
+        }
+
+        private async Task SaveAndPublish(Guid transaction,
+                                          Guid streamId,
+                                          long startVersion,
+                                          ImmutableArray<object> events,
+                                          TracingProperties tracingProperties = default)
+        {
+            await SaveEvents().ConfigureAwait(continueOnCapturedContext: false);
+            await PublishPendingEvents().ConfigureAwait(continueOnCapturedContext: false);
+
+            async Task SaveEvents()
             {
-                context.StreamEvents.AddRange(events.Select(SerializeEvent));
-                await context.SaveChangesAsync().ConfigureAwait(false);
+                using (EventStoreContext context = _contextFactory.Invoke())
+                {
+                    for (int i = 0; i < events.Length; i++)
+                    {
+                        object source = events[i];
+
+                        var streamEvent = new StreamEvent(
+                            streamId,
+                            version: startVersion + i,
+                            raisedTimeUtc: DateTime.UtcNow,
+                            eventType: _typeResolver.ResolveTypeName(source.GetType()),
+                            payload: JsonConvert.SerializeObject(source),
+                            messageId: $"{Guid.NewGuid()}",
+                            tracingProperties.OperationId,
+                            tracingProperties.Contributor,
+                            tracingProperties.ParentId,
+                            transaction);
+
+                        context.Add(streamEvent);
+                        context.Add(new PendingEvent(streamEvent));
+                    }
+
+                    await context.SaveChangesAsync().ConfigureAwait(continueOnCapturedContext: false);
+                }
             }
 
-            StreamEvent SerializeEvent(object source, int index) =>
-                new StreamEvent(
-                    streamId,
-                    version: startVersion + index,
-                    raisedTimeUtc: DateTime.UtcNow,
-                    eventType: _typeResolver.ResolveTypeName(source.GetType()),
-                    payload: JsonConvert.SerializeObject(source));
+            async Task PublishPendingEvents()
+            {
+                using (EventStoreContext context = _contextFactory.Invoke())
+                {
+                    IQueryable<PendingEvent> query =
+                        from pendingEvent in context.PendingEvents
+                        orderby pendingEvent.Version
+                        select pendingEvent;
+
+                    List<PendingEvent> pendingEvents = await query.ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
+                    foreach (IEnumerable<PendingEvent> window in Window(pendingEvents))
+                    {
+                        await _eventBus.Send(window.Select(GenerateMessage)).ConfigureAwait(continueOnCapturedContext: false);
+                        context.PendingEvents.RemoveRange(window);
+                        await context.SaveChangesAsync().ConfigureAwait(continueOnCapturedContext: false);
+                    }
+                }
+            }
+        }
+
+        private static IEnumerable<IEnumerable<PendingEvent>> Window(
+            IEnumerable<PendingEvent> pendingEvents)
+        {
+            Guid transaction = default;
+            List<PendingEvent> fragment = null;
+
+            foreach (PendingEvent pendingEvent in pendingEvents)
+            {
+                if (fragment == null)
+                {
+                    transaction = pendingEvent.Transaction;
+                    fragment = new List<PendingEvent> { pendingEvent };
+                    continue;
+                }
+
+                if (pendingEvent.Transaction != transaction)
+                {
+                    yield return fragment.ToImmutableArray();
+
+                    transaction = pendingEvent.Transaction;
+                    fragment = new List<PendingEvent> { pendingEvent };
+                    continue;
+                }
+
+                fragment.Add(pendingEvent);
+            }
+
+            if (fragment != null)
+            {
+                yield return fragment.ToImmutableArray();
+            }
+        }
+
+        private Message GenerateMessage(PendingEvent pendingEvent)
+        {
+            return new Message(
+                id: pendingEvent.MessageId,
+                data: RestoreStreamEvent(entity: pendingEvent),
+                pendingEvent.TracingProperties);
+        }
+
+        private object RestoreStreamEvent(PendingEvent entity)
+        {
+            Type type = _typeResolver.TryResolveType(entity.EventType);
+
+            ConstructorInfo constructor = typeof(StreamEvent<>)
+                .MakeGenericType(type)
+                .GetTypeInfo()
+                .GetConstructor(new[] { typeof(Guid), typeof(long), typeof(DateTime), type });
+
+            return constructor.Invoke(parameters: new object[]
+            {
+                entity.StreamId,
+                entity.Version,
+                entity.RaisedTimeUtc,
+                JsonConvert.DeserializeObject(entity.Payload, type),
+            });
         }
 
         public async Task<IEnumerable<object>> QueryEvents(
@@ -52,7 +164,7 @@
                     orderby e.Version ascending
                     select e;
 
-                return from e in await query.ToListAsync().ConfigureAwait(false)
+                return from e in await query.AsNoTracking().ToListAsync().ConfigureAwait(continueOnCapturedContext: false)
                        let value = e.Payload
                        let type = _typeResolver.TryResolveType(e.EventType)
                        select JsonConvert.DeserializeObject(value, type);

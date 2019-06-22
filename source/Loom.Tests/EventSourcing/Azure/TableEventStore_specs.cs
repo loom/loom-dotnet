@@ -59,7 +59,7 @@
             public Guid Value { get; }
         }
 
-        private static TypeResolver TypeResolver =>
+        private static TypeResolver TypeResolver { get; } =
             new TypeResolver(
                 new FullNameTypeNameResolvingStrategy(),
                 new FullNameTypeResolvingStrategy());

@@ -223,12 +223,14 @@
     <Rule Id="SA1101" Action="None" /> <!-- Prefix local calls with this -->
     <Rule Id="SA1102" Action="None" /> <!-- Query clause should follow previous clause -->
     <Rule Id="SA1116" Action="None" /> <!-- Split parameters must start on line after declaration -->
+    <Rule Id="SA1122" Action="Error" /> <!-- Use string empty for empty strings -->
     <Rule Id="SA1200" Action="Error" /> <!-- Using directives must be placed correctly -->
     <Rule Id="SA1201" Action="None" /> <!-- Elements must appear in the correct order -->
     <Rule Id="SA1202" Action="None" /> <!-- Elements must be ordered by access -->
     <Rule Id="SA1204" Action="None" /> <!-- Static elements must appear before instance elements -->
     <Rule Id="SA1300" Action="None" /> <!-- Element must begin with upper case letter -->
     <Rule Id="SA1309" Action="None" /> <!-- Field names must not begin with underscore -->
+    <Rule Id="SX1309" Action="Error" /> <!-- Field names must begin with underscore -->
     <Rule Id="SA1407" Action="Error" /> <!-- Arithmetic expressions must declare precedence -->
     <Rule Id="SA1413" Action="Error" /> <!-- Use trailing commas in multi-mine initializers -->
     <Rule Id="SA1508" Action="Error" /> <!-- Closing braces must not be preceded by blank line -->

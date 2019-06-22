@@ -75,7 +75,16 @@
                 {
                     context.StreamEvents.Add(
                         new StreamEvent(
-                            streamId, version, DateTime.UtcNow, "Empty", "{}"));
+                            streamId,
+                            version,
+                            raisedTimeUtc: DateTime.UtcNow,
+                            eventType: "Empty",
+                            payload: "{}",
+                            messageId: $"{Guid.NewGuid()}",
+                            operationId: default,
+                            contributor: default,
+                            parentId: default,
+                            transaction: Guid.NewGuid()));
                     await context.SaveChangesAsync();
                 }
 
@@ -84,7 +93,16 @@
                 {
                     context.StreamEvents.Add(
                         new StreamEvent(
-                            streamId, version, DateTime.UtcNow, "Empty", "{}"));
+                            streamId,
+                            version,
+                            raisedTimeUtc: DateTime.UtcNow,
+                            eventType: "Empty",
+                            payload: "{}",
+                            messageId: $"{Guid.NewGuid()}",
+                            operationId: default,
+                            contributor: default,
+                            parentId: default,
+                            transaction: Guid.NewGuid()));
                     Func<Task> action = () => context.SaveChangesAsync();
                     action.Should().Throw<DbUpdateException>();
                 }
@@ -113,7 +131,12 @@
                     version: 1,
                     raisedTimeUtc: DateTime.UtcNow,
                     eventType: null,
-                    payload: "{}");
+                    payload: "{}",
+                    messageId: $"{Guid.NewGuid()}",
+                    operationId: default,
+                    contributor: default,
+                    parentId: default,
+                    transaction: Guid.NewGuid());
 
                 using (var context = new EventStoreContext(options))
                 {
@@ -149,7 +172,12 @@
                     version: 1,
                     raisedTimeUtc: DateTime.UtcNow,
                     eventType: "Empty",
-                    payload: null);
+                    payload: null,
+                    messageId: $"{Guid.NewGuid()}",
+                    operationId: default,
+                    contributor: default,
+                    parentId: default,
+                    transaction: Guid.NewGuid());
 
                 using (var context = new EventStoreContext(options))
                 {

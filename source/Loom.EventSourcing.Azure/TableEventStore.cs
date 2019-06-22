@@ -9,27 +9,18 @@
     using Loom.Messaging;
     using Microsoft.Azure.Cosmos.Table;
     using Newtonsoft.Json;
-    using Newtonsoft.Json.Serialization;
 
     public class TableEventStore : IEventCollector, IEventReader
     {
         private readonly CloudTable _table;
         private readonly TypeResolver _typeResolver;
         private readonly IMessageBus _eventBus;
-        private readonly JsonSerializerSettings _jsonSettings;
 
         public TableEventStore(CloudTable table, TypeResolver typeResolver, IMessageBus eventBus)
         {
             _table = table;
             _typeResolver = typeResolver;
             _eventBus = eventBus;
-            _jsonSettings = new JsonSerializerSettings
-            {
-                ContractResolver = new DefaultContractResolver
-                {
-                    NamingStrategy = new CamelCaseNamingStrategy(),
-                },
-            };
         }
 
         public Task CollectEvents(Guid streamId,
@@ -37,22 +28,22 @@
                                   IEnumerable<object> events,
                                   TracingProperties tracingProperties = default)
         {
-            return CollectEventsWith(transaction: Guid.NewGuid(),
-                                     streamId,
-                                     startVersion,
-                                     events.ToImmutableArray(),
-                                     tracingProperties);
+            return SaveAndPublish(transaction: Guid.NewGuid(),
+                                  streamId,
+                                  startVersion,
+                                  events.ToImmutableArray(),
+                                  tracingProperties);
         }
 
-        private async Task CollectEventsWith(Guid transaction,
-                                             Guid streamId,
-                                             long startVersion,
-                                             ImmutableArray<object> events,
-                                             TracingProperties tracingProperties)
+        private async Task SaveAndPublish(Guid transaction,
+                                          Guid streamId,
+                                          long startVersion,
+                                          ImmutableArray<object> events,
+                                          TracingProperties tracingProperties)
         {
             await SaveQueueTicket().ConfigureAwait(continueOnCapturedContext: false);
-            await SaveStreamEvents().ConfigureAwait(continueOnCapturedContext: false);
-            await PublishStreamEvents().ConfigureAwait(continueOnCapturedContext: false);
+            await SaveEvents().ConfigureAwait(continueOnCapturedContext: false);
+            await PublishPendingEvents().ConfigureAwait(continueOnCapturedContext: false);
 
             Task SaveQueueTicket()
             {
@@ -60,7 +51,7 @@
                 return _table.ExecuteAsync(TableOperation.Insert(queueTicket));
             }
 
-            Task SaveStreamEvents()
+            Task SaveEvents()
             {
                 var batch = new TableBatchOperation();
 
@@ -73,7 +64,7 @@
                         version: startVersion + i,
                         raisedTimeUtc: DateTime.UtcNow,
                         eventType: _typeResolver.ResolveTypeName(source.GetType()),
-                        payload: JsonConvert.SerializeObject(source, _jsonSettings),
+                        payload: JsonConvert.SerializeObject(source),
                         messageId: $"{Guid.NewGuid()}",
                         tracingProperties.OperationId,
                         tracingProperties.Contributor,
@@ -86,17 +77,17 @@
                 return _table.ExecuteBatchAsync(batch);
             }
 
-            async Task PublishStreamEvents()
+            async Task PublishPendingEvents()
             {
                 TableQuery<QueueTicket> query = QueueTicket.CreateQuery(streamId).OrderBy("RowKey");
                 foreach (QueueTicket queueTicket in await ExecuteQuery(query).ConfigureAwait(continueOnCapturedContext: false))
                 {
-                    await PublishStreamEventsWith(queueTicket).ConfigureAwait(continueOnCapturedContext: false);
+                    await PublishEvents(queueTicket).ConfigureAwait(continueOnCapturedContext: false);
                 }
             }
         }
 
-        private async Task PublishStreamEventsWith(QueueTicket queueTicket)
+        private async Task PublishEvents(QueueTicket queueTicket)
         {
             TableQuery<StreamEvent> query = StreamEvent.CreateQuery(queueTicket);
             IEnumerable<StreamEvent> streamEvents = await ExecuteQuery(query).ConfigureAwait(continueOnCapturedContext: false);
@@ -126,7 +117,7 @@
                 entity.StreamId,
                 entity.Version,
                 entity.RaisedTimeUtc,
-                JsonConvert.DeserializeObject(entity.Payload, type, _jsonSettings),
+                JsonConvert.DeserializeObject(entity.Payload, type),
             });
         }
 
@@ -152,15 +143,14 @@
             }
             while (continuation != default);
 
-            return results.ToImmutableList();
+            return results.ToImmutableArray();
         }
 
         private object DeserializeEvent(StreamEvent streamEvent)
         {
             return JsonConvert.DeserializeObject(
                 value: streamEvent.Payload,
-                type: _typeResolver.TryResolveType(streamEvent.EventType),
-                settings: _jsonSettings);
+                type: _typeResolver.TryResolveType(streamEvent.EventType));
         }
     }
 }
