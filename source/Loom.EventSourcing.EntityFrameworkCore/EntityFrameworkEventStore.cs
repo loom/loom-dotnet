@@ -10,13 +10,16 @@
     using Microsoft.EntityFrameworkCore;
     using Newtonsoft.Json;
 
-    public class EventStore : IEventCollector, IEventReader
+    public class EntityFrameworkEventStore : IEventCollector, IEventReader
     {
         private readonly Func<EventStoreContext> _contextFactory;
         private readonly TypeResolver _typeResolver;
         private readonly IMessageBus _eventBus;
 
-        public EventStore(Func<EventStoreContext> contextFactory, TypeResolver typeResolver, IMessageBus eventBus)
+        public EntityFrameworkEventStore(
+            Func<EventStoreContext> contextFactory,
+            TypeResolver typeResolver,
+            IMessageBus eventBus)
         {
             _contextFactory = contextFactory;
             _typeResolver = typeResolver;
@@ -164,7 +167,10 @@
                     orderby e.Version ascending
                     select e;
 
-                return from e in await query.AsNoTracking().ToListAsync().ConfigureAwait(continueOnCapturedContext: false)
+                return from e in await query
+                           .AsNoTracking()
+                           .ToListAsync()
+                           .ConfigureAwait(continueOnCapturedContext: false)
                        let value = e.Payload
                        let type = _typeResolver.TryResolveType(e.EventType)
                        select JsonConvert.DeserializeObject(value, type);

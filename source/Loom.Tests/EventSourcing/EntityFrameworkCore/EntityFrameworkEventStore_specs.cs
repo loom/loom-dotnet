@@ -15,10 +15,9 @@
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Moq;
     using Newtonsoft.Json;
-    using static System.Guid;
 
     [TestClass]
-    public class EventStore_specs
+    public class EntityFrameworkEventStore_specs
     {
         public struct ComplexValue
         {
@@ -84,7 +83,7 @@
         [TestMethod]
         public void sut_implements_IEventCollector()
         {
-            typeof(EventStore).Should().Implement<IEventCollector>();
+            typeof(EntityFrameworkEventStore).Should().Implement<IEventCollector>();
         }
 
         [TestMethod]
@@ -92,12 +91,15 @@
         {
             // Arrange
             DbContextOptions options = new DbContextOptionsBuilder()
-                .UseInMemoryDatabase(databaseName: $"{NewGuid()}")
+                .UseInMemoryDatabase(databaseName: $"{Guid.NewGuid()}")
                 .Options;
 
-            var sut = new EventStore(() => new EventStoreContext(options), TypeResolver, Mock.Of<IMessageBus>());
+            var sut = new EntityFrameworkEventStore(
+                () => new EventStoreContext(options),
+                TypeResolver,
+                Mock.Of<IMessageBus>());
 
-            Guid streamId = NewGuid();
+            var streamId = Guid.NewGuid();
             (Event1 evt, long version) = new Fixture().Create<(Event1, long)>();
 
             // Act
@@ -124,12 +126,15 @@
         {
             // Arrange
             DbContextOptions options = new DbContextOptionsBuilder()
-                .UseInMemoryDatabase(databaseName: $"{NewGuid()}")
+                .UseInMemoryDatabase(databaseName: $"{Guid.NewGuid()}")
                 .Options;
 
-            var sut = new EventStore(() => new EventStoreContext(options), TypeResolver, Mock.Of<IMessageBus>());
+            var sut = new EntityFrameworkEventStore(
+                () => new EventStoreContext(options),
+                TypeResolver,
+                Mock.Of<IMessageBus>());
 
-            Guid streamId = NewGuid();
+            var streamId = Guid.NewGuid();
             (Event1 evt1, Event2 evt2, long startVersion) =
                 new Fixture().Create<(Event1, Event2, long)>();
 
@@ -167,12 +172,15 @@
         {
             // Arrange
             DbContextOptions options = new DbContextOptionsBuilder()
-                .UseInMemoryDatabase(databaseName: $"{NewGuid()}")
+                .UseInMemoryDatabase(databaseName: $"{Guid.NewGuid()}")
                 .Options;
 
-            var sut = new EventStore(() => new EventStoreContext(options), TypeResolver, Mock.Of<IMessageBus>());
+            var sut = new EntityFrameworkEventStore(
+                () => new EventStoreContext(options),
+                TypeResolver,
+                Mock.Of<IMessageBus>());
 
-            Guid streamId = NewGuid();
+            var streamId = Guid.NewGuid();
             Event1 evt = new Fixture().Create<Event1>();
 
             DateTime nearby = DateTime.UtcNow;
@@ -193,7 +201,7 @@
         [TestMethod]
         public void sut_implements_IEventReader()
         {
-            typeof(EventStore).Should().Implement<IEventReader>();
+            typeof(EntityFrameworkEventStore).Should().Implement<IEventReader>();
         }
 
         [TestMethod]
@@ -201,12 +209,15 @@
         {
             // Arrange
             DbContextOptions options = new DbContextOptionsBuilder()
-                .UseInMemoryDatabase(databaseName: $"{NewGuid()}")
+                .UseInMemoryDatabase(databaseName: $"{Guid.NewGuid()}")
                 .Options;
 
-            var sut = new EventStore(() => new EventStoreContext(options), TypeResolver, Mock.Of<IMessageBus>());
+            var sut = new EntityFrameworkEventStore(
+                () => new EventStoreContext(options),
+                TypeResolver,
+                Mock.Of<IMessageBus>());
 
-            Guid streamId = NewGuid();
+            var streamId = Guid.NewGuid();
             (Event1 evt1, Event2 evt2) = new Fixture().Create<(Event1, Event2)>();
             object[] events = new object[] { evt1, evt2 };
 
@@ -224,12 +235,15 @@
         {
             // Arrange
             DbContextOptions options = new DbContextOptionsBuilder()
-                .UseInMemoryDatabase(databaseName: $"{NewGuid()}")
+                .UseInMemoryDatabase(databaseName: $"{Guid.NewGuid()}")
                 .Options;
 
-            var sut = new EventStore(() => new EventStoreContext(options), TypeResolver, Mock.Of<IMessageBus>());
+            var sut = new EntityFrameworkEventStore(
+                () => new EventStoreContext(options),
+                TypeResolver,
+                Mock.Of<IMessageBus>());
 
-            Guid streamId = NewGuid();
+            var streamId = Guid.NewGuid();
             (Event1 evt1, Event2 evt2) = new Fixture().Create<(Event1, Event2)>();
             object[] events = new object[] { evt1, evt2 };
 
@@ -247,14 +261,17 @@
         {
             // Arrange
             DbContextOptions options = new DbContextOptionsBuilder()
-                .UseInMemoryDatabase(databaseName: $"{NewGuid()}")
+                .UseInMemoryDatabase(databaseName: $"{Guid.NewGuid()}")
                 .Options;
 
-            var sut = new EventStore(() => new EventStoreContext(options), TypeResolver, Mock.Of<IMessageBus>());
+            var sut = new EntityFrameworkEventStore(
+                () => new EventStoreContext(options),
+                TypeResolver,
+                Mock.Of<IMessageBus>());
 
             (Event1 evt1, Event2 evt2) = new Fixture().Create<(Event1, Event2)>();
 
-            Guid streamId = NewGuid();
+            var streamId = Guid.NewGuid();
             await sut.CollectEvents(streamId, startVersion: 1, events: new[] { evt1 });
 
             var otherStreamId = Guid.NewGuid();
@@ -272,12 +289,15 @@
         {
             // Arrange
             DbContextOptions options = new DbContextOptionsBuilder()
-                .UseInMemoryDatabase(databaseName: $"{NewGuid()}")
+                .UseInMemoryDatabase(databaseName: $"{Guid.NewGuid()}")
                 .Options;
 
-            var sut = new EventStore(() => new EventStoreContext(options), TypeResolver, Mock.Of<IMessageBus>());
+            var sut = new EntityFrameworkEventStore(
+                () => new EventStoreContext(options),
+                TypeResolver,
+                Mock.Of<IMessageBus>());
 
-            Guid streamId = NewGuid();
+            var streamId = Guid.NewGuid();
             (Event1 evt1, Event2 evt2) = new Fixture().Create<(Event1, Event2)>();
             object[] events = new object[] { evt1, evt2 };
 
@@ -308,9 +328,12 @@
                     await context.Database.EnsureCreatedAsync();
                 }
 
-                var sut = new EventStore(() => new EventStoreContext(options), TypeResolver, Mock.Of<IMessageBus>());
+                var sut = new EntityFrameworkEventStore(
+                    () => new EventStoreContext(options),
+                    TypeResolver,
+                    Mock.Of<IMessageBus>());
 
-                Guid streamId = NewGuid();
+                var streamId = Guid.NewGuid();
                 int version = 1;
                 object[] events = new[] { new Fixture().Create<Event1>() };
                 await sut.CollectEvents(streamId, startVersion: version, events);
@@ -328,15 +351,18 @@
         {
             // Arrange
             DbContextOptions options = new DbContextOptionsBuilder()
-                .UseInMemoryDatabase(databaseName: $"{NewGuid()}")
+                .UseInMemoryDatabase(databaseName: $"{Guid.NewGuid()}")
                 .Options;
 
             var spy = new MessageBusSpy();
-            var sut = new EventStore(() => new EventStoreContext(options), TypeResolver, eventBus: spy);
+            var sut = new EntityFrameworkEventStore(
+                () => new EventStoreContext(options),
+                TypeResolver,
+                eventBus: spy);
 
             var builder = new Fixture();
 
-            Guid streamId = NewGuid();
+            var streamId = Guid.NewGuid();
 
             int startVersion = builder.Create<int>();
 
@@ -394,9 +420,12 @@
                 }
 
                 var spy = new MessageBusSpy();
-                var sut = new EventStore(() => new EventStoreContext(options), TypeResolver, eventBus: spy);
+                var sut = new EntityFrameworkEventStore(
+                    () => new EventStoreContext(options),
+                    TypeResolver,
+                    eventBus: spy);
 
-                Guid streamId = NewGuid();
+                var streamId = Guid.NewGuid();
                 int version = new Fixture().Create<int>();
 
                 using (var context = new EventStoreContext(options))
@@ -408,11 +437,11 @@
                             raisedTimeUtc: default,
                             eventType: string.Empty,
                             payload: string.Empty,
-                            messageId: $"{NewGuid()}",
+                            messageId: $"{Guid.NewGuid()}",
                             operationId: default,
                             contributor: default,
                             parentId: default,
-                            transaction: NewGuid()));
+                            transaction: Guid.NewGuid()));
                     await context.SaveChangesAsync();
                 }
 
@@ -433,7 +462,7 @@
             var spy = new MessageBusSpy();
 
             var builder = new Fixture();
-            Guid streamId = NewGuid();
+            var streamId = Guid.NewGuid();
             int startVersion = builder.Create<int>();
             Event1 evt1 = builder.Create<Event1>();
             Event2 evt2 = builder.Create<Event2>();
@@ -453,7 +482,10 @@
                     await context.Database.EnsureCreatedAsync();
                 }
 
-                var sut = new EventStore(() => new EventStoreContext(options), TypeResolver, eventBus: stub);
+                var sut = new EntityFrameworkEventStore(
+                    () => new EventStoreContext(options),
+                    TypeResolver,
+                    eventBus: stub);
 
                 Mock.Get(stub)
                     .Setup(x => x.Send(It.IsAny<IEnumerable<Message>>()))
@@ -499,14 +531,17 @@
         {
             // Arrange
             DbContextOptions options = new DbContextOptionsBuilder()
-                .UseInMemoryDatabase(databaseName: $"{NewGuid()}")
+                .UseInMemoryDatabase(databaseName: $"{Guid.NewGuid()}")
                 .Options;
 
             var spy = new MessageBusSpy();
-            var sut = new EventStore(() => new EventStoreContext(options), TypeResolver, eventBus: spy);
+            var sut = new EntityFrameworkEventStore(
+                () => new EventStoreContext(options),
+                TypeResolver,
+                eventBus: spy);
 
             var builder = new Fixture();
-            Guid streamId = NewGuid();
+            var streamId = Guid.NewGuid();
             int startVersion = builder.Create<int>();
             Event1 evt1 = builder.Create<Event1>();
             Event2 evt2 = builder.Create<Event2>();
@@ -540,14 +575,17 @@
         {
             // Arrange
             DbContextOptions options = new DbContextOptionsBuilder()
-                .UseInMemoryDatabase(databaseName: $"{NewGuid()}")
+                .UseInMemoryDatabase(databaseName: $"{Guid.NewGuid()}")
                 .Options;
 
             var spy = new MessageBusSpy();
-            var sut = new EventStore(() => new EventStoreContext(options), TypeResolver, eventBus: spy);
+            var sut = new EntityFrameworkEventStore(
+                () => new EventStoreContext(options),
+                TypeResolver,
+                eventBus: spy);
 
             var builder = new Fixture();
-            Guid streamId = NewGuid();
+            var streamId = Guid.NewGuid();
             int startVersion = builder.Create<int>();
             Event1 evt1 = builder.Create<Event1>();
             Event2 evt2 = builder.Create<Event2>();
@@ -567,15 +605,18 @@
         {
             // Arrange
             DbContextOptions options = new DbContextOptionsBuilder()
-                .UseInMemoryDatabase(databaseName: $"{NewGuid()}")
+                .UseInMemoryDatabase(databaseName: $"{Guid.NewGuid()}")
                 .Options;
 
             var messages = new ConcurrentQueue<Message>();
             IMessageBus stub = Mock.Of<IMessageBus>();
 
-            var sut = new EventStore(() => new EventStoreContext(options), TypeResolver, eventBus: stub);
+            var sut = new EntityFrameworkEventStore(
+                () => new EventStoreContext(options),
+                TypeResolver,
+                eventBus: stub);
 
-            Guid streamId = NewGuid();
+            var streamId = Guid.NewGuid();
             var builder = new Fixture();
             int startVersion = builder.Create<int>();
             Event1 evt1 = builder.Create<Event1>();
@@ -612,15 +653,18 @@
         {
             // Arrange
             DbContextOptions options = new DbContextOptionsBuilder()
-                .UseInMemoryDatabase(databaseName: $"{NewGuid()}")
+                .UseInMemoryDatabase(databaseName: $"{Guid.NewGuid()}")
                 .Options;
 
             var messages = new ConcurrentQueue<Message>();
             IMessageBus stub = Mock.Of<IMessageBus>();
 
-            var sut = new EventStore(() => new EventStoreContext(options), TypeResolver, eventBus: stub);
+            var sut = new EntityFrameworkEventStore(
+                () => new EventStoreContext(options),
+                TypeResolver,
+                eventBus: stub);
 
-            Guid streamId = NewGuid();
+            var streamId = Guid.NewGuid();
             var builder = new Fixture();
             int startVersion = builder.Create<int>();
             Event1 evt1 = builder.Create<Event1>();

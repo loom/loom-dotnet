@@ -237,5 +237,6 @@
     <Rule Id="SA1516" Action="Error" /> <!-- Elements must be separated by blank line -->
     <Rule Id="SA1600" Action="None" /> <!-- Elements must be documented -->
     <Rule Id="SA1633" Action="None" /> <!-- File must have header -->
+    <Rule Id="SA1649" Action="Error" /> <!-- File name must match type name -->
   </Rules>
 </RuleSet>
