@@ -1,0 +1,394 @@
+﻿namespace Loom.EventSourcing
+{
+    using System;
+    using System.Collections.Concurrent;
+    using System.Collections.Generic;
+    using System.Collections.Immutable;
+    using System.Linq;
+    using System.Threading.Tasks;
+    using FluentAssertions;
+    using FluentAssertions.Equivalency;
+    using Loom.Messaging;
+    using Loom.Testing;
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Moq;
+
+    public abstract class EventStoreUnitTests<T>
+        where T : IEventCollector, IEventReader
+    {
+        private static readonly TypeResolver _typeResolver = new TypeResolver(
+            new FullNameTypeNameResolvingStrategy(),
+            new FullNameTypeResolvingStrategy());
+
+        protected abstract T GenerateEventStore(TypeResolver typeResolver, IMessageBus eventBus);
+
+        [TestMethod, AutoData]
+        public async Task QueryEvents_restores_events_correctly(
+            IMessageBus eventBus,
+            Guid streamId,
+            Event1 evt1,
+            Event2 evt2,
+            Event3 evt3,
+            Event4 evt4)
+        {
+            // Arrange
+            T sut = GenerateEventStore(_typeResolver, eventBus);
+            var events = new List<object>(
+                from e in new object[] { evt1, evt2, evt3, evt4 }
+                orderby e.GetHashCode()
+                select e);
+
+            await sut.CollectEvents(streamId, startVersion: 1, events);
+
+            // Act
+            IEnumerable<object> actual = await sut.QueryEvents(streamId, fromVersion: 1);
+
+            // Assert
+            actual.Should().BeEquivalentTo(events, c => c.WithStrictOrdering());
+        }
+
+        [TestMethod, AutoData]
+        public async Task QueryEvents_filters_events_by_stream_id(
+            IMessageBus eventBus,
+            Guid streamId,
+            Guid otherStreamId,
+            Event1 evt1,
+            Event2 evt2,
+            Event3 evt3,
+            Event4 evt4)
+        {
+            // Arrange
+            T sut = GenerateEventStore(_typeResolver, eventBus);
+            int startVersion = 1;
+            var events = new List<object>(
+                from e in new object[] { evt1, evt2, evt3, evt4 }
+                orderby e.GetHashCode()
+                select e);
+
+            await sut.CollectEvents(streamId, startVersion, events);
+            await sut.CollectEvents(otherStreamId, startVersion, events);
+
+            // Act
+            IEnumerable<object> actual = await sut.QueryEvents(streamId, fromVersion: 1);
+
+            // Assert
+            actual.Should().BeEquivalentTo(events, c => c.WithStrictOrdering());
+        }
+
+        [TestMethod, AutoData]
+        public async Task QueryEvents_filters_events_by_version(
+            IMessageBus eventBus,
+            Guid streamId,
+            Event1 evt1,
+            Event2 evt2,
+            Event3 evt3,
+            Event4 evt4)
+        {
+            // Arrange
+            T sut = GenerateEventStore(_typeResolver, eventBus);
+            var events = new List<object>(
+                from e in new object[] { evt1, evt2, evt3, evt4 }
+                orderby e.GetHashCode()
+                select e);
+
+            await sut.CollectEvents(streamId, startVersion: 1, events);
+
+            // Act
+            IEnumerable<object> actual = await sut.QueryEvents(streamId, fromVersion: 2);
+
+            // Assert
+            actual.Should().BeEquivalentTo(events.Skip(1), c => c.WithStrictOrdering());
+        }
+
+        [TestMethod, AutoData]
+        public async Task CollectEvents_controls_concurrency(
+            IMessageBus eventBus, Guid streamId, Event4 evt)
+        {
+            // Arrange
+            T sut = GenerateEventStore(_typeResolver, eventBus);
+            int version = 1;
+            object[] events = new[] { evt };
+            await sut.CollectEvents(streamId, startVersion: version, events);
+
+            // Act
+            Func<Task> action = () => sut.CollectEvents(streamId, startVersion: version, events);
+
+            // Assert
+            await action.Should().ThrowAsync<Exception>();
+        }
+
+        [TestMethod, AutoData]
+        public async Task CollectEvents_sends_messages_correctly(
+            Guid streamId,
+            MessageBusSpy spy,
+            int startVersion,
+            Event1 evt1,
+            Event2 evt2,
+            Event3 evt3,
+            Event4 evt4,
+            TracingProperties tracingProperties)
+        {
+            // Arrange
+            T sut = GenerateEventStore(_typeResolver, eventBus: spy);
+            object[] events = new object[] { evt1, evt2, evt3, evt4 };
+
+            // Act
+            await sut.CollectEvents(streamId, startVersion, events, tracingProperties);
+
+            // Assert
+            spy.Calls.Should().ContainSingle();
+
+            ImmutableArray<Message> call = spy.Calls.Single();
+
+            call.Should()
+                .HaveCount(events.Length)
+                .And.OnlyContain(x => x.TracingProperties == tracingProperties);
+
+            VerifyData(call[0].Data, startVersion + 0, evt1);
+            VerifyData(call[1].Data, startVersion + 1, evt2);
+            VerifyData(call[2].Data, startVersion + 2, evt3);
+            VerifyData(call[3].Data, startVersion + 3, evt4);
+
+            void VerifyData<TPayload>(object source,
+                                      long expectedVersion,
+                                      TPayload expectedPayload)
+            {
+                source.Should().BeOfType<StreamEvent<TPayload>>();
+                var data = (StreamEvent<TPayload>)source;
+                data.StreamId.Should().Be(streamId);
+                data.Version.Should().Be(expectedVersion);
+                data.Payload.Should().BeEquivalentTo(expectedPayload);
+            }
+        }
+
+        [TestMethod, AutoData]
+        public async Task CollectEvents_does_not_send_messages_if_it_failed_to_save_events(
+            MessageBusSpy spy, Guid streamId, int version, Event1 evt1, Event2 evt2)
+        {
+            // Arrange
+            T sut = GenerateEventStore(_typeResolver, eventBus: spy);
+            await sut.CollectEvents(streamId, startVersion: version, new[] { evt1 });
+            spy.Clear();
+
+            // Act
+            Func<Task> action = () => sut.CollectEvents(streamId, version, new[] { evt2 });
+
+            // Assert
+            await action.Should().ThrowAsync<Exception>();
+            spy.Calls.Should().BeEmpty();
+        }
+
+        [TestMethod, AutoData]
+        public async Task if_CollectEvents_failed_to_send_messages_it_sends_them_next_time(
+            IMessageBus stub,
+            Guid streamId,
+            int startVersion,
+            Event1 evt1,
+            Event2 evt2,
+            Event3 evt3,
+            Event4 evt4)
+        {
+            // Arrange
+            T sut = GenerateEventStore(_typeResolver, eventBus: stub);
+
+            Mock.Get(stub)
+                .Setup(x => x.Send(It.IsAny<IEnumerable<Message>>()))
+                .ThrowsAsync(new InvalidOperationException());
+
+            try
+            {
+                await sut.CollectEvents(streamId, startVersion, new object[] { evt1, evt2 });
+            }
+            catch
+            {
+            }
+
+            var log = new List<IEnumerable<Message>>();
+
+            Mock.Get(stub)
+                .Setup(x => x.Send(It.IsAny<IEnumerable<Message>>()))
+                .Callback<IEnumerable<Message>>(log.Add)
+                .Returns(Task.CompletedTask);
+
+            // Act
+            await sut.CollectEvents(streamId, startVersion + 2, new object[] { evt3, evt4 });
+
+            // Assert
+            log.Should().HaveCount(2);
+
+            log[0].Select(x => x.Data).Should().BeEquivalentTo(new object[]
+            {
+                new StreamEvent<Event1>(streamId, startVersion + 0, default, evt1),
+                new StreamEvent<Event2>(streamId, startVersion + 1, default, evt2),
+            }, c => c.WithStrictOrdering().Excluding((IMemberInfo m) => m.SelectedMemberInfo.Name == "RaisedTimeUtc"));
+
+            log[1].Select(x => x.Data).Should().BeEquivalentTo(new object[]
+            {
+                new StreamEvent<Event3>(streamId, startVersion + 2, default, evt3),
+                new StreamEvent<Event4>(streamId, startVersion + 3, default, evt4),
+            }, c => c.WithStrictOrdering().Excluding((IMemberInfo m) => m.SelectedMemberInfo.Name == "RaisedTimeUtc"));
+        }
+
+        [TestMethod, AutoData]
+        public async Task CollectEvents_does_not_send_messages_again(
+            MessageBusSpy spy,
+            Guid streamId,
+            int startVersion,
+            Event1 evt1,
+            Event2 evt2,
+            Event3 evt3,
+            Event4 evt4)
+        {
+            // Arrange
+            T sut = GenerateEventStore(_typeResolver, eventBus: spy);
+
+            // Act
+            await sut.CollectEvents(streamId, startVersion, new object[] { evt1, evt2 });
+            await sut.CollectEvents(streamId, startVersion + 2, new object[] { evt3, evt4 });
+
+            // Assert
+            var calls = spy.Calls.ToImmutableArray();
+
+            calls.Should().HaveCount(2);
+
+            calls[0].Select(x => x.Data).Should().BeEquivalentTo(new object[]
+            {
+                new StreamEvent<Event1>(streamId, startVersion + 0, default, evt1),
+                new StreamEvent<Event2>(streamId, startVersion + 1, default, evt2),
+            }, c => c.WithStrictOrdering().Excluding((IMemberInfo m) => m.SelectedMemberInfo.Name == "RaisedTimeUtc"));
+
+            calls[1].Select(x => x.Data).Should().BeEquivalentTo(new object[]
+            {
+                new StreamEvent<Event3>(streamId, startVersion + 2, default, evt3),
+                new StreamEvent<Event4>(streamId, startVersion + 3, default, evt4),
+            }, c => c.WithStrictOrdering().Excluding((IMemberInfo m) => m.SelectedMemberInfo.Name == "RaisedTimeUtc"));
+        }
+
+        [TestMethod, AutoData]
+        public async Task CollectEvents_sets_message_id_properties_to_unique_values(
+            MessageBusSpy spy,
+            Guid streamId,
+            int startVersion,
+            Event1 evt1,
+            Event2 evt2,
+            Event3 evt3,
+            Event4 evt4)
+        {
+            // Arrange
+            T sut = GenerateEventStore(_typeResolver, eventBus: spy);
+
+            // Act
+            await sut.CollectEvents(streamId, startVersion, new object[] { evt1, evt2 });
+            await sut.CollectEvents(streamId, startVersion + 2, new object[] { evt3, evt4 });
+
+            // Assert
+            spy.Calls.SelectMany(x => x).Select(x => x.Id).Should().OnlyHaveUniqueItems();
+        }
+
+        [TestMethod, AutoData]
+        public async Task CollectEvents_preserves_message_id(
+            ConcurrentQueue<Message> messages,
+            IMessageBus stub,
+            Guid streamId,
+            int startVersion,
+            Event1 evt1,
+            Event2 evt2)
+        {
+            // Arrange
+            T sut = GenerateEventStore(_typeResolver, eventBus: stub);
+
+            // Act
+            Mock.Get(stub)
+                .Setup(x => x.Send(It.IsAny<IEnumerable<Message>>()))
+                .Callback<IEnumerable<Message>>(x => x.ForEach(messages.Enqueue))
+                .ThrowsAsync(new InvalidOperationException());
+
+            try
+            {
+                await sut.CollectEvents(streamId, startVersion, new[] { evt1 });
+            }
+            catch
+            {
+            }
+
+            Mock.Get(stub)
+                .Setup(x => x.Send(It.IsAny<IEnumerable<Message>>()))
+                .Callback<IEnumerable<Message>>(x => x.ForEach(messages.Enqueue))
+                .Returns(Task.CompletedTask);
+
+            await sut.CollectEvents(streamId, startVersion + 1, new[] { evt2 });
+
+            // Assert
+            messages.Should().HaveCount(3);
+            messages.Take(2).Select(x => x.Id).Distinct().Should().ContainSingle();
+        }
+
+        [TestMethod, AutoData]
+        public async Task CollectEvents_sets_RaisedTimeUtc_property_correctly(
+            MessageBusSpy spy, Guid streamId, Event1 evt)
+        {
+            // Arrange
+            T sut = GenerateEventStore(_typeResolver, eventBus: spy);
+            int startVersion = 1;
+            DateTime nowUtc = DateTime.UtcNow;
+
+            // Act
+            await sut.CollectEvents(streamId, startVersion, new[] { evt });
+
+            // Assert
+            Message message = spy.Calls.SelectMany(x => x).Single();
+            DateTime actual = message.Data.As<StreamEvent<Event1>>().RaisedTimeUtc;
+            actual.Kind.Should().Be(DateTimeKind.Utc);
+            actual.Should().BeCloseTo(nowUtc, precision: 1000);
+        }
+
+        [TestMethod, AutoData]
+        public async Task CollectEvents_preserves_RaisedTimeUtc_property(
+            ConcurrentQueue<Message> messages,
+            IMessageBus stub,
+            Guid streamId,
+            int startVersion,
+            Event1 evt1,
+            Event2 evt2)
+        {
+            // Arrange
+            T sut = GenerateEventStore(_typeResolver, eventBus: stub);
+
+            // Act
+            Mock.Get(stub)
+                .Setup(x => x.Send(It.IsAny<IEnumerable<Message>>()))
+                .Callback<IEnumerable<Message>>(x => x.ForEach(messages.Enqueue))
+                .ThrowsAsync(new InvalidOperationException());
+
+            try
+            {
+                await sut.CollectEvents(streamId, startVersion, new[] { evt1 });
+            }
+            catch
+            {
+            }
+
+            await Task.Delay(millisecondsDelay: 100);
+
+            Mock.Get(stub)
+                .Setup(x => x.Send(It.IsAny<IEnumerable<Message>>()))
+                .Callback<IEnumerable<Message>>(x => x.ForEach(messages.Enqueue))
+                .Returns(Task.CompletedTask);
+
+            await sut.CollectEvents(streamId, startVersion + 1, new[] { evt2 });
+
+            // Assert
+            messages.Should()
+                    .HaveCount(3)
+                    .And
+                    .Subject
+                    .Take(2)
+                    .Select(x => x.Data)
+                    .Cast<StreamEvent<Event1>>()
+                    .Select(x => x.RaisedTimeUtc)
+                    .Distinct()
+                    .Should()
+                    .ContainSingle();
+        }
+    }
+}

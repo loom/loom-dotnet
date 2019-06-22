@@ -21,5 +21,7 @@
             _calls.Enqueue(messages.ToImmutableArray());
             return Task.CompletedTask;
         }
+
+        public void Clear() => _calls.Clear();
     }
 }

@@ -149,7 +149,7 @@
             {
                 entity.StreamId,
                 entity.Version,
-                entity.RaisedTimeUtc,
+                new DateTime(entity.RaisedTimeUtc.Ticks, DateTimeKind.Utc),
                 JsonConvert.DeserializeObject(entity.Payload, type),
             });
         }

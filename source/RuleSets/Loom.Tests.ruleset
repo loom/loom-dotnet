@@ -224,6 +224,7 @@
     <Rule Id="SA1102" Action="None" /> <!-- Query clause should follow previous clause -->
     <Rule Id="SA1116" Action="None" /> <!-- Split parameters must start on line after declaration -->
     <Rule Id="SA1122" Action="Error" /> <!-- Use string empty for empty strings -->
+    <Rule Id="SA1133" Action="None" /> <!-- Do not combine attributes -->
     <Rule Id="SA1200" Action="Error" /> <!-- Using directives must be placed correctly -->
     <Rule Id="SA1201" Action="None" /> <!-- Elements must appear in the correct order -->
     <Rule Id="SA1202" Action="None" /> <!-- Elements must be ordered by access -->
