@@ -11,6 +11,7 @@
 
         internal PendingEvent(StreamEvent source)
         {
+            EntityType = source.EntityType;
             StreamId = source.StreamId;
             Version = source.Version;
             RaisedTimeUtc = source.RaisedTimeUtc;
@@ -22,6 +23,8 @@
             ParentId = source.ParentId;
             Transaction = source.Transaction;
         }
+
+        public string EntityType { get; private set; }
 
         public Guid StreamId { get; private set; }
 
