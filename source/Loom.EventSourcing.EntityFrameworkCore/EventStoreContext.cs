@@ -27,14 +27,14 @@
         private static void ConfigureStreamEventEntity(EntityTypeBuilder<StreamEvent> entity)
         {
             entity.HasKey(e => e.Sequence);
-            entity.HasIndex(e => new { e.EntityType, e.StreamId, e.Version }).IsUnique();
+            entity.HasIndex(e => new { e.StateType, e.StreamId, e.Version }).IsUnique();
             entity.Property(e => e.EventType).IsRequired();
             entity.Property(e => e.Payload).IsRequired();
         }
 
         private static void ConfigurePendingEventEntity(EntityTypeBuilder<PendingEvent> entity)
         {
-            entity.HasKey(e => new { e.EntityType, e.StreamId, e.Version });
+            entity.HasKey(e => new { e.StateType, e.StreamId, e.Version });
             entity.Ignore(e => e.TracingProperties);
         }
     }

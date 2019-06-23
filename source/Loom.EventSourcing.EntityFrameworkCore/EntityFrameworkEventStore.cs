@@ -10,7 +10,7 @@
     using Microsoft.EntityFrameworkCore;
     using Newtonsoft.Json;
 
-    public class EntityFrameworkEventStore<TEntity> :
+    public class EntityFrameworkEventStore<T> :
         IEventCollector, IEventReader
     {
         private readonly Func<EventStoreContext> _contextFactory;
@@ -32,7 +32,7 @@
                                   IEnumerable<object> events,
                                   TracingProperties tracingProperties = default)
         {
-            return SaveAndPublish(entityType: _typeResolver.ResolveTypeName<TEntity>(),
+            return SaveAndPublish(stateType: _typeResolver.ResolveTypeName<T>(),
                                   transaction: Guid.NewGuid(),
                                   streamId,
                                   startVersion,
@@ -40,7 +40,7 @@
                                   tracingProperties);
         }
 
-        private async Task SaveAndPublish(string entityType,
+        private async Task SaveAndPublish(string stateType,
                                           Guid transaction,
                                           Guid streamId,
                                           long startVersion,
@@ -59,7 +59,7 @@
                         object source = events[i];
 
                         var streamEvent = new StreamEvent(
-                            entityType,
+                            stateType,
                             streamId,
                             version: startVersion + i,
                             raisedTimeUtc: DateTime.UtcNow,
@@ -86,7 +86,7 @@
                     IQueryable<PendingEvent> query =
                         from pendingEvent in context.PendingEvents
                         where
-                            pendingEvent.EntityType == entityType &&
+                            pendingEvent.StateType == stateType &&
                             pendingEvent.StreamId == streamId
                         orderby pendingEvent.Version
                         select pendingEvent;
@@ -166,12 +166,12 @@
         {
             using (EventStoreContext context = _contextFactory.Invoke())
             {
-                string entityType = _typeResolver.ResolveTypeName<TEntity>();
+                string stateType = _typeResolver.ResolveTypeName<T>();
 
                 IQueryable<StreamEvent> query =
                     from e in context.StreamEvents
                     where
-                        e.EntityType == entityType &&
+                        e.StateType == stateType &&
                         e.StreamId == streamId &&
                         e.Version >= fromVersion
                     orderby e.Version ascending

@@ -10,7 +10,7 @@
     using Microsoft.Azure.Cosmos.Table;
     using Newtonsoft.Json;
 
-    public class TableEventStore<TEntity> : IEventCollector, IEventReader
+    public class TableEventStore<T> : IEventCollector, IEventReader
     {
         private readonly CloudTable _table;
         private readonly TypeResolver _typeResolver;
@@ -28,7 +28,7 @@
                                   IEnumerable<object> events,
                                   TracingProperties tracingProperties = default)
         {
-            return SaveAndPublish(entityType: _typeResolver.ResolveTypeName<TEntity>(),
+            return SaveAndPublish(stateType: _typeResolver.ResolveTypeName<T>(),
                                   transaction: Guid.NewGuid(),
                                   streamId,
                                   startVersion,
@@ -36,7 +36,7 @@
                                   tracingProperties);
         }
 
-        private async Task SaveAndPublish(string entityType,
+        private async Task SaveAndPublish(string stateType,
                                           Guid transaction,
                                           Guid streamId,
                                           long startVersion,
@@ -49,7 +49,7 @@
 
             Task SaveQueueTicket()
             {
-                var queueTicket = new QueueTicket(entityType, streamId, startVersion, events.Length, transaction);
+                var queueTicket = new QueueTicket(stateType, streamId, startVersion, events.Length, transaction);
                 return _table.ExecuteAsync(TableOperation.Insert(queueTicket));
             }
 
@@ -62,7 +62,7 @@
                     object source = events[i];
 
                     var streamEvent = new StreamEvent(
-                        entityType,
+                        stateType,
                         streamId,
                         version: startVersion + i,
                         raisedTimeUtc: DateTime.UtcNow,
@@ -82,7 +82,7 @@
 
             async Task PublishPendingEvents()
             {
-                TableQuery<QueueTicket> query = QueueTicket.CreateQuery(entityType, streamId).OrderBy("RowKey");
+                TableQuery<QueueTicket> query = QueueTicket.CreateQuery(stateType, streamId).OrderBy("RowKey");
                 foreach (QueueTicket queueTicket in await ExecuteQuery(query).ConfigureAwait(continueOnCapturedContext: false))
                 {
                     await PublishEvents(queueTicket).ConfigureAwait(continueOnCapturedContext: false);
@@ -127,8 +127,8 @@
         public async Task<IEnumerable<object>> QueryEvents(
             Guid streamId, long fromVersion)
         {
-            string entityType = _typeResolver.ResolveTypeName<TEntity>();
-            TableQuery<StreamEvent> query = StreamEvent.CreateQuery(entityType, streamId, fromVersion);
+            string stateType = _typeResolver.ResolveTypeName<T>();
+            TableQuery<StreamEvent> query = StreamEvent.CreateQuery(stateType, streamId, fromVersion);
             IEnumerable<StreamEvent> streamEvents = await ExecuteQuery(query).ConfigureAwait(continueOnCapturedContext: false);
             return streamEvents.Select(DeserializeEvent).ToImmutableArray();
         }

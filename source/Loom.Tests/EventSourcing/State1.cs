@@ -1,6 +1,6 @@
 ﻿namespace Loom.EventSourcing
 {
-    public sealed class Entity1
+    public sealed class State1
     {
     }
 }

@@ -11,7 +11,7 @@
 
         internal PendingEvent(StreamEvent source)
         {
-            EntityType = source.EntityType;
+            StateType = source.StateType;
             StreamId = source.StreamId;
             Version = source.Version;
             RaisedTimeUtc = source.RaisedTimeUtc;
@@ -24,7 +24,7 @@
             Transaction = source.Transaction;
         }
 
-        public string EntityType { get; private set; }
+        public string StateType { get; private set; }
 
         public Guid StreamId { get; private set; }
 

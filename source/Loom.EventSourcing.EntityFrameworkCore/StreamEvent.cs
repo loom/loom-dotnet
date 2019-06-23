@@ -8,7 +8,7 @@
         {
         }
 
-        public StreamEvent(string entityType,
+        public StreamEvent(string stateType,
                            Guid streamId,
                            long version,
                            DateTime raisedTimeUtc,
@@ -20,7 +20,7 @@
                            string parentId,
                            Guid transaction)
         {
-            EntityType = entityType;
+            StateType = stateType;
             StreamId = streamId;
             Version = version;
             RaisedTimeUtc = raisedTimeUtc;
@@ -35,7 +35,7 @@
 
         public long Sequence { get; private set; }
 
-        public string EntityType { get; private set; }
+        public string StateType { get; private set; }
 
         public Guid StreamId { get; private set; }
 

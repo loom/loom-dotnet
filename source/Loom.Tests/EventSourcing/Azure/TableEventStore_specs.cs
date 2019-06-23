@@ -11,17 +11,17 @@
 
     [TestClass]
     public class TableEventStore_specs :
-        EventStoreUnitTests<TableEventStore<Entity1>>
+        EventStoreUnitTests<TableEventStore<State1>>
     {
-        protected override TableEventStore<Entity1> GenerateEventStore(
+        protected override TableEventStore<State1> GenerateEventStore(
             TypeResolver typeResolver, IMessageBus eventBus)
         {
             CloudTable table = StorageEmulator.EventStoreTable;
-            return new TableEventStore<Entity1>(table, typeResolver, eventBus);
+            return new TableEventStore<State1>(table, typeResolver, eventBus);
         }
 
         [TestMethod, AutoData]
-        public async Task sut_supports_multiple_entity_types_having_same_stream_id(
+        public async Task sut_supports_multiple_state_types_having_same_stream_id(
             IMessageBus eventBus, Guid streamId, Event1 evt1, Event2 evt2)
         {
             // Arrange
@@ -31,8 +31,8 @@
                 new FullNameTypeNameResolvingStrategy(),
                 new FullNameTypeResolvingStrategy());
 
-            var store1 = new TableEventStore<Entity1>(table, typeResolver, eventBus);
-            var store2 = new TableEventStore<Entity2>(table, typeResolver, eventBus);
+            var store1 = new TableEventStore<State1>(table, typeResolver, eventBus);
+            var store2 = new TableEventStore<State2>(table, typeResolver, eventBus);
 
             int startVersion = 1;
 
