@@ -35,8 +35,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Loom.EventSourcing\Loom.EventSourcing.csproj" />
-    <ProjectReference Include="..\Loom.Messaging\Loom.Messaging.csproj" />
+    <ProjectReference Include="..\Loom.EventSourcing.Abstraction\Loom.EventSourcing.Abstraction.csproj" />
+    <ProjectReference Include="..\Loom.Messaging.Abstraction\Loom.Messaging.Abstraction.csproj" />
   </ItemGroup>
 
 </Project>
