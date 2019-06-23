@@ -2,7 +2,6 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Collections.Immutable;
     using System.Linq;
     using System.Reflection;
     using System.Threading.Tasks;
@@ -32,7 +31,7 @@
                                   transaction: Guid.NewGuid(),
                                   streamId,
                                   startVersion,
-                                  events.ToImmutableArray(),
+                                  events.ToList().AsReadOnly(),
                                   tracingProperties);
         }
 
@@ -40,7 +39,7 @@
                                           Guid transaction,
                                           Guid streamId,
                                           long startVersion,
-                                          ImmutableArray<object> events,
+                                          IReadOnlyList<object> events,
                                           TracingProperties tracingProperties)
         {
             await SaveQueueTicket().ConfigureAwait(continueOnCapturedContext: false);
@@ -49,7 +48,7 @@
 
             Task SaveQueueTicket()
             {
-                var queueTicket = new QueueTicket(stateType, streamId, startVersion, events.Length, transaction);
+                var queueTicket = new QueueTicket(stateType, streamId, startVersion, events.Count, transaction);
                 return _table.ExecuteAsync(TableOperation.Insert(queueTicket));
             }
 
@@ -57,7 +56,7 @@
             {
                 var batch = new TableBatchOperation();
 
-                for (int i = 0; i < events.Length; i++)
+                for (int i = 0; i < events.Count; i++)
                 {
                     object source = events[i];
 
@@ -130,7 +129,7 @@
             string stateType = _typeResolver.ResolveTypeName<T>();
             TableQuery<StreamEvent> query = StreamEvent.CreateQuery(stateType, streamId, fromVersion);
             IEnumerable<StreamEvent> streamEvents = await ExecuteQuery(query).ConfigureAwait(continueOnCapturedContext: false);
-            return streamEvents.Select(DeserializeEvent).ToImmutableArray();
+            return streamEvents.Select(DeserializeEvent).ToList().AsReadOnly();
         }
 
         private async Task<IEnumerable<TElement>> ExecuteQuery<TElement>(
@@ -150,7 +149,7 @@
             }
             while (continuation != default);
 
-            return results.ToImmutableArray();
+            return results.ToList();
         }
 
         private object DeserializeEvent(StreamEvent streamEvent)

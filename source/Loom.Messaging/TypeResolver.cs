@@ -2,13 +2,12 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Collections.Immutable;
     using System.Linq;
     using System.Reflection;
 
     public sealed class TypeResolver
     {
-        private static readonly Lazy<ImmutableArray<Type>> _types = new Lazy<ImmutableArray<Type>>(GetAllTypes);
+        private static readonly Lazy<IReadOnlyList<Type>> _types = new Lazy<IReadOnlyList<Type>>(GetAllTypes);
 
         private readonly ITypeNameResolvingStrategy _typeNameResolvingStrategy;
         private readonly ITypeResolvingStrategy _typeResolvingStrategy;
@@ -21,7 +20,7 @@
             _typeResolvingStrategy = typeResolvingStrategy;
         }
 
-        private static ImmutableArray<Type> GetAllTypes()
+        private static IReadOnlyList<Type> GetAllTypes()
         {
             AppDomain appDomain = AppDomain.CurrentDomain;
 
@@ -38,7 +37,7 @@
                 from type in assembly.GetTypes()
                 select type;
 
-            return query.ToImmutableArray();
+            return query.ToList().AsReadOnly();
         }
 
         public string ResolveTypeName(Type type)

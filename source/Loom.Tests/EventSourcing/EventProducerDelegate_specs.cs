@@ -2,12 +2,12 @@
 {
     using System;
     using System.Collections.Generic;
-    using AutoFixture;
     using FluentAssertions;
+    using Loom.Testing;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
-    public class ConventionalEventProducer_specs
+    public class EventProducerDelegate_specs
     {
         public class State
         {
@@ -31,9 +31,9 @@
             public int Value { get; }
         }
 
-        public class EventProducer : ConventionalEventProducer<State>
+        public class EventProducer
         {
-            private IEnumerable<object> ProduceEvents(
+            public IEnumerable<object> ProduceEvents(
                 State state, DecreaseValueTwice command)
             {
                 int seed = state.Value;
@@ -43,39 +43,35 @@
         }
 
         [TestMethod]
+        public void sut_is_sealed()
+        {
+            typeof(EventProducerDelegate<>).Should().BeSealed();
+        }
+
+        [TestMethod]
         public void sut_implements_IEventProducerT()
         {
-            Type sut = typeof(ConventionalEventProducer<State>);
+            Type sut = typeof(EventProducerDelegate<State>);
             sut.Should().Implement<IEventProducer<State>>();
         }
 
-        [TestMethod]
-        public void given_unknown_command_then_ProduceEvents_throws_exception()
+        [TestMethod, AutoData]
+        public void given_unknown_command_then_ProduceEvents_throws_exception(
+            EventProducer producer, State state, UnknownCommand command)
         {
-            // Arrange
-            IEventProducer<State> sut = new EventProducer();
-            State state = new Fixture().Create<State>();
-            object command = new UnknownCommand();
-
-            // Act
+            var sut = new EventProducerDelegate<State>(producer);
             Action action = () => sut.ProduceEvents(state, command);
-
-            // Assert
             action.Should().Throw<InvalidOperationException>();
         }
 
-        [TestMethod]
-        public void given_known_command_then_ProduceEvents_returns_events_correctly()
+        [TestMethod, AutoData]
+        public void given_known_command_then_ProduceEvents_returns_events_correctly(
+            EventProducer producer, State state, DecreaseValueTwice command)
         {
-            // Arrange
-            IEventProducer<State> sut = new EventProducer();
-            State state = new Fixture().Create<State>();
-            object command = new DecreaseValueTwice();
+            var sut = new EventProducerDelegate<State>(producer);
 
-            // Act
             IEnumerable<object> actual = sut.ProduceEvents(state, command);
 
-            // Assert
             actual.Should().BeEquivalentTo(
                 new ValueChanged(state.Value - 1),
                 new ValueChanged(state.Value - 2));

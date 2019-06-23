@@ -2,14 +2,13 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Collections.Immutable;
     using System.Linq;
     using System.Reflection;
 
     public sealed class EventHandlerDelegate<T> : IEventHandler<T>
     {
         private readonly object _handler;
-        private readonly ImmutableDictionary<Type, MethodInfo> _functions;
+        private readonly IReadOnlyDictionary<Type, MethodInfo> _functions;
 
         public EventHandlerDelegate(object handler)
         {
@@ -37,7 +36,7 @@
 
                 select (eventType, function: method);
 
-            _functions = query.ToImmutableDictionary(
+            _functions = query.ToDictionary(
                 keySelector: t => t.eventType,
                 elementSelector: t => t.function);
         }
