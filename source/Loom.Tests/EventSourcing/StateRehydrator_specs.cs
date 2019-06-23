@@ -7,6 +7,7 @@
     using AutoFixture;
     using AutoFixture.Kernel;
     using FluentAssertions;
+    using Loom.Testing;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
@@ -31,7 +32,7 @@
             public int Amount { get; }
         }
 
-        public class EventHandler : ConventionalEventHandler<State>
+        public class EventHandler
         {
             public State HandleEvent(State state, ValueAdded valueAdded)
             {
@@ -48,12 +49,11 @@
             sut.Should().Implement<IStateRehydrator<State>>();
         }
 
-        [TestMethod]
-        public async Task given_no_snapshot_and_no_event_then_TryRehydrateState_returns_null()
+        [TestMethod, AutoData]
+        public async Task given_no_snapshot_and_no_event_then_TryRehydrateState_returns_null(
+            EventHandler handler, Guid streamId)
         {
             // Arrange
-            var streamId = Guid.NewGuid();
-
             ISnapshotReader<State> snapshotReader =
                 new DelegatingSnapshotReader<State>(
                     stream => Task.FromResult<State>(default));
@@ -63,7 +63,7 @@
                     (stream, from) =>
                     Task.FromResult(Enumerable.Empty<object>()));
 
-            IEventHandler<State> eventHandler = new EventHandler();
+            IEventHandler<State> eventHandler = new EventHandlerDelegate<State>(handler);
 
             var sut = new StateRehydrator<State>(
                 snapshotReader, eventReader, eventHandler);
@@ -75,20 +75,16 @@
             actual.Should().BeNull();
         }
 
-        [TestMethod]
-        public async Task given_no_snapshot_and_some_events_then_TryRehydrateState_restores_state_correctly()
+        [TestMethod, AutoData]
+        public async Task given_no_snapshot_and_some_events_then_TryRehydrateState_restores_state_correctly(
+            Generator<ValueAdded> generator, Guid streamId, EventHandler handler)
         {
             // Arrange
-            var streamId = Guid.NewGuid();
-
             ISnapshotReader<State> snapshotReader =
                 new DelegatingSnapshotReader<State>(
                     stream => Task.FromResult<State>(default));
 
-            var gen = new Generator<ValueAdded>(new Fixture());
-
-            var events = new List<object>(
-                gen.Where(x => x.Amount >= 0).Take(10));
+            var events = new List<object>(generator.Where(x => x.Amount >= 0).Take(10));
 
             IEventReader eventReader =
                 new DelegatingEventReader(
@@ -96,7 +92,7 @@
                     ? Task.FromResult(events.Skip((int)from - 1))
                     : Task.FromResult(Enumerable.Empty<object>()));
 
-            IEventHandler<State> eventHandler = new EventHandler();
+            IEventHandler<State> eventHandler = new EventHandlerDelegate<State>(handler);
 
             var sut = new StateRehydrator<State>(
                 snapshotReader, eventReader, eventHandler);
@@ -110,16 +106,13 @@
             actual.Should().BeEquivalentTo(expected);
         }
 
-        [TestMethod]
-        public async Task given_snapshot_and_no_event_then_TryRehydrateState_returns_snapshot_directly()
+        [TestMethod, AutoData]
+        public async Task given_snapshot_and_no_event_then_TryRehydrateState_returns_snapshot_directly(
+            IFixture builder, Guid streamId, EventHandler handler)
         {
             // Arrange
-            var streamId = Guid.NewGuid();
-
-            var builder = new Fixture();
             var methodQuery = new GreedyConstructorQuery();
             builder.Customizations.Add(new MethodInvoker(methodQuery));
-
             State snapshot = builder.Create<State>();
 
             ISnapshotReader<State> snapshotReader =
@@ -133,7 +126,7 @@
                     (stream, from) =>
                     Task.FromResult(Enumerable.Empty<object>()));
 
-            IEventHandler<State> eventHandler = new EventHandler();
+            IEventHandler<State> eventHandler = new EventHandlerDelegate<State>(handler);
 
             var sut = new StateRehydrator<State>(
                 snapshotReader, eventReader, eventHandler);
@@ -145,16 +138,13 @@
             actual.Should().BeSameAs(snapshot);
         }
 
-        [TestMethod]
-        public async Task given_snapshot_and_some_events_then_TryRehydrateState_restores_state_correctly()
+        [TestMethod, AutoData]
+        public async Task given_snapshot_and_some_events_then_TryRehydrateState_restores_state_correctly(
+            IFixture builder, Generator<ValueAdded> generator, Guid streamId, EventHandler handler)
         {
             // Arrange
-            var streamId = Guid.NewGuid();
-
-            var builder = new Fixture();
             var methodQuery = new GreedyConstructorQuery();
             builder.Customizations.Add(new MethodInvoker(methodQuery));
-
             State snapshot = builder.Create<State>();
 
             ISnapshotReader<State> snapshotReader =
@@ -163,10 +153,7 @@
                     ? Task.FromResult(snapshot)
                     : Task.FromResult<State>(default));
 
-            var gen = new Generator<ValueAdded>(builder);
-
-            var events = new List<object>(
-                gen.Where(x => x.Amount >= 0).Take(10));
+            var events = new List<object>(generator.Where(x => x.Amount >= 0).Take(10));
 
             IEventReader eventReader =
                 new DelegatingEventReader(
@@ -175,7 +162,7 @@
                     ? Task.FromResult(events.AsEnumerable())
                     : Task.FromResult(Enumerable.Empty<object>()));
 
-            IEventHandler<State> eventHandler = new EventHandler();
+            IEventHandler<State> eventHandler = new EventHandlerDelegate<State>(handler);
 
             var sut = new StateRehydrator<State>(
                 snapshotReader, eventReader, eventHandler);
