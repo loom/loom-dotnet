@@ -1,0 +1,17 @@
+version: 0.1.{build}
+image: Visual Studio 2017
+configuration: Release
+before_build:
+- cmd: nuget restore source\Loom.sln
+build:
+  verbosity: minimal
+  project: source\Loom.sln
+after_build:
+test: off
+artifacts:
+- path: '**\Loom**.nupkg'
+deploy:
+- provider: NuGet
+  api_key:
+    secure: lsntLeh0+0gJFZSpHd88aml765YgNzvYWQo+uQVm4LFw3fhOk5F874QdqyvvPCZw
+  artifact: /.*\.nupkg/
