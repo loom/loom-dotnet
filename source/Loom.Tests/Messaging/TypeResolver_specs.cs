@@ -1,7 +1,6 @@
 ﻿namespace Loom.Messaging
 {
     using System;
-    using System.Linq;
     using FluentAssertions;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Moq;
@@ -41,7 +40,7 @@
             Type type = GetTypeFromReferencedAssembly();
 
             var typeResolvingStrategy = new DelegatingTypeResolvingStrategy(
-                (types, typeName) => types.Single(t => t.FullName == typeName));
+                typeName => typeName == type.FullName ? type : default);
 
             var sut = new TypeResolver(
                 Mock.Of<ITypeNameResolvingStrategy>(), typeResolvingStrategy);

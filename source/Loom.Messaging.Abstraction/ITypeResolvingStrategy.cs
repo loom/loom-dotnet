@@ -6,6 +6,6 @@
     public interface ITypeResolvingStrategy
     {
         // TODO: Change return type to Type?.
-        Type TryResolveType(IEnumerable<Type> types, string typeName);
+        Type TryResolveType(string typeName);
     }
 }
