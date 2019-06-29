@@ -1,9 +1,8 @@
 ﻿namespace Loom.EventSourcing
 {
     using System;
-    using Loom.Messaging;
 
-    public sealed class StreamEvent<T> : IPartitioned
+    public sealed class StreamEvent<T>
     {
         public StreamEvent(Guid streamId, long version, DateTime raisedTimeUtc, T payload)
         {
@@ -20,7 +19,5 @@
         public DateTime RaisedTimeUtc { get; }
 
         public T Payload { get; }
-
-        public string PartitionKey => $"{StreamId}";
     }
 }

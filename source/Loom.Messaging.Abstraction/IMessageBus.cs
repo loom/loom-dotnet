@@ -5,6 +5,6 @@
 
     public interface IMessageBus
     {
-        Task Send(IEnumerable<Message> messages);
+        Task Send(IEnumerable<Message> messages, string partitionKey);
     }
 }

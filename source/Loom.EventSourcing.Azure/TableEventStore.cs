@@ -93,7 +93,8 @@
         {
             TableQuery<StreamEvent> query = StreamEvent.CreateQuery(queueTicket);
             IEnumerable<StreamEvent> streamEvents = await ExecuteQuery(query).ConfigureAwait(continueOnCapturedContext: false);
-            await _eventBus.Send(streamEvents.Select(GenerateMessage)).ConfigureAwait(continueOnCapturedContext: false);
+            string partitionKey = $"{queueTicket.StreamId}";
+            await _eventBus.Send(streamEvents.Select(GenerateMessage), partitionKey).ConfigureAwait(continueOnCapturedContext: false);
             await _table.ExecuteAsync(TableOperation.Delete(queueTicket)).ConfigureAwait(continueOnCapturedContext: false);
         }
 

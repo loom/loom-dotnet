@@ -94,7 +94,8 @@
                     List<PendingEvent> pendingEvents = await query.ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
                     foreach (IEnumerable<PendingEvent> window in Window(pendingEvents))
                     {
-                        await _eventBus.Send(window.Select(GenerateMessage)).ConfigureAwait(continueOnCapturedContext: false);
+                        string partitionKey = $"{streamId}";
+                        await _eventBus.Send(window.Select(GenerateMessage), partitionKey).ConfigureAwait(continueOnCapturedContext: false);
                         context.PendingEvents.RemoveRange(window);
                         await context.SaveChangesAsync().ConfigureAwait(continueOnCapturedContext: false);
                     }

@@ -138,16 +138,16 @@
             // Assert
             spy.Calls.Should().ContainSingle();
 
-            ImmutableArray<Message> call = spy.Calls.Single();
+            (ImmutableArray<Message> msgs, string pk) = spy.Calls.Single();
 
-            call.Should()
+            msgs.Should()
                 .HaveCount(events.Length)
                 .And.OnlyContain(x => x.TracingProperties == tracingProperties);
 
-            VerifyData(call[0].Data, startVersion + 0, evt1);
-            VerifyData(call[1].Data, startVersion + 1, evt2);
-            VerifyData(call[2].Data, startVersion + 2, evt3);
-            VerifyData(call[3].Data, startVersion + 3, evt4);
+            VerifyData(msgs[0].Data, startVersion + 0, evt1);
+            VerifyData(msgs[1].Data, startVersion + 1, evt2);
+            VerifyData(msgs[2].Data, startVersion + 2, evt3);
+            VerifyData(msgs[3].Data, startVersion + 3, evt4);
 
             void VerifyData<TPayload>(object source,
                                       long expectedVersion,
@@ -159,6 +159,8 @@
                 data.Version.Should().Be(expectedVersion);
                 data.Payload.Should().BeEquivalentTo(expectedPayload);
             }
+
+            pk.Should().Be($"{streamId}");
         }
 
         [TestMethod, AutoData]
@@ -192,7 +194,7 @@
             T sut = GenerateEventStore(_typeResolver, eventBus: stub);
 
             Mock.Get(stub)
-                .Setup(x => x.Send(It.IsAny<IEnumerable<Message>>()))
+                .Setup(x => x.Send(It.IsAny<IEnumerable<Message>>(), It.IsAny<string>()))
                 .ThrowsAsync(new InvalidOperationException());
 
             try
@@ -203,11 +205,11 @@
             {
             }
 
-            var log = new List<IEnumerable<Message>>();
+            var log = new List<(IEnumerable<Message> messages, string partitionKey)>();
 
             Mock.Get(stub)
-                .Setup(x => x.Send(It.IsAny<IEnumerable<Message>>()))
-                .Callback<IEnumerable<Message>>(log.Add)
+                .Setup(x => x.Send(It.IsAny<IEnumerable<Message>>(), It.IsAny<string>()))
+                .Callback<IEnumerable<Message>, string>((msgs, pk) => log.Add((msgs, pk)))
                 .Returns(Task.CompletedTask);
 
             // Act
@@ -216,17 +218,19 @@
             // Assert
             log.Should().HaveCount(2);
 
-            log[0].Select(x => x.Data).Should().BeEquivalentTo(new object[]
+            log[0].messages.Select(x => x.Data).Should().BeEquivalentTo(new object[]
             {
                 new StreamEvent<Event1>(streamId, startVersion + 0, default, evt1),
                 new StreamEvent<Event2>(streamId, startVersion + 1, default, evt2),
             }, c => c.WithStrictOrdering().Excluding((IMemberInfo m) => m.SelectedMemberInfo.Name == "RaisedTimeUtc"));
+            log[0].partitionKey.Should().Be($"{streamId}");
 
-            log[1].Select(x => x.Data).Should().BeEquivalentTo(new object[]
+            log[1].messages.Select(x => x.Data).Should().BeEquivalentTo(new object[]
             {
                 new StreamEvent<Event3>(streamId, startVersion + 2, default, evt3),
                 new StreamEvent<Event4>(streamId, startVersion + 3, default, evt4),
             }, c => c.WithStrictOrdering().Excluding((IMemberInfo m) => m.SelectedMemberInfo.Name == "RaisedTimeUtc"));
+            log[1].partitionKey.Should().Be($"{streamId}");
         }
 
         [TestMethod, AutoData]
@@ -251,17 +255,19 @@
 
             calls.Should().HaveCount(2);
 
-            calls[0].Select(x => x.Data).Should().BeEquivalentTo(new object[]
+            calls[0].messages.Select(x => x.Data).Should().BeEquivalentTo(new object[]
             {
                 new StreamEvent<Event1>(streamId, startVersion + 0, default, evt1),
                 new StreamEvent<Event2>(streamId, startVersion + 1, default, evt2),
             }, c => c.WithStrictOrdering().Excluding((IMemberInfo m) => m.SelectedMemberInfo.Name == "RaisedTimeUtc"));
+            calls[0].partitionKey.Should().Be($"{streamId}");
 
-            calls[1].Select(x => x.Data).Should().BeEquivalentTo(new object[]
+            calls[1].messages.Select(x => x.Data).Should().BeEquivalentTo(new object[]
             {
                 new StreamEvent<Event3>(streamId, startVersion + 2, default, evt3),
                 new StreamEvent<Event4>(streamId, startVersion + 3, default, evt4),
             }, c => c.WithStrictOrdering().Excluding((IMemberInfo m) => m.SelectedMemberInfo.Name == "RaisedTimeUtc"));
+            calls[1].partitionKey.Should().Be($"{streamId}");
         }
 
         [TestMethod, AutoData]
@@ -282,7 +288,7 @@
             await sut.CollectEvents(streamId, startVersion + 2, new object[] { evt3, evt4 });
 
             // Assert
-            spy.Calls.SelectMany(x => x).Select(x => x.Id).Should().OnlyHaveUniqueItems();
+            spy.Calls.SelectMany(x => x.messages).Select(x => x.Id).Should().OnlyHaveUniqueItems();
         }
 
         [TestMethod, AutoData]
@@ -299,8 +305,8 @@
 
             // Act
             Mock.Get(stub)
-                .Setup(x => x.Send(It.IsAny<IEnumerable<Message>>()))
-                .Callback<IEnumerable<Message>>(x => x.ForEach(messages.Enqueue))
+                .Setup(x => x.Send(It.IsAny<IEnumerable<Message>>(), It.IsAny<string>()))
+                .Callback<IEnumerable<Message>, string>((x, _) => x.ForEach(messages.Enqueue))
                 .ThrowsAsync(new InvalidOperationException());
 
             try
@@ -312,8 +318,8 @@
             }
 
             Mock.Get(stub)
-                .Setup(x => x.Send(It.IsAny<IEnumerable<Message>>()))
-                .Callback<IEnumerable<Message>>(x => x.ForEach(messages.Enqueue))
+                .Setup(x => x.Send(It.IsAny<IEnumerable<Message>>(), It.IsAny<string>()))
+                .Callback<IEnumerable<Message>, string>((x, _) => x.ForEach(messages.Enqueue))
                 .Returns(Task.CompletedTask);
 
             await sut.CollectEvents(streamId, startVersion + 1, new[] { evt2 });
@@ -336,7 +342,7 @@
             await sut.CollectEvents(streamId, startVersion, new[] { evt });
 
             // Assert
-            Message message = spy.Calls.SelectMany(x => x).Single();
+            Message message = spy.Calls.SelectMany(x => x.messages).Single();
             DateTime actual = message.Data.As<StreamEvent<Event1>>().RaisedTimeUtc;
             actual.Kind.Should().Be(DateTimeKind.Utc);
             actual.Should().BeCloseTo(nowUtc, precision: 1000);
@@ -356,8 +362,8 @@
 
             // Act
             Mock.Get(stub)
-                .Setup(x => x.Send(It.IsAny<IEnumerable<Message>>()))
-                .Callback<IEnumerable<Message>>(x => x.ForEach(messages.Enqueue))
+                .Setup(x => x.Send(It.IsAny<IEnumerable<Message>>(), It.IsAny<string>()))
+                .Callback<IEnumerable<Message>, string>((x, _) => x.ForEach(messages.Enqueue))
                 .ThrowsAsync(new InvalidOperationException());
 
             try
@@ -371,8 +377,8 @@
             await Task.Delay(millisecondsDelay: 100);
 
             Mock.Get(stub)
-                .Setup(x => x.Send(It.IsAny<IEnumerable<Message>>()))
-                .Callback<IEnumerable<Message>>(x => x.ForEach(messages.Enqueue))
+                .Setup(x => x.Send(It.IsAny<IEnumerable<Message>>(), It.IsAny<string>()))
+                .Callback<IEnumerable<Message>, string>((x, _) => x.ForEach(messages.Enqueue))
                 .Returns(Task.CompletedTask);
 
             await sut.CollectEvents(streamId, startVersion + 1, new[] { evt2 });
