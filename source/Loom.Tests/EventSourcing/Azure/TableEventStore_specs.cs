@@ -8,6 +8,7 @@
     using Loom.Testing;
     using Microsoft.Azure.Cosmos.Table;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Moq;
 
     [TestClass]
     public class TableEventStore_specs :
@@ -51,6 +52,26 @@
 
             IEnumerable<object> actual2 = await store2.QueryEvents(streamId, fromVersion: 1);
             actual2.Should().BeEquivalentTo(evt2);
+        }
+
+        [TestMethod, AutoData]
+        public async Task CollectEvents_does_not_fail_for_empty_event_list(
+            IMessageBus eventBus, Guid streamId)
+        {
+            // Arrange
+            CloudTable table = StorageEmulator.EventStoreTable;
+
+            var typeResolver = new TypeResolver(
+                new FullNameTypeNameResolvingStrategy(),
+                new FullNameTypeResolvingStrategy());
+
+            var sut = new TableEventStore<State1>(table, typeResolver, eventBus);
+
+            // Act
+            Func<Task> action = () => sut.CollectEvents(streamId, startVersion: 1, Array.Empty<object>());
+
+            // Assert
+            await action.Should().NotThrowAsync();
         }
     }
 }

@@ -42,6 +42,11 @@
                                           IReadOnlyList<object> events,
                                           TracingProperties tracingProperties)
         {
+            if (events.Count == 0)
+            {
+                return;
+            }
+
             await SaveQueueTicket().ConfigureAwait(continueOnCapturedContext: false);
             await SaveEvents().ConfigureAwait(continueOnCapturedContext: false);
             await PublishPendingEvents().ConfigureAwait(continueOnCapturedContext: false);
