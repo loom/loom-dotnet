@@ -9,7 +9,7 @@
     using Microsoft.Azure.Cosmos.Table;
     using Newtonsoft.Json;
 
-    public class TableEventStore<T> : IEventCollector, IEventReader
+    public class TableEventStore<T> : IEventStore<T>, IEventCollector, IEventReader
     {
         private readonly CloudTable _table;
         private readonly TypeResolver _typeResolver;

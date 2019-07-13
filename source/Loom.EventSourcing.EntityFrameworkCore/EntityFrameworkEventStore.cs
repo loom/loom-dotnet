@@ -11,7 +11,7 @@
     using Newtonsoft.Json;
 
     public class EntityFrameworkEventStore<T> :
-        IEventCollector, IEventReader
+        IEventStore<T>, IEventCollector, IEventReader
     {
         private readonly Func<EventStoreContext> _contextFactory;
         private readonly TypeResolver _typeResolver;
