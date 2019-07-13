@@ -1,6 +1,5 @@
 ﻿namespace Loom.EventSourcing.EntityFrameworkCore
 {
-    using System;
     using Microsoft.EntityFrameworkCore;
     using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -15,7 +14,7 @@
 
         public DbSet<PendingEvent> PendingEvents { get; private set; }
 
-        // TODO: Use nullable-reference in C# 8.0 and remove the following preprocessor.
+// TODO: Use nullable-reference in C# 8.0 and remove the following preprocessor.
 #pragma warning disable CA1062 // Validate arguments of public methods
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

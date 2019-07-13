@@ -169,7 +169,7 @@
             {
                 string stateType = _typeResolver.ResolveTypeName<T>();
 
-                IQueryable<StreamEvent> query =
+                IQueryable<StreamEvent> entityQuery =
                     from e in context.StreamEvents
                     where
                         e.StateType == stateType &&
@@ -178,13 +178,16 @@
                     orderby e.Version ascending
                     select e;
 
-                return from e in await query
-                           .AsNoTracking()
-                           .ToListAsync()
-                           .ConfigureAwait(continueOnCapturedContext: false)
-                       let value = e.Payload
-                       let type = _typeResolver.TryResolveType(e.EventType)
-                       select JsonConvert.DeserializeObject(value, type);
+                IEnumerable<object> objectQuery =
+                    from e in await entityQuery
+                        .AsNoTracking()
+                        .ToListAsync()
+                        .ConfigureAwait(continueOnCapturedContext: false)
+                    let value = e.Payload
+                    let type = _typeResolver.TryResolveType(e.EventType)
+                    select JsonConvert.DeserializeObject(value, type);
+
+                return objectQuery.ToImmutableArray();
             }
         }
     }
