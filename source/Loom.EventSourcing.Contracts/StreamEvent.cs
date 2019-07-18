@@ -2,22 +2,14 @@
 {
     using System;
 
-    public sealed class StreamEvent<T>
+    public static class StreamEvent
     {
-        public StreamEvent(Guid streamId, long version, DateTime raisedTimeUtc, T payload)
+        public static StreamEvent<T> Create<T>(Guid streamId,
+                                               long version,
+                                               DateTime raisedTimeUtc,
+                                               T payload)
         {
-            StreamId = streamId;
-            Version = version;
-            RaisedTimeUtc = raisedTimeUtc;
-            Payload = payload;
+            return new StreamEvent<T>(streamId, version, raisedTimeUtc, payload);
         }
-
-        public Guid StreamId { get; }
-
-        public long Version { get; }
-
-        public DateTime RaisedTimeUtc { get; }
-
-        public T Payload { get; }
     }
 }

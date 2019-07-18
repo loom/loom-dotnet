@@ -1,6 +1,8 @@
 ﻿namespace Loom.EventSourcing
 {
+    using System;
     using FluentAssertions;
+    using Loom.Testing;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
@@ -10,6 +12,23 @@
         public void sut_is_sealed()
         {
             typeof(StreamEvent<>).Should().BeSealed();
+        }
+
+        [TestMethod, AutoData]
+        public void factory_creates_instance_correctly(
+            Guid streamId,
+            long version,
+            DateTime raisedTimeUtcSource,
+            Event1 payload)
+        {
+            var raisedTimeUtc = new DateTime(raisedTimeUtcSource.Ticks, DateTimeKind.Utc);
+
+            StreamEvent<Event1> actual = StreamEvent.Create(streamId, version, raisedTimeUtc, payload);
+
+            actual.StreamId.Should().Be(streamId);
+            actual.Version.Should().Be(version);
+            actual.RaisedTimeUtc.Should().Be(raisedTimeUtc);
+            actual.Payload.Should().Be(payload);
         }
     }
 }
