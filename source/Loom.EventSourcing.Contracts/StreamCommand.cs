@@ -2,13 +2,9 @@
 {
     using System;
 
-    public sealed class StreamCommand<T>
+    public static class StreamCommand
     {
-        public StreamCommand(Guid streamId, T payload)
-            => (StreamId, Payload) = (streamId, payload);
-
-        public Guid StreamId { get; }
-
-        public T Payload { get; }
+        public static StreamCommand<T> Create<T>(Guid streamId, T payload)
+            => new StreamCommand<T>(streamId, payload);
     }
 }
