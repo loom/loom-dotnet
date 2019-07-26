@@ -10,21 +10,28 @@
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true, Inherited = false)]
-    public sealed class AutoDataAttribute : Attribute, ITestDataSource
+    public sealed class AutoDataRepeatAttribute : Attribute, ITestDataSource
     {
+        public AutoDataRepeatAttribute(int repeat = 100) => Repeat = repeat;
+
+        public int Repeat { get; }
+
         public IEnumerable<object[]> GetData(MethodInfo methodInfo)
         {
             IFixture generator = CreateGenerator();
 
-            var arguments = new List<object>();
-            foreach (ParameterInfo parameter in methodInfo.GetParameters())
+            for (int i = 0; i < Repeat; i++)
             {
-                var context = new SpecimenContext(generator);
-                object argument = context.Resolve(parameter);
-                arguments.Add(argument);
-            }
+                var arguments = new List<object>();
+                foreach (ParameterInfo parameter in methodInfo.GetParameters())
+                {
+                    var context = new SpecimenContext(generator);
+                    object argument = context.Resolve(parameter);
+                    arguments.Add(argument);
+                }
 
-            yield return arguments.ToArray();
+                yield return arguments.ToArray();
+            }
         }
 
         private static IFixture CreateGenerator() =>

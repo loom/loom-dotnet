@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.ComponentModel.DataAnnotations;
     using System.Linq;
     using System.Threading.Tasks;
     using AutoFixture;
@@ -221,6 +222,83 @@
 
             // Assert
             actual.Should().BeEquivalentTo(expected);
+        }
+
+        [TestMethod, AutoData]
+        public async Task given_no_event_then_TryRehydrateStateAt_returns_null(
+            Guid streamId, long version, EventHandler handler)
+        {
+            // Arrange
+            IEventReader eventReader =
+                new DelegatingEventReader(
+                    (stream, from) =>
+                    Task.FromResult(Enumerable.Empty<object>()));
+
+            IEventHandler<State> eventHandler = new EventHandlerDelegate<State>(handler);
+
+            var sut = new StateRehydrator<State>(eventReader, eventHandler);
+
+            // Act
+            State actual = await sut.TryRehydrateStateAt(streamId, version);
+
+            // Assert
+            actual.Should().BeNull();
+        }
+
+        [TestMethod, AutoDataRepeat(10)]
+        public async Task given_some_events_then_TryRehydrateStateAt_with_existing_version_restores_state_correctly(
+            Generator<ValueAdded> generator,
+            Guid streamId,
+            [Range(1, 10)] long version,
+            EventHandler handler)
+        {
+            // Arrange
+            var events = new List<object>(generator.Where(x => x.Amount >= 0).Take(10));
+
+            IEventReader eventReader =
+                new DelegatingEventReader(
+                    (stream, from) => stream == streamId
+                    ? Task.FromResult(events.Skip((int)from - 1))
+                    : Task.FromResult(Enumerable.Empty<object>()));
+
+            IEventHandler<State> eventHandler = new EventHandlerDelegate<State>(handler);
+
+            var sut = new StateRehydrator<State>(eventReader, eventHandler);
+
+            State expected = eventHandler.HandleEvents(new State(), events.Take((int)version));
+
+            // Act
+            State actual = await sut.TryRehydrateStateAt(streamId, version);
+
+            // Assert
+            actual.Should().BeEquivalentTo(expected);
+        }
+
+        [TestMethod, AutoDataRepeat(10)]
+        public async Task given_some_events_then_TryRehydrateStateAt_with_nonexistent_version_throws_exception(
+            Generator<ValueAdded> generator,
+            Guid streamId,
+            [Range(11, 20)] long version,
+            EventHandler handler)
+        {
+            // Arrange
+            var events = new List<object>(generator.Where(x => x.Amount >= 0).Take(10));
+
+            IEventReader eventReader =
+                new DelegatingEventReader(
+                    (stream, from) => stream == streamId
+                    ? Task.FromResult(events.Skip((int)from - 1))
+                    : Task.FromResult(Enumerable.Empty<object>()));
+
+            IEventHandler<State> eventHandler = new EventHandlerDelegate<State>(handler);
+
+            var sut = new StateRehydrator<State>(eventReader, eventHandler);
+
+            // Act
+            Func<Task> action = () => sut.TryRehydrateStateAt(streamId, version);
+
+            // Assert
+            await action.Should().ThrowAsync<InvalidOperationException>();
         }
     }
 }
