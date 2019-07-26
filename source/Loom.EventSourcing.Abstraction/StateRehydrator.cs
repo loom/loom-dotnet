@@ -12,14 +12,19 @@
         private readonly IEventReader _eventReader;
         private readonly IEventHandler<T> _eventHandler;
 
-        public StateRehydrator(
-            ISnapshotReader<T> snapshotReader,
-            IEventReader eventReader,
-            IEventHandler<T> eventHandler)
+        public StateRehydrator(ISnapshotReader<T> snapshotReader,
+                               IEventReader eventReader,
+                               IEventHandler<T> eventHandler)
         {
             _snapshotReader = snapshotReader;
             _eventReader = eventReader;
             _eventHandler = eventHandler;
+        }
+
+        public StateRehydrator(IEventReader eventReader,
+                               IEventHandler<T> eventHandler)
+            : this(DefaultSnapshotReader.Instance, eventReader, eventHandler)
+        {
         }
 
         public async Task<T> TryRehydrateState(Guid streamId)
@@ -52,5 +57,12 @@
 
         private T FoldLeft(T seed, IEnumerable<object> events)
             => _eventHandler.HandleEvents(seed, events);
+
+        private class DefaultSnapshotReader : ISnapshotReader<T>
+        {
+            public static readonly DefaultSnapshotReader Instance = new DefaultSnapshotReader();
+
+            public Task<T> TryRestoreSnapshot(Guid streamId) => Task.FromResult<T>(default);
+        }
     }
 }
