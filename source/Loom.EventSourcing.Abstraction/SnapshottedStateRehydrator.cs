@@ -5,27 +5,21 @@
     using System.Linq;
     using System.Threading.Tasks;
 
-    public class StateRehydrator<T> : IStateRehydrator<T>
-        where T : IVersioned, new()
+    public class SnapshottedStateRehydrator<T> : IStateRehydrator<T>
+        where T : IVersioned
     {
+        private readonly Func<Guid, T> _seedFactory;
         private readonly ISnapshotReader<T> _snapshotReader;
         private readonly IEventReader _eventReader;
         private readonly IEventHandler<T> _eventHandler;
 
-        [Obsolete("Use class SnapshottedStateRehydrator<T> instead.")]
-        public StateRehydrator(ISnapshotReader<T> snapshotReader,
-                               IEventReader eventReader,
-                               IEventHandler<T> eventHandler)
+        public SnapshottedStateRehydrator(Func<Guid, T> seedFactory,
+                                          ISnapshotReader<T> snapshotReader,
+                                          IEventReader eventReader,
+                                          IEventHandler<T> eventHandler)
         {
+            _seedFactory = seedFactory;
             _snapshotReader = snapshotReader;
-            _eventReader = eventReader;
-            _eventHandler = eventHandler;
-        }
-
-        public StateRehydrator(IEventReader eventReader,
-                               IEventHandler<T> eventHandler)
-        {
-            _snapshotReader = DefaultSnapshotReader.Instance;
             _eventReader = eventReader;
             _eventHandler = eventHandler;
         }
@@ -54,7 +48,7 @@
             switch (await _eventReader.QueryEvents(streamId, fromVersion: 1).ConfigureAwait(continueOnCapturedContext: false))
             {
                 case var events when events.Any() == false: return default;
-                case var events: return FoldLeft(new T(), events);
+                case var events: return FoldLeft(_seedFactory.Invoke(streamId), events);
             }
         }
 
@@ -64,18 +58,10 @@
             {
                 case var events when events.Any() == false: return default;
                 case var events when events.Count() < version: throw new InvalidOperationException($"State of the specified version({version}) does not exists.");
-                case var events: return FoldLeft(new T(), events.TakeWhile((_, index) => index < version));
+                case var events: return FoldLeft(_seedFactory.Invoke(streamId), events.TakeWhile((_, index) => index < version));
             }
         }
 
-        private T FoldLeft(T seed, IEnumerable<object> events)
-            => _eventHandler.HandleEvents(seed, events);
-
-        private class DefaultSnapshotReader : ISnapshotReader<T>
-        {
-            public static readonly DefaultSnapshotReader Instance = new DefaultSnapshotReader();
-
-            public Task<T> TryRestoreSnapshot(Guid streamId) => Task.FromResult<T>(default);
-        }
+        private T FoldLeft(T seed, IEnumerable<object> events) => _eventHandler.HandleEvents(seed, events);
     }
 }
