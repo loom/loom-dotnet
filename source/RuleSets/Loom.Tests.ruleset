@@ -79,7 +79,7 @@
     <Rule Id="CA2244" Action="Error" /> <!-- Do not duplicate indexed element initializations -->
   </Rules>
   <Rules AnalyzerId="Microsoft.CodeQuality.CSharp.Analyzers" RuleNamespace="Microsoft.CodeQuality.CSharp.Analyzers">
-    <Rule Id="CA1001" Action="Error" /> <!-- Types that own disposable fields should be disposable -->
+    <Rule Id="CA1001" Action="None" /> <!-- Types that own disposable fields should be disposable -->
     <Rule Id="CA1003" Action="Error" /> <!-- Use generic event handler instances -->
     <Rule Id="CA1019" Action="Error" /> <!-- Define accessors for attribute arguments -->
     <Rule Id="CA1032" Action="Error" /> <!-- Implement standard exception constructors -->
@@ -91,7 +91,7 @@
     <Rule Id="CA2234" Action="Error" /> <!-- Pass system uri objects instead of strings -->
   </Rules>
   <Rules AnalyzerId="Microsoft.CodeQuality.VisualBasic.Analyzers" RuleNamespace="Microsoft.CodeQuality.VisualBasic.Analyzers">
-    <Rule Id="CA1001" Action="Error" /> <!-- Types that own disposable fields should be disposable -->
+    <Rule Id="CA1001" Action="None" /> <!-- Types that own disposable fields should be disposable -->
     <Rule Id="CA1003" Action="Error" /> <!-- Use generic event handler instances -->
     <Rule Id="CA1019" Action="Error" /> <!-- Define accessors for attribute arguments -->
     <Rule Id="CA1032" Action="Error" /> <!-- Implement standard exception constructors -->

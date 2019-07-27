@@ -17,10 +17,9 @@
         private readonly TypeResolver _typeResolver;
         private readonly IMessageBus _eventBus;
 
-        public EntityFrameworkEventStore(
-            Func<EventStoreContext> contextFactory,
-            TypeResolver typeResolver,
-            IMessageBus eventBus)
+        public EntityFrameworkEventStore(Func<EventStoreContext> contextFactory,
+                                         TypeResolver typeResolver,
+                                         IMessageBus eventBus)
         {
             _contextFactory = contextFactory;
             _typeResolver = typeResolver;
@@ -83,14 +82,7 @@
             {
                 using (EventStoreContext context = _contextFactory.Invoke())
                 {
-                    IQueryable<PendingEvent> query =
-                        from pendingEvent in context.PendingEvents
-                        where
-                            pendingEvent.StateType == stateType &&
-                            pendingEvent.StreamId == streamId
-                        orderby pendingEvent.Version
-                        select pendingEvent;
-
+                    IQueryable<PendingEvent> query = context.GetPendingEventsQuery(stateType, streamId);
                     List<PendingEvent> pendingEvents = await query.ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
                     foreach (IEnumerable<PendingEvent> window in Window(pendingEvents))
                     {
@@ -136,31 +128,7 @@
             }
         }
 
-        private Message GenerateMessage(PendingEvent pendingEvent)
-        {
-            return new Message(
-                id: pendingEvent.MessageId,
-                data: RestoreStreamEvent(entity: pendingEvent),
-                pendingEvent.TracingProperties);
-        }
-
-        private object RestoreStreamEvent(PendingEvent entity)
-        {
-            Type type = _typeResolver.TryResolveType(entity.EventType);
-
-            ConstructorInfo constructor = typeof(StreamEvent<>)
-                .MakeGenericType(type)
-                .GetTypeInfo()
-                .GetConstructor(new[] { typeof(Guid), typeof(long), typeof(DateTime), type });
-
-            return constructor.Invoke(parameters: new object[]
-            {
-                entity.StreamId,
-                entity.Version,
-                new DateTime(entity.RaisedTimeUtc.Ticks, DateTimeKind.Utc),
-                JsonConvert.DeserializeObject(entity.Payload, type),
-            });
-        }
+        private Message GenerateMessage(PendingEvent entity) => entity.GenerateMessage(_typeResolver);
 
         public async Task<IEnumerable<object>> QueryEvents(
             Guid streamId, long fromVersion)

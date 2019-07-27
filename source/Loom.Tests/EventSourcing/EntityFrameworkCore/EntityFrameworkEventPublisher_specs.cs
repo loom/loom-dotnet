@@ -1,4 +1,4 @@
-﻿namespace Loom.EventSourcing.Azure
+﻿namespace Loom.EventSourcing.EntityFrameworkCore
 {
     using System;
     using System.Collections.Generic;
@@ -10,13 +10,16 @@
     using FluentAssertions;
     using Loom.Messaging;
     using Loom.Testing;
-    using Microsoft.Azure.Cosmos.Table;
+    using Microsoft.Data.Sqlite;
+    using Microsoft.EntityFrameworkCore;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
-    public class TableEventPublisher_specs
+    public class EntityFrameworkEventPublisher_specs
     {
-        private CloudTable Table { get; set; }
+        private SqliteConnection Connection { get; set; }
+
+        private Func<EventStoreContext> ContextFactory { get; set; }
 
         private TypeResolver TypeResolver { get; } = new TypeResolver(
             new FullNameTypeNameResolvingStrategy(),
@@ -25,16 +28,18 @@
         [TestInitialize]
         public async Task TestInitialize()
         {
-            CloudTable table = CloudStorageAccount
-                .DevelopmentStorageAccount
-                .CreateCloudTableClient()
-                .GetTableReference("PublisherTestingEventStore");
-
-            await table.DeleteIfExistsAsync();
-            await table.CreateAsync();
-
-            Table = table;
+            Connection = new SqliteConnection("DataSource=:memory:");
+            await Connection.OpenAsync();
+            DbContextOptions options = new DbContextOptionsBuilder().UseSqlite(Connection).Options;
+            ContextFactory = () => new EventStoreContext(options);
+            using (EventStoreContext db = ContextFactory.Invoke())
+            {
+                await db.Database.EnsureCreatedAsync();
+            }
         }
+
+        [TestCleanup]
+        public void TestCleanup() => Connection.Dispose();
 
         [TestMethod, AutoDataRepeat(10)]
         public async Task sut_publishes_cold_pending_events(
@@ -42,7 +47,7 @@
         {
             // Arrange
             var eventBus = new MessageBusDouble(errors: 1);
-            var eventStore = new TableEventStore<State1>(Table, TypeResolver, eventBus);
+            var eventStore = new EntityFrameworkEventStore<State1>(ContextFactory, TypeResolver, eventBus);
             try
             {
                 await eventStore.CollectEvents(streamId, startVersion, events, tracingProperties);
@@ -55,7 +60,7 @@
             eventBus.Clear();
 
             TimeSpan minimumPendingTime = TimeSpan.Zero;
-            var sut = new TableEventPublisher(Table, TypeResolver, eventBus, minimumPendingTime);
+            var sut = new EntityFrameworkEventPublisher(ContextFactory, TypeResolver, eventBus, minimumPendingTime);
 
             // Act
             await sut.PublishPendingEvents();
@@ -70,7 +75,7 @@
         {
             // Arrange
             var eventBus = new MessageBusDouble(errors: transactions);
-            var eventStore = new TableEventStore<State1>(Table, TypeResolver, eventBus);
+            var eventStore = new EntityFrameworkEventStore<State1>(ContextFactory, TypeResolver, eventBus);
             int startVersion = 1;
             for (int i = 0; i < transactions; i++)
             {
@@ -90,7 +95,7 @@
             eventBus.Clear();
 
             TimeSpan minimumPendingTime = TimeSpan.Zero;
-            var sut = new TableEventPublisher(Table, TypeResolver, eventBus, minimumPendingTime);
+            var sut = new EntityFrameworkEventPublisher(ContextFactory, TypeResolver, eventBus, minimumPendingTime);
 
             // Act
             await sut.PublishPendingEvents();
@@ -112,7 +117,7 @@
         {
             // Arrange
             var eventBus = new MessageBusDouble(errors: 1);
-            var eventStore = new TableEventStore<State1>(Table, TypeResolver, eventBus);
+            var eventStore = new EntityFrameworkEventStore<State1>(ContextFactory, TypeResolver, eventBus);
             try
             {
                 await eventStore.CollectEvents(streamId, startVersion, events, tracingProperties);
@@ -124,7 +129,7 @@
             eventBus.Clear();
 
             var minimumPendingTime = TimeSpan.FromMilliseconds(1000);
-            var sut = new TableEventPublisher(Table, TypeResolver, eventBus, minimumPendingTime);
+            var sut = new EntityFrameworkEventPublisher(ContextFactory, TypeResolver, eventBus, minimumPendingTime);
 
             // Act
             await sut.PublishPendingEvents();
