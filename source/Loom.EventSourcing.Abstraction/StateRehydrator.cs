@@ -5,6 +5,7 @@
     using System.Linq;
     using System.Threading.Tasks;
 
+    [Obsolete("Use class SimpleStateRehydrator<T> or class SnapshottedStateRehydrator<T> instead.")]
     public class StateRehydrator<T> : IStateRehydrator<T>
         where T : IVersioned, new()
     {
@@ -12,7 +13,6 @@
         private readonly IEventReader _eventReader;
         private readonly IEventHandler<T> _eventHandler;
 
-        [Obsolete("Use class SnapshottedStateRehydrator<T> instead.")]
         public StateRehydrator(ISnapshotReader<T> snapshotReader,
                                IEventReader eventReader,
                                IEventHandler<T> eventHandler)
