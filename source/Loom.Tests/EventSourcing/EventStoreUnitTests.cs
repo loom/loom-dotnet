@@ -120,7 +120,7 @@
         [TestMethod, AutoData]
         public async Task CollectEvents_sends_messages_correctly(
             Guid streamId,
-            MessageBusSpy spy,
+            MessageBusDouble spy,
             int startVersion,
             Event1 evt1,
             Event2 evt2,
@@ -165,7 +165,7 @@
 
         [TestMethod, AutoData]
         public async Task CollectEvents_does_not_send_messages_if_it_failed_to_save_events(
-            MessageBusSpy spy, Guid streamId, int version, Event1 evt1, Event2 evt2)
+            MessageBusDouble spy, Guid streamId, int version, Event1 evt1, Event2 evt2)
         {
             // Arrange
             T sut = GenerateEventStore(_typeResolver, eventBus: spy);
@@ -235,7 +235,7 @@
 
         [TestMethod, AutoData]
         public async Task CollectEvents_does_not_send_messages_again(
-            MessageBusSpy spy,
+            MessageBusDouble spy,
             Guid streamId,
             int startVersion,
             Event1 evt1,
@@ -272,7 +272,7 @@
 
         [TestMethod, AutoData]
         public async Task CollectEvents_sets_message_id_properties_to_unique_values(
-            MessageBusSpy spy,
+            MessageBusDouble spy,
             Guid streamId,
             int startVersion,
             Event1 evt1,
@@ -331,7 +331,7 @@
 
         [TestMethod, AutoData]
         public async Task CollectEvents_sets_RaisedTimeUtc_property_correctly(
-            MessageBusSpy spy, Guid streamId, Event1 evt)
+            MessageBusDouble spy, Guid streamId, Event1 evt)
         {
             // Arrange
             T sut = GenerateEventStore(_typeResolver, eventBus: spy);

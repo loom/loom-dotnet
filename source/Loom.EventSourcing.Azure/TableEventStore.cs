@@ -3,7 +3,6 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Reflection;
     using System.Threading.Tasks;
     using Loom.Messaging;
     using Microsoft.Azure.Cosmos.Table;
@@ -87,7 +86,7 @@
             async Task PublishPendingEvents()
             {
                 TableQuery<QueueTicket> query = QueueTicket.CreateQuery(stateType, streamId).OrderBy("RowKey");
-                foreach (QueueTicket queueTicket in await ExecuteQuery(query).ConfigureAwait(continueOnCapturedContext: false))
+                foreach (QueueTicket queueTicket in await _table.ExecuteTableQuery(query).ConfigureAwait(continueOnCapturedContext: false))
                 {
                     await PublishEvents(queueTicket).ConfigureAwait(continueOnCapturedContext: false);
                 }
@@ -97,65 +96,21 @@
         private async Task PublishEvents(QueueTicket queueTicket)
         {
             TableQuery<StreamEvent> query = StreamEvent.CreateQuery(queueTicket);
-            IEnumerable<StreamEvent> streamEvents = await ExecuteQuery(query).ConfigureAwait(continueOnCapturedContext: false);
+            IEnumerable<StreamEvent> streamEvents = await _table.ExecuteTableQuery(query).ConfigureAwait(continueOnCapturedContext: false);
             string partitionKey = $"{queueTicket.StreamId}";
             await _eventBus.Send(streamEvents.Select(GenerateMessage), partitionKey).ConfigureAwait(continueOnCapturedContext: false);
             await _table.ExecuteAsync(TableOperation.Delete(queueTicket)).ConfigureAwait(continueOnCapturedContext: false);
         }
 
-        private Message GenerateMessage(StreamEvent streamEvent)
-        {
-            return new Message(
-                id: streamEvent.MessageId,
-                data: RestoreStreamEvent(entity: streamEvent),
-                streamEvent.TracingProperties);
-        }
-
-        private object RestoreStreamEvent(StreamEvent entity)
-        {
-            Type type = _typeResolver.TryResolveType(entity.EventType);
-
-            ConstructorInfo constructor = typeof(StreamEvent<>)
-                .MakeGenericType(type)
-                .GetTypeInfo()
-                .GetConstructor(new[] { typeof(Guid), typeof(long), typeof(DateTime), type });
-
-            return constructor.Invoke(parameters: new object[]
-            {
-                entity.StreamId,
-                entity.Version,
-                entity.RaisedTimeUtc,
-                JsonConvert.DeserializeObject(entity.Payload, type),
-            });
-        }
+        private Message GenerateMessage(StreamEvent entity) => entity.GenerateMessage(_typeResolver);
 
         public async Task<IEnumerable<object>> QueryEvents(
             Guid streamId, long fromVersion)
         {
             string stateType = _typeResolver.ResolveTypeName<T>();
             TableQuery<StreamEvent> query = StreamEvent.CreateQuery(stateType, streamId, fromVersion);
-            IEnumerable<StreamEvent> streamEvents = await ExecuteQuery(query).ConfigureAwait(continueOnCapturedContext: false);
+            IEnumerable<StreamEvent> streamEvents = await _table.ExecuteTableQuery(query).ConfigureAwait(continueOnCapturedContext: false);
             return streamEvents.Select(DeserializeEvent).ToList().AsReadOnly();
-        }
-
-        private async Task<IEnumerable<TElement>> ExecuteQuery<TElement>(
-            TableQuery<TElement> query)
-            where TElement : ITableEntity, new()
-        {
-            var results = new List<TElement>();
-
-            TableContinuationToken continuation = default;
-            do
-            {
-                TableQuerySegment<TElement> segment = await _table
-                    .ExecuteQuerySegmentedAsync(query, continuation)
-                    .ConfigureAwait(continueOnCapturedContext: false);
-                results.AddRange(segment);
-                continuation = segment.ContinuationToken;
-            }
-            while (continuation != default);
-
-            return results.ToList();
         }
 
         private object DeserializeEvent(StreamEvent streamEvent)
