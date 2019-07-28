@@ -65,6 +65,12 @@
 
         public static string FormatVersion(long version) => $"{version:D19}";
 
+        private object DeserializePayload(Type type)
+            => JsonConvert.DeserializeObject(Payload, type);
+
+        public object DeserializePayload(TypeResolver typeResolver)
+            => DeserializePayload(type: typeResolver.TryResolveType(EventType));
+
         public Message GenerateMessage(TypeResolver typeResolver)
         {
             Type type = typeResolver.TryResolveType(EventType);
@@ -79,7 +85,7 @@
                 StreamId,
                 Version,
                 RaisedTimeUtc,
-                JsonConvert.DeserializeObject(Payload, type),
+                DeserializePayload(type),
             });
 
             return new Message(id: MessageId, data, TracingProperties);

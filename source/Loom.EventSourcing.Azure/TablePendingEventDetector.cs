@@ -64,8 +64,7 @@
                     contributor: typeof(TablePendingEventDetector).FullName,
                     parentId: default));
 
-            return _commandBus.Send(messages: new[] { message },
-                                    partitionKey: $"{streamId}");
+            return _commandBus.Send(new[] { message }, $"{streamId}");
         }
     }
 }

@@ -12,13 +12,13 @@
     {
         private readonly CloudTable _table;
         private readonly TypeResolver _typeResolver;
-        private readonly IMessageBus _eventBus;
+        private readonly EventPublisher _publisher;
 
         public TableEventStore(CloudTable table, TypeResolver typeResolver, IMessageBus eventBus)
         {
             _table = table;
             _typeResolver = typeResolver;
-            _eventBus = eventBus;
+            _publisher = new EventPublisher(table, typeResolver, eventBus);
         }
 
         public Task CollectEvents(Guid streamId,
@@ -83,42 +83,8 @@
                 return _table.ExecuteBatchAsync(batch);
             }
 
-            async Task PublishPendingEvents()
-            {
-                IQueryable<QueueTicket> query = _table.BuildQueueTicketsQuery(stateType, streamId);
-                foreach (QueueTicket queueTicket in from t in await query.ExecuteAsync().ConfigureAwait(continueOnCapturedContext: false)
-                                                    orderby t.RowKey
-                                                    select t)
-                {
-                    await FlushEvents(queueTicket).ConfigureAwait(continueOnCapturedContext: false);
-                }
-            }
+            Task PublishPendingEvents() => _publisher.PublishEvents(stateType, streamId);
         }
-
-        private async Task FlushEvents(QueueTicket queueTicket)
-        {
-            IQueryable<StreamEvent> query = BuildStreamEventsQuery(queueTicket);
-            await PublishStreamEvents(query, partitionKey: $"{queueTicket.StreamId}").ConfigureAwait(continueOnCapturedContext: false);
-            await DeleteQueueTicket(queueTicket).ConfigureAwait(continueOnCapturedContext: false);
-        }
-
-        private IQueryable<StreamEvent> BuildStreamEventsQuery(QueueTicket queueTicket)
-        {
-            return _table.BuildStreamEventsQuery(queueTicket);
-        }
-
-        private async Task PublishStreamEvents(IQueryable<StreamEvent> query, string partitionKey)
-        {
-            IEnumerable<StreamEvent> streamEvents = await query.ExecuteAsync().ConfigureAwait(continueOnCapturedContext: false);
-            await _eventBus.Send(streamEvents.Select(GenerateMessage), partitionKey).ConfigureAwait(continueOnCapturedContext: false);
-        }
-
-        private async Task DeleteQueueTicket(QueueTicket queueTicket)
-        {
-            await _table.ExecuteAsync(TableOperation.Delete(queueTicket)).ConfigureAwait(continueOnCapturedContext: false);
-        }
-
-        private Message GenerateMessage(StreamEvent entity) => entity.GenerateMessage(_typeResolver);
 
         public async Task<IEnumerable<object>> QueryEvents(Guid streamId, long fromVersion)
         {
@@ -130,9 +96,7 @@
 
         private object DeserializeEvent(StreamEvent streamEvent)
         {
-            return JsonConvert.DeserializeObject(
-                value: streamEvent.Payload,
-                type: _typeResolver.TryResolveType(streamEvent.EventType));
+            return streamEvent.DeserializePayload(_typeResolver);
         }
     }
 }

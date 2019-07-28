@@ -7,42 +7,28 @@
     using Loom.Messaging;
     using Microsoft.Azure.Cosmos.Table;
 
-    [Obsolete("This class has the concurrency vulnerability. Use TablePendingEventDetector and FlushTableEventsCommandExecutor instead.")]
-    public sealed class TableEventPublisher
+    internal sealed class EventPublisher
     {
         private readonly CloudTable _table;
         private readonly TypeResolver _typeResolver;
         private readonly IMessageBus _eventBus;
-        private readonly TimeSpan _minimumPendingTime;
 
-        public TableEventPublisher(CloudTable table,
-                                   TypeResolver typeResolver,
-                                   IMessageBus eventBus,
-                                   TimeSpan minimumPendingTime)
+        public EventPublisher(CloudTable table, TypeResolver typeResolver, IMessageBus eventBus)
         {
             _table = table;
             _typeResolver = typeResolver;
             _eventBus = eventBus;
-            _minimumPendingTime = minimumPendingTime;
         }
 
-        public async Task PublishPendingEvents()
+        public async Task PublishEvents(string stateType, Guid streamId)
         {
-            IQueryable<QueueTicket> query = BuildQueueTicketsQuery();
-            foreach (QueueTicket t in await ScanQueueTickets(query).ConfigureAwait(continueOnCapturedContext: false))
+            IQueryable<QueueTicket> query = _table.BuildQueueTicketsQuery(stateType, streamId);
+            foreach (QueueTicket queueTicket in from t in await query.ExecuteAsync().ConfigureAwait(continueOnCapturedContext: false)
+                                                orderby t.RowKey
+                                                select t)
             {
-                await FlushEvents(t).ConfigureAwait(continueOnCapturedContext: false);
+                await FlushEvents(queueTicket).ConfigureAwait(continueOnCapturedContext: false);
             }
-        }
-
-        private IQueryable<QueueTicket> BuildQueueTicketsQuery() => _table.BuildQueueTicketsQuery();
-
-        private async Task<IOrderedEnumerable<QueueTicket>> ScanQueueTickets(IQueryable<QueueTicket> query)
-        {
-            return from t in await query.ExecuteAsync().ConfigureAwait(continueOnCapturedContext: false)
-                   where DateTime.UtcNow - t.Timestamp.UtcDateTime >= _minimumPendingTime
-                   orderby t.StartVersion
-                   select t;
         }
 
         private async Task FlushEvents(QueueTicket queueTicket)
@@ -63,11 +49,11 @@
             await _eventBus.Send(streamEvents.Select(GenerateMessage), partitionKey).ConfigureAwait(continueOnCapturedContext: false);
         }
 
+        private Message GenerateMessage(StreamEvent entity) => entity.GenerateMessage(_typeResolver);
+
         private Task DeleteQueueTicket(QueueTicket queueTicket)
         {
             return _table.ExecuteAsync(TableOperation.Delete(queueTicket));
         }
-
-        private Message GenerateMessage(StreamEvent entity) => entity.GenerateMessage(_typeResolver);
     }
 }
