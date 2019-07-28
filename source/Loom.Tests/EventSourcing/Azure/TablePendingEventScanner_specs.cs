@@ -11,7 +11,7 @@
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
-    public class TablePendingEventDetector_specs
+    public class TablePendingEventScanner_specs
     {
         private CloudTable Table { get; set; }
 
@@ -33,6 +33,12 @@
             Table = table;
         }
 
+        [TestMethod]
+        public void sut_implements_IPendingEventScanner()
+        {
+            typeof(TablePendingEventScanner).Should().Implement<IPendingEventScanner>();
+        }
+
         [TestMethod, AutoData]
         public async Task sut_sends_flush_commands_for_streams_containing_cold_pending_events(
             Guid streamId, long startVersion, Event1[] events, MessageBusDouble commandBus)
@@ -42,10 +48,10 @@
             var eventStore = new TableEventStore<State1>(Table, TypeResolver, eventBus);
             await TryForget(() => eventStore.CollectEvents(streamId, startVersion, events));
 
-            var sut = new TablePendingEventDetector(Table, commandBus);
+            var sut = new TablePendingEventScanner(Table, commandBus);
 
             // Act
-            await sut.ScanQueueTickets();
+            await sut.ScanPendingEvents();
 
             // Assert
             commandBus.Calls.Should().ContainSingle();
@@ -76,15 +82,15 @@
             var eventStore = new TableEventStore<State1>(Table, TypeResolver, eventBus);
             await TryForget(() => eventStore.CollectEvents(streamId, startVersion, events));
 
-            var sut = new TablePendingEventDetector(Table, commandBus);
+            var sut = new TablePendingEventScanner(Table, commandBus);
 
             // Act
-            await sut.ScanQueueTickets();
+            await sut.ScanPendingEvents();
 
             // Assert
             TracingProperties actual = commandBus.Calls.Single().messages.Single().TracingProperties;
             actual.OperationId.Should().NotBeNullOrWhiteSpace();
-            actual.Contributor.Should().Be("Loom.EventSourcing.Azure.TablePendingEventDetector");
+            actual.Contributor.Should().Be("Loom.EventSourcing.Azure.TablePendingEventScanner");
             actual.ParentId.Should().BeNull();
         }
 
@@ -98,10 +104,10 @@
             await TryForget(() => eventStore.CollectEvents(streamId, startVersion, events));
             await TryForget(() => eventStore.CollectEvents(streamId, startVersion + events.Length, events));
 
-            var sut = new TablePendingEventDetector(Table, commandBus);
+            var sut = new TablePendingEventScanner(Table, commandBus);
 
             // Act
-            await sut.ScanQueueTickets();
+            await sut.ScanPendingEvents();
 
             // Assert
             commandBus.Calls.Should().ContainSingle();
@@ -117,10 +123,10 @@
             await TryForget(() => eventStore.CollectEvents(streamId, startVersion, events));
 
             var minimumPendingTime = TimeSpan.FromSeconds(1);
-            var sut = new TablePendingEventDetector(Table, commandBus, minimumPendingTime);
+            var sut = new TablePendingEventScanner(Table, commandBus, minimumPendingTime);
 
             // Act
-            await sut.ScanQueueTickets();
+            await sut.ScanPendingEvents();
 
             // Assert
             commandBus.Calls.Should().BeEmpty();
