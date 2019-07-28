@@ -10,7 +10,7 @@
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
-    public class FlushEntityFrameworkEventsCommandExecutor_specs
+    public class FlushEntityEventsCommandExecutor_specs
     {
         private SqliteConnection Connection { get; set; }
 
@@ -36,7 +36,7 @@
         [TestMethod]
         public void sut_implements_IMessageHandler()
         {
-            typeof(FlushEntityFrameworkEventsCommandExecutor).Should().Implement<IMessageHandler>();
+            typeof(FlushEntityEventsCommandExecutor).Should().Implement<IMessageHandler>();
         }
 
         [TestMethod, AutoData]
@@ -47,7 +47,7 @@
             IMessageBus eventBus)
         {
             var message = new Message(id: commandId, data: command, tracingProperties);
-            var sut = new FlushEntityFrameworkEventsCommandExecutor(ContextFactory, TypeResolver, eventBus);
+            var sut = new FlushEntityEventsCommandExecutor(ContextFactory, TypeResolver, eventBus);
 
             bool actual = sut.CanHandle(message);
 
@@ -62,7 +62,7 @@
             IMessageBus eventBus)
         {
             var message = new Message(id, data, tracingProperties);
-            var sut = new FlushEntityFrameworkEventsCommandExecutor(ContextFactory, TypeResolver, eventBus);
+            var sut = new FlushEntityEventsCommandExecutor(ContextFactory, TypeResolver, eventBus);
 
             bool actual = sut.CanHandle(message);
 
@@ -83,7 +83,7 @@
             var eventStore = new EntityFrameworkEventStore<State1>(ContextFactory, TypeResolver, brokenEventBus);
             await TryForget(() => eventStore.CollectEvents(streamId, startVersion, events));
 
-            var sut = new FlushEntityFrameworkEventsCommandExecutor(ContextFactory, TypeResolver, eventBus);
+            var sut = new FlushEntityEventsCommandExecutor(ContextFactory, TypeResolver, eventBus);
             var command = new FlushEntityEvents(TypeResolver.ResolveTypeName<State1>(), streamId);
             var message = new Message(id: commandId, data: command, tracingProperties);
 
@@ -108,7 +108,7 @@
             var eventStore = new EntityFrameworkEventStore<State1>(ContextFactory, TypeResolver, brokenEventBus);
             await TryForget(() => eventStore.CollectEvents(streamId, startVersion, events));
 
-            var sut = new FlushEntityFrameworkEventsCommandExecutor(ContextFactory, TypeResolver, eventBus);
+            var sut = new FlushEntityEventsCommandExecutor(ContextFactory, TypeResolver, eventBus);
             var command = new FlushEntityEvents(TypeResolver.ResolveTypeName<State1>(), streamId);
             var message = new Message(id: commandId, data: command, tracingProperties);
 

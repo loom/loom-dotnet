@@ -4,11 +4,11 @@
     using System.Threading.Tasks;
     using Loom.Messaging;
 
-    public sealed class FlushEntityFrameworkEventsCommandExecutor : IMessageHandler
+    public sealed class FlushEntityEventsCommandExecutor : IMessageHandler
     {
         private readonly EventPublisher _publisher;
 
-        public FlushEntityFrameworkEventsCommandExecutor(
+        public FlushEntityEventsCommandExecutor(
             Func<EventStoreContext> contextFactory,
             TypeResolver typeResolver,
             IMessageBus eventBus)
