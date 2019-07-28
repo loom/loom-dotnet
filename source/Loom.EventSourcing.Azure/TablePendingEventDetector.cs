@@ -54,17 +54,22 @@
 
         private Task SendFlushCommand(string stateType, Guid streamId)
         {
-            var command = new FlushTableEvents(stateType, streamId);
+            Message message = Envelop(command: new FlushTableEvents(stateType, streamId));
+            return Send(message, partitionKey: $"{streamId}");
+        }
 
-            var message = new Message(
-                id: $"{Guid.NewGuid()}",
-                data: command,
-                new TracingProperties(
-                    operationId: $"{Guid.NewGuid()}",
-                    contributor: typeof(TablePendingEventDetector).FullName,
-                    parentId: default));
+        private static Message Envelop(FlushTableEvents command)
+        {
+            string commandId = $"{Guid.NewGuid()}";
+            string operationId = $"{Guid.NewGuid()}";
+            string contributor = typeof(TablePendingEventDetector).FullName;
+            var tracingProperties = new TracingProperties(operationId, contributor, parentId: default);
+            return new Message(commandId, command, tracingProperties);
+        }
 
-            return _commandBus.Send(new[] { message }, $"{streamId}");
+        private Task Send(Message message, string partitionKey)
+        {
+            return _commandBus.Send(new[] { message }, partitionKey);
         }
     }
 }
