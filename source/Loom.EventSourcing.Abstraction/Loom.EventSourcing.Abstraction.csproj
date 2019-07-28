@@ -11,7 +11,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>Loom.EventSourcing.Abstraction</PackageId>
     <Description>Core implementation of event sourcing pattern.</Description>
-    <Version>0.7.0</Version>
+    <Version>0.8.0</Version>
     <Authors>Gyuwon</Authors>
     <Copyright>Copyright (c) 2019 Yi Gyuwon</Copyright>
     <PackageProjectUrl>https://github.com/loom/loom-dotnet</PackageProjectUrl>
@@ -27,7 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Loom.EventSourcing.Contracts" Version="0.7.0" Exclude="*" />
+    <PackageReference Include="Loom.EventSourcing.Contracts" Version="0.8.0" Exclude="*" />
   </ItemGroup>
 
   <ItemGroup>

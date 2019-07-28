@@ -11,7 +11,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>Loom.EventSourcing.Azure</PackageId>
     <Description>Microsoft Azure based event sourcing implementation.</Description>
-    <Version>0.7.0</Version>
+    <Version>0.8.0</Version>
     <Authors>Gyuwon</Authors>
     <Copyright>Copyright (c) 2019 Yi Gyuwon</Copyright>
     <PackageProjectUrl>https://github.com/loom/loom-dotnet</PackageProjectUrl>
@@ -31,8 +31,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Loom.EventSourcing.Abstraction" Version="0.7.0" Exclude="*" />
-    <PackageReference Include="Loom.Messaging.Abstraction" Version="0.7.0" Exclude="*" />
+    <PackageReference Include="Loom.EventSourcing.Abstraction" Version="0.8.0" Exclude="*" />
+    <PackageReference Include="Loom.Messaging.Abstraction" Version="0.8.0" Exclude="*" />
   </ItemGroup>
 
   <ItemGroup>
