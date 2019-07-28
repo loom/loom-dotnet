@@ -5,22 +5,22 @@
     using System.Threading.Tasks;
     using Loom.Messaging;
 
-    public sealed class EntityFrameworkPendingEventDetector
+    public sealed class PendingEntityEventScanner : IPendingEventScanner
     {
         private readonly Func<EventStoreContext> _contextFactory;
         private readonly IMessageBus _commandBus;
         private readonly TimeSpan _minimumPendingTime;
 
-        public EntityFrameworkPendingEventDetector(Func<EventStoreContext> contextFactory,
-                                                   IMessageBus commandBus,
-                                                   TimeSpan minimumPendingTime)
+        public PendingEntityEventScanner(Func<EventStoreContext> contextFactory,
+                                         IMessageBus commandBus,
+                                         TimeSpan minimumPendingTime)
         {
             _contextFactory = contextFactory;
             _commandBus = commandBus;
             _minimumPendingTime = minimumPendingTime;
         }
 
-        public EntityFrameworkPendingEventDetector(Func<EventStoreContext> contextFactory, IMessageBus commandBus)
+        public PendingEntityEventScanner(Func<EventStoreContext> contextFactory, IMessageBus commandBus)
             : this(contextFactory, commandBus, minimumPendingTime: TimeSpan.Zero)
         {
         }
@@ -53,7 +53,7 @@
         {
             string commandId = $"{Guid.NewGuid()}";
             string operationId = $"{Guid.NewGuid()}";
-            string contributor = typeof(EntityFrameworkPendingEventDetector).FullName;
+            string contributor = typeof(PendingEntityEventScanner).FullName;
             var tracingProperties = new TracingProperties(operationId, contributor, parentId: default);
             return new Message(commandId, command, tracingProperties);
         }

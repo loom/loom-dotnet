@@ -12,7 +12,7 @@
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
-    public class EntityFrameworkPendingEventDetector_specs
+    public class PendingEntityEventScanner_specs
     {
         private SqliteConnection Connection { get; set; }
 
@@ -47,7 +47,7 @@
             var eventStore = new EntityEventStore<State1>(ContextFactory, TypeResolver, eventBus);
             await TryForget(() => eventStore.CollectEvents(streamId, startVersion, events));
 
-            var sut = new EntityFrameworkPendingEventDetector(ContextFactory, commandBus);
+            var sut = new PendingEntityEventScanner(ContextFactory, commandBus);
 
             // Act
             await sut.ScanPendingEvents();
@@ -81,7 +81,7 @@
             var eventStore = new EntityEventStore<State1>(ContextFactory, TypeResolver, eventBus);
             await TryForget(() => eventStore.CollectEvents(streamId, startVersion, events));
 
-            var sut = new EntityFrameworkPendingEventDetector(ContextFactory, commandBus);
+            var sut = new PendingEntityEventScanner(ContextFactory, commandBus);
 
             // Act
             await sut.ScanPendingEvents();
@@ -89,7 +89,7 @@
             // Assert
             TracingProperties actual = commandBus.Calls.Single().messages.Single().TracingProperties;
             actual.OperationId.Should().NotBeNullOrWhiteSpace();
-            actual.Contributor.Should().Be("Loom.EventSourcing.EntityFrameworkCore.EntityFrameworkPendingEventDetector");
+            actual.Contributor.Should().Be("Loom.EventSourcing.EntityFrameworkCore.PendingEntityEventScanner");
             actual.ParentId.Should().BeNull();
         }
 
@@ -103,7 +103,7 @@
             await TryForget(() => eventStore.CollectEvents(streamId, startVersion, events));
             await TryForget(() => eventStore.CollectEvents(streamId, startVersion + events.Length, events));
 
-            var sut = new EntityFrameworkPendingEventDetector(ContextFactory, commandBus);
+            var sut = new PendingEntityEventScanner(ContextFactory, commandBus);
 
             // Act
             await sut.ScanPendingEvents();
@@ -122,7 +122,7 @@
             await TryForget(() => eventStore.CollectEvents(streamId, startVersion, events));
 
             var minimumPendingTime = TimeSpan.FromSeconds(1);
-            var sut = new EntityFrameworkPendingEventDetector(ContextFactory, commandBus, minimumPendingTime);
+            var sut = new PendingEntityEventScanner(ContextFactory, commandBus, minimumPendingTime);
 
             // Act
             await sut.ScanPendingEvents();
