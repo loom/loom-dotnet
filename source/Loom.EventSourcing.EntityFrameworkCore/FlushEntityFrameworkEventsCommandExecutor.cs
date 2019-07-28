@@ -17,12 +17,12 @@
         }
 
         public bool CanHandle(Message message)
-            => message?.Data is FlushEntityFrameworkEvents;
+            => message?.Data is FlushEntityEvents;
 
         public Task Handle(Message message)
-            => Execute(command: (FlushEntityFrameworkEvents)message?.Data);
+            => Execute(command: (FlushEntityEvents)message?.Data);
 
-        private Task Execute(FlushEntityFrameworkEvents command)
+        private Task Execute(FlushEntityEvents command)
             => _publisher.PublishEvents(command.StateType, command.StreamId);
     }
 }

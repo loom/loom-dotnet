@@ -2,9 +2,9 @@
 {
     using System;
 
-    public class FlushEntityFrameworkEvents
+    public class FlushEntityEvents
     {
-        public FlushEntityFrameworkEvents(string stateType, Guid streamId)
+        public FlushEntityEvents(string stateType, Guid streamId)
         {
             StateType = stateType;
             StreamId = streamId;
