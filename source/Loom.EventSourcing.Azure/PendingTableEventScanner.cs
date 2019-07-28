@@ -7,22 +7,22 @@
     using Loom.Messaging;
     using Microsoft.Azure.Cosmos.Table;
 
-    public sealed class TablePendingEventScanner : IPendingEventScanner
+    public sealed class PendingTableEventScanner : IPendingEventScanner
     {
         private readonly CloudTable _table;
         private readonly IMessageBus _commandBus;
         private readonly TimeSpan _minimumPendingTime;
 
-        public TablePendingEventScanner(CloudTable table,
-                                         IMessageBus commandBus,
-                                         TimeSpan minimumPendingTime)
+        public PendingTableEventScanner(CloudTable table,
+                                        IMessageBus commandBus,
+                                        TimeSpan minimumPendingTime)
         {
             _table = table;
             _commandBus = commandBus;
             _minimumPendingTime = minimumPendingTime;
         }
 
-        public TablePendingEventScanner(CloudTable table, IMessageBus commandBus)
+        public PendingTableEventScanner(CloudTable table, IMessageBus commandBus)
             : this(table, commandBus, minimumPendingTime: TimeSpan.Zero)
         {
         }
@@ -62,7 +62,7 @@
         {
             string commandId = $"{Guid.NewGuid()}";
             string operationId = $"{Guid.NewGuid()}";
-            string contributor = typeof(TablePendingEventScanner).FullName;
+            string contributor = typeof(PendingTableEventScanner).FullName;
             var tracingProperties = new TracingProperties(operationId, contributor, parentId: default);
             return new Message(commandId, command, tracingProperties);
         }

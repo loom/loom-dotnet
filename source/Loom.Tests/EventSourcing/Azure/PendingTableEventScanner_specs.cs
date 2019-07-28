@@ -11,7 +11,7 @@
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
-    public class TablePendingEventScanner_specs
+    public class PendingTableEventScanner_specs
     {
         private CloudTable Table { get; set; }
 
@@ -36,7 +36,7 @@
         [TestMethod]
         public void sut_implements_IPendingEventScanner()
         {
-            typeof(TablePendingEventScanner).Should().Implement<IPendingEventScanner>();
+            typeof(PendingTableEventScanner).Should().Implement<IPendingEventScanner>();
         }
 
         [TestMethod, AutoData]
@@ -48,7 +48,7 @@
             var eventStore = new TableEventStore<State1>(Table, TypeResolver, eventBus);
             await TryForget(() => eventStore.CollectEvents(streamId, startVersion, events));
 
-            var sut = new TablePendingEventScanner(Table, commandBus);
+            var sut = new PendingTableEventScanner(Table, commandBus);
 
             // Act
             await sut.ScanPendingEvents();
@@ -82,7 +82,7 @@
             var eventStore = new TableEventStore<State1>(Table, TypeResolver, eventBus);
             await TryForget(() => eventStore.CollectEvents(streamId, startVersion, events));
 
-            var sut = new TablePendingEventScanner(Table, commandBus);
+            var sut = new PendingTableEventScanner(Table, commandBus);
 
             // Act
             await sut.ScanPendingEvents();
@@ -90,7 +90,7 @@
             // Assert
             TracingProperties actual = commandBus.Calls.Single().messages.Single().TracingProperties;
             actual.OperationId.Should().NotBeNullOrWhiteSpace();
-            actual.Contributor.Should().Be("Loom.EventSourcing.Azure.TablePendingEventScanner");
+            actual.Contributor.Should().Be("Loom.EventSourcing.Azure.PendingTableEventScanner");
             actual.ParentId.Should().BeNull();
         }
 
@@ -104,7 +104,7 @@
             await TryForget(() => eventStore.CollectEvents(streamId, startVersion, events));
             await TryForget(() => eventStore.CollectEvents(streamId, startVersion + events.Length, events));
 
-            var sut = new TablePendingEventScanner(Table, commandBus);
+            var sut = new PendingTableEventScanner(Table, commandBus);
 
             // Act
             await sut.ScanPendingEvents();
@@ -123,7 +123,7 @@
             await TryForget(() => eventStore.CollectEvents(streamId, startVersion, events));
 
             var minimumPendingTime = TimeSpan.FromSeconds(1);
-            var sut = new TablePendingEventScanner(Table, commandBus, minimumPendingTime);
+            var sut = new PendingTableEventScanner(Table, commandBus, minimumPendingTime);
 
             // Act
             await sut.ScanPendingEvents();
