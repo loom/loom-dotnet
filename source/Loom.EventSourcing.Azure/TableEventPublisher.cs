@@ -27,24 +27,44 @@
 
         public async Task PublishPendingEvents()
         {
-            string filter = "PartitionKey ge '~'";
-            TableQuery<QueueTicket> query = new TableQuery<QueueTicket>().Where(filter);
-            foreach (QueueTicket queueTicket in from t in await _table.ExecuteTableQuery(query).ConfigureAwait(continueOnCapturedContext: false)
-                                                where DateTime.UtcNow - t.Timestamp.UtcDateTime >= _minimumPendingTime
-                                                orderby t.StartVersion
-                                                select t)
+            IQueryable<QueueTicket> query = BuildQueueTicketsQuery();
+            foreach (QueueTicket t in await ScanQueueTickets(query).ConfigureAwait(continueOnCapturedContext: false))
             {
-                await PublishEvents(queueTicket).ConfigureAwait(continueOnCapturedContext: false);
+                await FlushEvents(t).ConfigureAwait(continueOnCapturedContext: false);
             }
         }
 
-        private async Task PublishEvents(QueueTicket queueTicket)
+        private IQueryable<QueueTicket> BuildQueueTicketsQuery() => _table.BuildQueueTicketsQuery();
+
+        private async Task<IOrderedEnumerable<QueueTicket>> ScanQueueTickets(IQueryable<QueueTicket> query)
         {
-            TableQuery<StreamEvent> query = StreamEvent.CreateQuery(queueTicket);
-            IEnumerable<StreamEvent> streamEvents = await _table.ExecuteTableQuery(query).ConfigureAwait(continueOnCapturedContext: false);
-            string partitionKey = $"{queueTicket.StreamId}";
+            return from t in await query.ExecuteAsync().ConfigureAwait(continueOnCapturedContext: false)
+                   where DateTime.UtcNow - t.Timestamp.UtcDateTime >= _minimumPendingTime
+                   orderby t.StartVersion
+                   select t;
+        }
+
+        private async Task FlushEvents(QueueTicket queueTicket)
+        {
+            IQueryable<StreamEvent> query = BuildStreamEventsQuery(queueTicket);
+            await PublishStreamEvents(query, partitionKey: $"{queueTicket.StreamId}").ConfigureAwait(continueOnCapturedContext: false);
+            await DeleteQueueTicket(queueTicket).ConfigureAwait(continueOnCapturedContext: false);
+        }
+
+        private IQueryable<StreamEvent> BuildStreamEventsQuery(QueueTicket queueTicket)
+        {
+            return _table.BuildStreamEventsQuery(queueTicket);
+        }
+
+        private async Task PublishStreamEvents(IQueryable<StreamEvent> query, string partitionKey)
+        {
+            IEnumerable<StreamEvent> streamEvents = await query.ExecuteAsync().ConfigureAwait(continueOnCapturedContext: false);
             await _eventBus.Send(streamEvents.Select(GenerateMessage), partitionKey).ConfigureAwait(continueOnCapturedContext: false);
-            await _table.ExecuteAsync(TableOperation.Delete(queueTicket)).ConfigureAwait(continueOnCapturedContext: false);
+        }
+
+        private Task DeleteQueueTicket(QueueTicket queueTicket)
+        {
+            return _table.ExecuteAsync(TableOperation.Delete(queueTicket));
         }
 
         private Message GenerateMessage(StreamEvent entity) => entity.GenerateMessage(_typeResolver);

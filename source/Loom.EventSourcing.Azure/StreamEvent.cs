@@ -1,9 +1,10 @@
 ﻿namespace Loom.EventSourcing.Azure
 {
     using System;
-    using System.Linq;
+    using System.Reflection;
     using Loom.Messaging;
     using Microsoft.Azure.Cosmos.Table;
+    using Newtonsoft.Json;
 
     internal class StreamEvent : TableEntity
     {
@@ -62,37 +63,26 @@
         [IgnoreProperty]
         public TracingProperties TracingProperties => new TracingProperties(OperationId, Contributor, ParentId);
 
-        private static string FormatVersion(long version) => $"{version:D19}";
+        public static string FormatVersion(long version) => $"{version:D19}";
 
-        public static TableQuery<StreamEvent> CreateQuery(
-            string stateType, Guid streamId, long fromVersion)
+        public Message GenerateMessage(TypeResolver typeResolver)
         {
-            string filter = CombineFilters(
-                $"PartitionKey eq '{stateType}:{streamId}'",
-                $"RowKey ge '{FormatVersion(fromVersion)}'");
+            Type type = typeResolver.TryResolveType(EventType);
 
-            return new TableQuery<StreamEvent>().Where(filter);
-        }
+            ConstructorInfo constructor = typeof(StreamEvent<>)
+                .MakeGenericType(type)
+                .GetTypeInfo()
+                .GetConstructor(new[] { typeof(Guid), typeof(long), typeof(DateTime), type });
 
-        public static TableQuery<StreamEvent> CreateQuery(QueueTicket queueTicket)
-        {
-            string filter = CombineFilters(
-                $"PartitionKey eq '{queueTicket.StateType}:{queueTicket.StreamId}'",
-                $"RowKey ge '{queueTicket.StartVersion:D19}'",
-                $"RowKey lt '{queueTicket.StartVersion + queueTicket.EventCount:D19}'",
-                $"Transaction eq guid'{queueTicket.Transaction}'");
+            object data = constructor.Invoke(parameters: new object[]
+            {
+                StreamId,
+                Version,
+                RaisedTimeUtc,
+                JsonConvert.DeserializeObject(Payload, type),
+            });
 
-            return new TableQuery<StreamEvent>().Where(filter);
-        }
-
-        private static string CombineFilters(params string[] filters)
-        {
-            return filters.Aggregate(CombineFilters);
-        }
-
-        private static string CombineFilters(string filterA, string filterB)
-        {
-            return TableQuery.CombineFilters(filterA, "and", filterB);
+            return new Message(id: MessageId, data, TracingProperties);
         }
     }
 }

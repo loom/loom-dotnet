@@ -33,11 +33,5 @@
         public long EventCount { get; set; }
 
         public Guid Transaction { get; set; }
-
-        public static TableQuery<QueueTicket> CreateQuery(string stateType, Guid streamId)
-        {
-            string filter = $"PartitionKey eq '~{stateType}:{streamId}'";
-            return new TableQuery<QueueTicket>().Where(filter);
-        }
     }
 }
