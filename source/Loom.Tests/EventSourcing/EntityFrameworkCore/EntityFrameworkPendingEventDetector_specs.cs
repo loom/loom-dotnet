@@ -44,7 +44,7 @@
         {
             // Arrange
             var eventBus = new MessageBusDouble(errors: 1);
-            var eventStore = new EntityFrameworkEventStore<State1>(ContextFactory, TypeResolver, eventBus);
+            var eventStore = new EntityEventStore<State1>(ContextFactory, TypeResolver, eventBus);
             await TryForget(() => eventStore.CollectEvents(streamId, startVersion, events));
 
             var sut = new EntityFrameworkPendingEventDetector(ContextFactory, commandBus);
@@ -78,7 +78,7 @@
         {
             // Arrange
             var eventBus = new MessageBusDouble(errors: 1);
-            var eventStore = new EntityFrameworkEventStore<State1>(ContextFactory, TypeResolver, eventBus);
+            var eventStore = new EntityEventStore<State1>(ContextFactory, TypeResolver, eventBus);
             await TryForget(() => eventStore.CollectEvents(streamId, startVersion, events));
 
             var sut = new EntityFrameworkPendingEventDetector(ContextFactory, commandBus);
@@ -99,7 +99,7 @@
         {
             // Arrange
             var eventBus = new MessageBusDouble(errors: 2);
-            var eventStore = new EntityFrameworkEventStore<State1>(ContextFactory, TypeResolver, eventBus);
+            var eventStore = new EntityEventStore<State1>(ContextFactory, TypeResolver, eventBus);
             await TryForget(() => eventStore.CollectEvents(streamId, startVersion, events));
             await TryForget(() => eventStore.CollectEvents(streamId, startVersion + events.Length, events));
 
@@ -118,7 +118,7 @@
         {
             // Arrange
             var eventBus = new MessageBusDouble(errors: 1);
-            var eventStore = new EntityFrameworkEventStore<State1>(ContextFactory, TypeResolver, eventBus);
+            var eventStore = new EntityEventStore<State1>(ContextFactory, TypeResolver, eventBus);
             await TryForget(() => eventStore.CollectEvents(streamId, startVersion, events));
 
             var minimumPendingTime = TimeSpan.FromSeconds(1);

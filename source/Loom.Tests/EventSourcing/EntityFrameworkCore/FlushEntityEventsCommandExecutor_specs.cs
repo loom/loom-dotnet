@@ -80,7 +80,7 @@
         {
             // Arrange
             var brokenEventBus = new MessageBusDouble(errors: 1);
-            var eventStore = new EntityFrameworkEventStore<State1>(ContextFactory, TypeResolver, brokenEventBus);
+            var eventStore = new EntityEventStore<State1>(ContextFactory, TypeResolver, brokenEventBus);
             await TryForget(() => eventStore.CollectEvents(streamId, startVersion, events));
 
             var sut = new FlushEntityEventsCommandExecutor(ContextFactory, TypeResolver, eventBus);
@@ -105,7 +105,7 @@
         {
             // Arrange
             var brokenEventBus = new MessageBusDouble(errors: 1);
-            var eventStore = new EntityFrameworkEventStore<State1>(ContextFactory, TypeResolver, brokenEventBus);
+            var eventStore = new EntityEventStore<State1>(ContextFactory, TypeResolver, brokenEventBus);
             await TryForget(() => eventStore.CollectEvents(streamId, startVersion, events));
 
             var sut = new FlushEntityEventsCommandExecutor(ContextFactory, TypeResolver, eventBus);

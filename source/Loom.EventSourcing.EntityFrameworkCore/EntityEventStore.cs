@@ -9,16 +9,16 @@
     using Microsoft.EntityFrameworkCore;
     using Newtonsoft.Json;
 
-    public class EntityFrameworkEventStore<T> :
+    public class EntityEventStore<T> :
         IEventStore<T>, IEventCollector, IEventReader
     {
         private readonly Func<EventStoreContext> _contextFactory;
         private readonly TypeResolver _typeResolver;
         private readonly EventPublisher _publisher;
 
-        public EntityFrameworkEventStore(Func<EventStoreContext> contextFactory,
-                                         TypeResolver typeResolver,
-                                         IMessageBus eventBus)
+        public EntityEventStore(Func<EventStoreContext> contextFactory,
+                                TypeResolver typeResolver,
+                                IMessageBus eventBus)
         {
             _contextFactory = contextFactory;
             _typeResolver = typeResolver;

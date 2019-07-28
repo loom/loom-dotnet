@@ -11,8 +11,8 @@
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
-    public class EntityFrameworkEventStore_specs :
-        EventStoreUnitTests<EntityFrameworkEventStore<State1>>
+    public class EntityEventStore_specs :
+        EventStoreUnitTests<EntityEventStore<State1>>
     {
         private static SqliteConnection _connection;
         private static DbContextOptions _options;
@@ -35,11 +35,11 @@
             _connection.Dispose();
         }
 
-        protected override EntityFrameworkEventStore<State1> GenerateEventStore(
+        protected override EntityEventStore<State1> GenerateEventStore(
             TypeResolver typeResolver, IMessageBus eventBus)
         {
             EventStoreContext factory() => new EventStoreContext(_options);
-            return new EntityFrameworkEventStore<State1>(factory, typeResolver, eventBus);
+            return new EntityEventStore<State1>(factory, typeResolver, eventBus);
         }
 
         [TestMethod, AutoData]
@@ -53,8 +53,8 @@
                 new FullNameTypeNameResolvingStrategy(),
                 new FullNameTypeResolvingStrategy());
 
-            var store1 = new EntityFrameworkEventStore<State1>(factory, typeResolver, eventBus);
-            var store2 = new EntityFrameworkEventStore<State2>(factory, typeResolver, eventBus);
+            var store1 = new EntityEventStore<State1>(factory, typeResolver, eventBus);
+            var store2 = new EntityEventStore<State2>(factory, typeResolver, eventBus);
 
             int startVersion = 1;
 
