@@ -61,7 +61,8 @@
         public Guid Transaction { get; set; }
 
         [IgnoreProperty]
-        public TracingProperties TracingProperties => new TracingProperties(OperationId, Contributor, ParentId);
+        public TracingProperties TracingProperties
+            => new TracingProperties(OperationId, Contributor, ParentId);
 
         public static string FormatVersion(long version) => $"{version:D19}";
 

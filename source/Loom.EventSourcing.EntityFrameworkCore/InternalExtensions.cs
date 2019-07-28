@@ -8,9 +8,10 @@
 
     internal static class InternalExtensions
     {
-        public static IQueryable<PendingEvent> GetPendingEventsQuery(this EventStoreContext context,
-                                                                     string stateType,
-                                                                     Guid streamId)
+        public static IQueryable<PendingEvent> GetPendingEventsQuery(
+            this EventStoreContext context,
+            string stateType,
+            Guid streamId)
         {
             return from e in context.PendingEvents
                    where e.StateType == stateType && e.StreamId == streamId
@@ -18,8 +19,8 @@
                    select e;
         }
 
-        public static Message GenerateMessage(this PendingEvent entity,
-                                              TypeResolver typeResolver)
+        public static Message GenerateMessage(
+            this PendingEvent entity, TypeResolver typeResolver)
         {
             Type type = typeResolver.TryResolveType(entity.EventType);
 

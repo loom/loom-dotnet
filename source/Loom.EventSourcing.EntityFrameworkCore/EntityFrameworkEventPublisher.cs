@@ -8,6 +8,7 @@
     using Loom.Messaging;
     using Microsoft.EntityFrameworkCore;
 
+    [Obsolete("This class has the concurrency vulnerability. Use EntityFrameworkPendingEventDetector and FlushEntityFrameworkEventsCommandExecutor instead.")]
     public class EntityFrameworkEventPublisher
     {
         private readonly Func<EventStoreContext> _contextFactory;

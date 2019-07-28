@@ -4,7 +4,6 @@
     using System.Collections.Generic;
     using System.Collections.Immutable;
     using System.Linq;
-    using System.Reflection;
     using System.Threading.Tasks;
     using Loom.Messaging;
     using Microsoft.EntityFrameworkCore;
@@ -15,7 +14,7 @@
     {
         private readonly Func<EventStoreContext> _contextFactory;
         private readonly TypeResolver _typeResolver;
-        private readonly IMessageBus _eventBus;
+        private readonly EventPublisher _publisher;
 
         public EntityFrameworkEventStore(Func<EventStoreContext> contextFactory,
                                          TypeResolver typeResolver,
@@ -23,7 +22,7 @@
         {
             _contextFactory = contextFactory;
             _typeResolver = typeResolver;
-            _eventBus = eventBus;
+            _publisher = new EventPublisher(contextFactory, typeResolver, eventBus);
         }
 
         public Task CollectEvents(Guid streamId,
@@ -78,57 +77,8 @@
                 }
             }
 
-            async Task PublishPendingEvents()
-            {
-                using (EventStoreContext context = _contextFactory.Invoke())
-                {
-                    IQueryable<PendingEvent> query = context.GetPendingEventsQuery(stateType, streamId);
-                    List<PendingEvent> pendingEvents = await query.ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
-                    foreach (IEnumerable<PendingEvent> window in Window(pendingEvents))
-                    {
-                        string partitionKey = $"{streamId}";
-                        await _eventBus.Send(window.Select(GenerateMessage), partitionKey).ConfigureAwait(continueOnCapturedContext: false);
-                        context.PendingEvents.RemoveRange(window);
-                        await context.SaveChangesAsync().ConfigureAwait(continueOnCapturedContext: false);
-                    }
-                }
-            }
+            Task PublishPendingEvents() => _publisher.PublishEvents(stateType, streamId);
         }
-
-        private static IEnumerable<IEnumerable<PendingEvent>> Window(
-            IEnumerable<PendingEvent> pendingEvents)
-        {
-            Guid transaction = default;
-            List<PendingEvent> fragment = null;
-
-            foreach (PendingEvent pendingEvent in pendingEvents)
-            {
-                if (fragment == null)
-                {
-                    transaction = pendingEvent.Transaction;
-                    fragment = new List<PendingEvent> { pendingEvent };
-                    continue;
-                }
-
-                if (pendingEvent.Transaction != transaction)
-                {
-                    yield return fragment.ToImmutableArray();
-
-                    transaction = pendingEvent.Transaction;
-                    fragment = new List<PendingEvent> { pendingEvent };
-                    continue;
-                }
-
-                fragment.Add(pendingEvent);
-            }
-
-            if (fragment != null)
-            {
-                yield return fragment.ToImmutableArray();
-            }
-        }
-
-        private Message GenerateMessage(PendingEvent entity) => entity.GenerateMessage(_typeResolver);
 
         public async Task<IEnumerable<object>> QueryEvents(
             Guid streamId, long fromVersion)
@@ -137,7 +87,7 @@
             {
                 string stateType = _typeResolver.ResolveTypeName<T>();
 
-                IQueryable<StreamEvent> entityQuery =
+                IQueryable<StreamEvent> query =
                     from e in context.StreamEvents
                     where
                         e.StateType == stateType &&
@@ -146,8 +96,8 @@
                     orderby e.Version ascending
                     select e;
 
-                IEnumerable<object> objectQuery =
-                    from e in await entityQuery
+                IEnumerable<object> sequence =
+                    from e in await query
                         .AsNoTracking()
                         .ToListAsync()
                         .ConfigureAwait(continueOnCapturedContext: false)
@@ -155,7 +105,7 @@
                     let type = _typeResolver.TryResolveType(e.EventType)
                     select JsonConvert.DeserializeObject(value, type);
 
-                return objectQuery.ToImmutableArray();
+                return sequence.ToImmutableArray();
             }
         }
     }
