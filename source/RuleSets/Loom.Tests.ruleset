@@ -23,7 +23,7 @@
     <Rule Id="CA1040" Action="Error" /> <!-- Avoid empty interfaces -->
     <Rule Id="CA1041" Action="Error" /> <!-- Provide ObsoleteAttribute message -->
     <Rule Id="CA1043" Action="Error" /> <!-- Use Integral Or String Argument For Indexers -->
-    <Rule Id="CA1044" Action="Error" /> <!-- Properties should not be write only -->
+    <Rule Id="CA1044" Action="None" /> <!-- Properties should not be write only -->
     <Rule Id="CA1050" Action="Error" /> <!-- Declare types in namespaces -->
     <Rule Id="CA1051" Action="Error" /> <!-- Do not declare visible instance fields -->
     <Rule Id="CA1052" Action="Error" /> <!-- Static holder types should be Static or NotInheritable -->
