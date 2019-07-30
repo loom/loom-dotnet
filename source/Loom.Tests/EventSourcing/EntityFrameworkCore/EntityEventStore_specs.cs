@@ -51,7 +51,7 @@
 
             var typeResolver = new TypeResolver(
                 new FullNameTypeNameResolvingStrategy(),
-                new FullNameTypeResolvingStrategy());
+                new TypeResolvingStrategy());
 
             var store1 = new EntityEventStore<State1>(factory, typeResolver, eventBus);
             var store2 = new EntityEventStore<State2>(factory, typeResolver, eventBus);

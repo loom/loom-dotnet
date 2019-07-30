@@ -20,7 +20,7 @@
 
         private TypeResolver TypeResolver { get; } = new TypeResolver(
             new FullNameTypeNameResolvingStrategy(),
-            new FullNameTypeResolvingStrategy());
+            new TypeResolvingStrategy());
 
         [TestInitialize]
         public async Task TestInitialize()

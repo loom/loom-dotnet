@@ -18,7 +18,7 @@
     {
         private static readonly TypeResolver _typeResolver = new TypeResolver(
             new FullNameTypeNameResolvingStrategy(),
-            new FullNameTypeResolvingStrategy());
+            new TypeResolvingStrategy());
 
         protected abstract T GenerateEventStore(TypeResolver typeResolver, IMessageBus eventBus);
 

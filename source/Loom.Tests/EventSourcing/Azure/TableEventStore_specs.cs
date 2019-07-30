@@ -30,7 +30,7 @@
 
             var typeResolver = new TypeResolver(
                 new FullNameTypeNameResolvingStrategy(),
-                new FullNameTypeResolvingStrategy());
+                new TypeResolvingStrategy());
 
             var store1 = new TableEventStore<State1>(table, typeResolver, eventBus);
             var store2 = new TableEventStore<State2>(table, typeResolver, eventBus);
@@ -63,7 +63,7 @@
 
             var typeResolver = new TypeResolver(
                 new FullNameTypeNameResolvingStrategy(),
-                new FullNameTypeResolvingStrategy());
+                new TypeResolvingStrategy());
 
             var sut = new TableEventStore<State1>(table, typeResolver, eventBus);
 

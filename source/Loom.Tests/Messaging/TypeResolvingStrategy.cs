@@ -5,8 +5,7 @@
     using System.Linq;
     using System.Reflection;
 
-    [Obsolete("This class is unstable. Use your own implementation of ITypeResolvingStrategy please.")]
-    public class FullNameTypeResolvingStrategy : ITypeResolvingStrategy
+    public class TypeResolvingStrategy : ITypeResolvingStrategy
     {
         private static readonly Lazy<IReadOnlyList<Type>> _types = new Lazy<IReadOnlyList<Type>>(GetAllTypes);
 

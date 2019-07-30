@@ -15,7 +15,7 @@
 
         private static TypeResolver TypeResolver { get; } = new TypeResolver(
             new FullNameTypeNameResolvingStrategy(),
-            new FullNameTypeResolvingStrategy());
+            new TypeResolvingStrategy());
 
         [TestMethod]
         public void sut_implements_IMessageHandler()
