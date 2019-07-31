@@ -11,7 +11,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>Loom.DataAnnotations</PackageId>
     <Description>Provides object validator and attributes supporting invariants of messages.</Description>
-    <Version>0.9.0</Version>
+    <Version>0.10.0</Version>
     <Authors>Gyuwon</Authors>
     <Copyright>Copyright (c) 2019 Yi Gyuwon</Copyright>
     <PackageProjectUrl>https://github.com/loom/loom-dotnet</PackageProjectUrl>
