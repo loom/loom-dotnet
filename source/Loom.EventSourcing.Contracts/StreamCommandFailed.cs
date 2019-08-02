@@ -5,11 +5,6 @@
 
     public sealed class StreamCommandFailed<T>
     {
-        public StreamCommandFailed(StreamCommand<T> command, HandlerError error)
-            : this(command, error, DateTime.UtcNow)
-        {
-        }
-
         // TODO: Remove guard clauses after apply C# 8.0.
         public StreamCommandFailed(StreamCommand<T> command,
                                    HandlerError error,

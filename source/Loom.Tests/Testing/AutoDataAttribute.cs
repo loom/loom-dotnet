@@ -28,7 +28,7 @@
         }
 
         private static IFixture CreateGenerator() =>
-            new Fixture().Customize(new AutoMoqCustomization());
+            new Fixture { Behaviors = { new OmitOnRecursionBehavior() } }.Customize(new AutoMoqCustomization());
 
         public string GetDisplayName(MethodInfo methodInfo, object[] data)
         {
