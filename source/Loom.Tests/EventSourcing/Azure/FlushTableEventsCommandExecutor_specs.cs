@@ -3,11 +3,12 @@
     using System;
     using System.Threading.Tasks;
     using FluentAssertions;
-    using Loom.EventSourcing.Serialization;
+    using Loom.Json;
     using Loom.Messaging;
     using Loom.Testing;
     using Microsoft.Azure.Cosmos.Table;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Newtonsoft.Json;
 
     [TestClass]
     public class FlushTableEventsCommandExecutor_specs
@@ -18,7 +19,7 @@
             new FullNameTypeNameResolvingStrategy(),
             new TypeResolvingStrategy());
 
-        private IJsonSerializer Serializer { get; } = new DefaultJsonSerializer();
+        private IJsonProcessor JsonProcessor { get; } = new JsonProcessor(new JsonSerializer());
 
         [TestMethod]
         public void sut_implements_IMessageHandler()
@@ -27,10 +28,10 @@
         }
 
         private FlushTableEventsCommandExecutor GenerateSut(IMessageBus eventBus) =>
-            new FlushTableEventsCommandExecutor(Table, TypeResolver, Serializer, eventBus);
+            new FlushTableEventsCommandExecutor(Table, TypeResolver, JsonProcessor, eventBus);
 
         private TableEventStore<State1> GenerateEventStore(IMessageBus eventBus) =>
-            new TableEventStore<State1>(Table, TypeResolver, Serializer, eventBus);
+            new TableEventStore<State1>(Table, TypeResolver, JsonProcessor, eventBus);
 
         [TestMethod, AutoData]
         public void CanHandle_returns_true_for_FlushTableEvents_command_message(

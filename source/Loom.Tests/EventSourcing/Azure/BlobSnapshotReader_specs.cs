@@ -4,9 +4,10 @@
     using System.Threading.Tasks;
     using AutoFixture;
     using FluentAssertions;
-    using Loom.EventSourcing.Serialization;
+    using Loom.Json;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Moq;
+    using Newtonsoft.Json;
     using static StorageEmulator;
 
     [TestClass]
@@ -28,7 +29,7 @@
             public Guid Value3 { get; }
         }
 
-        private IJsonSerializer Serializer { get; } = new DefaultJsonSerializer();
+        private IJsonProcessor JsonProcessor { get; } = new JsonProcessor(new JsonSerializer());
 
         [TestMethod]
         public void sut_implements_ISnapshotReaderT()
@@ -38,7 +39,7 @@
         }
 
         private BlobSnapshotReader<State> GenerateSut() =>
-            new BlobSnapshotReader<State>(SnapshotContainer, Serializer);
+            new BlobSnapshotReader<State>(SnapshotContainer, JsonProcessor);
 
         [TestMethod]
         public async Task TryRestoreSnapshot_returns_null_if_snapshot_not_exists()
@@ -67,7 +68,7 @@
                 .ReturnsAsync(state);
 
             var snapshotter = new BlobSnapshotter<State>(
-                rehydrator, Serializer, SnapshotContainer);
+                rehydrator, JsonProcessor, SnapshotContainer);
             await snapshotter.TakeSnapshot(streamId);
 
             // Act

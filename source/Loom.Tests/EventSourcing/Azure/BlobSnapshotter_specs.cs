@@ -5,7 +5,7 @@
     using System.Text;
     using System.Threading.Tasks;
     using FluentAssertions;
-    using Loom.EventSourcing.Serialization;
+    using Loom.Json;
     using Loom.Testing;
     using Microsoft.Azure.Storage.Blob;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -45,7 +45,7 @@
         private static BlobSnapshotter<State> GenerateSut(IStateRehydrator<State> rehydrator) =>
             new BlobSnapshotter<State>(
                 rehydrator,
-                serializer: new DefaultJsonSerializer(),
+                jsonProcessor: new JsonProcessor(new JsonSerializer()),
                 container: StorageEmulator.SnapshotContainer);
 
         private static Task<ICloudBlob> GetBlob(Guid streamId)

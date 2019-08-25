@@ -5,12 +5,13 @@
     using System.Linq;
     using System.Threading.Tasks;
     using FluentAssertions;
-    using Loom.EventSourcing.Serialization;
+    using Loom.Json;
     using Loom.Messaging;
     using Loom.Testing;
     using Microsoft.Data.Sqlite;
     using Microsoft.EntityFrameworkCore;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Newtonsoft.Json;
 
     [TestClass]
     public class PendingEntityEventScanner_specs
@@ -23,7 +24,7 @@
             new FullNameTypeNameResolvingStrategy(),
             new TypeResolvingStrategy());
 
-        private IJsonSerializer Serializer { get; } = new DefaultJsonSerializer();
+        private IJsonProcessor JsonProcessor { get; } = new JsonProcessor(new JsonSerializer());
 
         [TestInitialize]
         public async Task TestInitialize()
@@ -42,7 +43,7 @@
         public void TestCleanup() => Connection.Dispose();
 
         private EntityEventStore<T> GenerateEventStore<T>(IMessageBus eventBus) =>
-            new EntityEventStore<T>(ContextFactory, TypeResolver, Serializer, eventBus);
+            new EntityEventStore<T>(ContextFactory, TypeResolver, JsonProcessor, eventBus);
 
         [TestMethod, AutoData]
         public async Task sut_sends_flush_commands_for_streams_containing_cold_pending_events(

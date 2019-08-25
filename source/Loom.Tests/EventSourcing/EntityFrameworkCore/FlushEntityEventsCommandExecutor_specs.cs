@@ -3,12 +3,13 @@
     using System;
     using System.Threading.Tasks;
     using FluentAssertions;
-    using Loom.EventSourcing.Serialization;
+    using Loom.Json;
     using Loom.Messaging;
     using Loom.Testing;
     using Microsoft.Data.Sqlite;
     using Microsoft.EntityFrameworkCore;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Newtonsoft.Json;
 
     [TestClass]
     public class FlushEntityEventsCommandExecutor_specs
@@ -21,7 +22,7 @@
             new FullNameTypeNameResolvingStrategy(),
             new TypeResolvingStrategy());
 
-        private IJsonSerializer Serializer { get; } = new DefaultJsonSerializer();
+        private IJsonProcessor JsonProcessor { get; } = new JsonProcessor(new JsonSerializer());
 
         [TestInitialize]
         public async Task TestInitialize()
@@ -44,10 +45,10 @@
 
         private FlushEntityEventsCommandExecutor GenerateSut(IMessageBus eventBus) =>
             new FlushEntityEventsCommandExecutor(
-                ContextFactory, TypeResolver, Serializer, eventBus);
+                ContextFactory, TypeResolver, JsonProcessor, eventBus);
 
         private EntityEventStore<T> GenerateEventStore<T>(IMessageBus eventBus) =>
-            new EntityEventStore<T>(ContextFactory, TypeResolver, Serializer, eventBus);
+            new EntityEventStore<T>(ContextFactory, TypeResolver, JsonProcessor, eventBus);
 
         [TestMethod, AutoData]
         public void CanHandle_returns_true_for_FlushEntityFrameworkEvents_command_message(

@@ -3,7 +3,7 @@
     using System;
     using System.Linq;
     using System.Reflection;
-    using Loom.EventSourcing.Serialization;
+    using Loom.Json;
     using Loom.Messaging;
 
     internal static class InternalExtensions
@@ -21,7 +21,7 @@
 
         public static Message GenerateMessage(this PendingEvent entity,
                                               TypeResolver typeResolver,
-                                              IJsonSerializer serializer)
+                                              IJsonProcessor jsonProcessor)
         {
             Type type = typeResolver.TryResolveType(entity.EventType);
 
@@ -35,7 +35,7 @@
                 entity.StreamId,
                 entity.Version,
                 new DateTime(entity.RaisedTimeUtc.Ticks, DateTimeKind.Utc),
-                serializer.Deserialize(entity.Payload, type),
+                jsonProcessor.FromJson(entity.Payload, type),
             });
 
             return new Message(id: entity.MessageId, data, entity.TracingProperties);

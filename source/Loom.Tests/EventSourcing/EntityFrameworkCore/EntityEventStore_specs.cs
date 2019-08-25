@@ -43,7 +43,7 @@
         protected EntityEventStore<T> GenerateEventStore<T>(IMessageBus eventBus)
         {
             EventStoreContext factory() => new EventStoreContext(_options);
-            return new EntityEventStore<T>(factory, TypeResolver, Serializer, eventBus);
+            return new EntityEventStore<T>(factory, TypeResolver, JsonProcessor, eventBus);
         }
 
         [TestMethod, AutoData]

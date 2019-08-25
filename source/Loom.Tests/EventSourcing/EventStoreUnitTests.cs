@@ -8,11 +8,12 @@
     using System.Threading.Tasks;
     using FluentAssertions;
     using FluentAssertions.Equivalency;
-    using Loom.EventSourcing.Serialization;
+    using Loom.Json;
     using Loom.Messaging;
     using Loom.Testing;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Moq;
+    using Newtonsoft.Json;
 
     public abstract class EventStoreUnitTests<T>
         where T : IEventCollector, IEventReader
@@ -21,7 +22,7 @@
             new FullNameTypeNameResolvingStrategy(),
             new TypeResolvingStrategy());
 
-        protected static IJsonSerializer Serializer { get; } = new DefaultJsonSerializer();
+        protected static IJsonProcessor JsonProcessor { get; } = new JsonProcessor(new JsonSerializer());
 
         protected abstract T GenerateEventStore(IMessageBus eventBus);
 

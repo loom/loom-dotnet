@@ -5,11 +5,12 @@
     using System.Linq;
     using System.Threading.Tasks;
     using FluentAssertions;
-    using Loom.EventSourcing.Serialization;
+    using Loom.Json;
     using Loom.Messaging;
     using Loom.Testing;
     using Microsoft.Azure.Cosmos.Table;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Newtonsoft.Json;
 
     [TestClass]
     public class PendingTableEventScanner_specs
@@ -20,7 +21,7 @@
             new FullNameTypeNameResolvingStrategy(),
             new TypeResolvingStrategy());
 
-        private IJsonSerializer Serializer { get; } = new DefaultJsonSerializer();
+        private IJsonProcessor JsonProcessor { get; } = new JsonProcessor(new JsonSerializer());
 
         [TestInitialize]
         public async Task TestInitialize()
@@ -43,7 +44,7 @@
         }
 
         private TableEventStore<State1> GenerateEventStore(IMessageBus eventBus) =>
-            new TableEventStore<State1>(Table, TypeResolver, Serializer, eventBus);
+            new TableEventStore<State1>(Table, TypeResolver, JsonProcessor, eventBus);
 
         [TestMethod, AutoData]
         public async Task sut_sends_flush_commands_for_streams_containing_cold_pending_events(

@@ -22,7 +22,7 @@
 
         private TableEventStore<T> GenerateEventStore<T>(IMessageBus eventBus)
         {
-            return new TableEventStore<T>(Table, TypeResolver, Serializer, eventBus);
+            return new TableEventStore<T>(Table, TypeResolver, JsonProcessor, eventBus);
         }
 
         [TestMethod, AutoData]

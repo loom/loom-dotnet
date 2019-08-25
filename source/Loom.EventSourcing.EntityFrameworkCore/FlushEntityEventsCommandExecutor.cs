@@ -2,7 +2,7 @@
 {
     using System;
     using System.Threading.Tasks;
-    using Loom.EventSourcing.Serialization;
+    using Loom.Json;
     using Loom.Messaging;
 
     public sealed class FlushEntityEventsCommandExecutor : IMessageHandler
@@ -12,10 +12,10 @@
         public FlushEntityEventsCommandExecutor(
             Func<EventStoreContext> contextFactory,
             TypeResolver typeResolver,
-            IJsonSerializer serializer,
+            IJsonProcessor jsonProcessor,
             IMessageBus eventBus)
         {
-            _publisher = new EventPublisher(contextFactory, typeResolver, serializer, eventBus);
+            _publisher = new EventPublisher(contextFactory, typeResolver, jsonProcessor, eventBus);
         }
 
         public bool CanHandle(Message message)

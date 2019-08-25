@@ -397,7 +397,7 @@
         }
 
         [TestMethod]
-        [Timeout(10)]
+        [Timeout(100)]
         public void given_DateTimeOffset_element_then_Validate_does_not_enter_infinite_recursion()
         {
             var instance = new RootObject

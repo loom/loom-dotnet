@@ -4,7 +4,7 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
-    using Loom.EventSourcing.Serialization;
+    using Loom.Json;
     using Loom.Messaging;
     using Microsoft.Azure.Cosmos.Table;
 
@@ -12,17 +12,17 @@
     {
         private readonly CloudTable _table;
         private readonly TypeResolver _typeResolver;
-        private readonly IJsonSerializer _serializer;
+        private readonly IJsonProcessor _jsonProcessor;
         private readonly IMessageBus _eventBus;
 
         public EventPublisher(CloudTable table,
                               TypeResolver typeResolver,
-                              IJsonSerializer serializer,
+                              IJsonProcessor jsonProcessor,
                               IMessageBus eventBus)
         {
             _table = table;
             _typeResolver = typeResolver;
-            _serializer = serializer;
+            _jsonProcessor = jsonProcessor;
             _eventBus = eventBus;
         }
 
@@ -57,7 +57,7 @@
 
         private Message GenerateMessage(StreamEvent entity)
         {
-            return entity.GenerateMessage(_typeResolver, _serializer);
+            return entity.GenerateMessage(_typeResolver, _jsonProcessor);
         }
 
         private Task DeleteQueueTicket(QueueTicket queueTicket)

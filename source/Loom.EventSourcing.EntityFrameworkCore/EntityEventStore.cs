@@ -5,7 +5,7 @@
     using System.Collections.Immutable;
     using System.Linq;
     using System.Threading.Tasks;
-    using Loom.EventSourcing.Serialization;
+    using Loom.Json;
     using Loom.Messaging;
     using Microsoft.EntityFrameworkCore;
 
@@ -14,18 +14,18 @@
     {
         private readonly Func<EventStoreContext> _contextFactory;
         private readonly TypeResolver _typeResolver;
-        private readonly IJsonSerializer _serializer;
+        private readonly IJsonProcessor _jsonProcessor;
         private readonly EventPublisher _publisher;
 
         public EntityEventStore(Func<EventStoreContext> contextFactory,
                                 TypeResolver typeResolver,
-                                IJsonSerializer serializer,
+                                IJsonProcessor jsonProcessor,
                                 IMessageBus eventBus)
         {
             _contextFactory = contextFactory;
             _typeResolver = typeResolver;
-            _serializer = serializer;
-            _publisher = new EventPublisher(contextFactory, typeResolver, serializer, eventBus);
+            _jsonProcessor = jsonProcessor;
+            _publisher = new EventPublisher(contextFactory, typeResolver, jsonProcessor, eventBus);
         }
 
         public Task CollectEvents(Guid streamId,
@@ -65,7 +65,7 @@
                             version: startVersion + i,
                             raisedTimeUtc: DateTime.UtcNow,
                             eventType: _typeResolver.ResolveTypeName(source.GetType()),
-                            payload: _serializer.Serialize(source),
+                            payload: _jsonProcessor.ToJson(source),
                             messageId: $"{Guid.NewGuid()}",
                             tracingProperties.OperationId,
                             tracingProperties.Contributor,
@@ -106,7 +106,7 @@
                         .ConfigureAwait(continueOnCapturedContext: false)
                     let value = e.Payload
                     let type = _typeResolver.TryResolveType(e.EventType)
-                    select _serializer.Deserialize(value, type);
+                    select _jsonProcessor.FromJson(value, type);
 
                 return sequence.ToImmutableArray();
             }

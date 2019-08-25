@@ -5,7 +5,7 @@
     using System.Collections.Immutable;
     using System.Linq;
     using System.Threading.Tasks;
-    using Loom.EventSourcing.Serialization;
+    using Loom.Json;
     using Loom.Messaging;
     using Microsoft.EntityFrameworkCore;
 
@@ -13,17 +13,17 @@
     {
         private readonly Func<EventStoreContext> _contextFactory;
         private readonly TypeResolver _typeResolver;
-        private readonly IJsonSerializer _serializer;
+        private readonly IJsonProcessor _jsonProcessor;
         private readonly IMessageBus _eventBus;
 
         public EventPublisher(Func<EventStoreContext> contextFactory,
                               TypeResolver typeResolver,
-                              IJsonSerializer serializer,
+                              IJsonProcessor jsonProcessor,
                               IMessageBus eventBus)
         {
             _contextFactory = contextFactory;
             _typeResolver = typeResolver;
-            _serializer = serializer;
+            _jsonProcessor = jsonProcessor;
             _eventBus = eventBus;
         }
 
@@ -85,7 +85,7 @@
 
         private Message GenerateMessage(PendingEvent entity)
         {
-            return entity.GenerateMessage(_typeResolver, _serializer);
+            return entity.GenerateMessage(_typeResolver, _jsonProcessor);
         }
     }
 }

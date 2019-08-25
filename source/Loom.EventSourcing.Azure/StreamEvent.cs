@@ -2,7 +2,7 @@
 {
     using System;
     using System.Reflection;
-    using Loom.EventSourcing.Serialization;
+    using Loom.Json;
     using Loom.Messaging;
     using Microsoft.Azure.Cosmos.Table;
 
@@ -66,18 +66,18 @@
 
         public static string FormatVersion(long version) => $"{version:D19}";
 
-        private object DeserializePayload(IJsonSerializer serializer, Type type)
-            => serializer.Deserialize(json: Payload, dataType: type);
+        private object DeserializePayload(IJsonProcessor jsonProcessor, Type type)
+            => jsonProcessor.FromJson(json: Payload, dataType: type);
 
         public object DeserializePayload(
-            TypeResolver typeResolver, IJsonSerializer serializer)
+            TypeResolver typeResolver, IJsonProcessor jsonProcessor)
         {
             Type type = typeResolver.TryResolveType(EventType);
-            return DeserializePayload(serializer, type);
+            return DeserializePayload(jsonProcessor, type);
         }
 
         public Message GenerateMessage(
-            TypeResolver typeResolver, IJsonSerializer serializer)
+            TypeResolver typeResolver, IJsonProcessor jsonProcessor)
         {
             Type type = typeResolver.TryResolveType(EventType);
 
@@ -97,7 +97,7 @@
                 StreamId,
                 Version,
                 RaisedTimeUtc,
-                DeserializePayload(serializer, type),
+                DeserializePayload(jsonProcessor, type),
             });
 
             return new Message(id: MessageId, data, TracingProperties);

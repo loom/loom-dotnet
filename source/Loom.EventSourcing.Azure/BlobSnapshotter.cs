@@ -4,7 +4,7 @@
     using System.IO;
     using System.Text;
     using System.Threading.Tasks;
-    using Loom.EventSourcing.Serialization;
+    using Loom.Json;
     using Microsoft.Azure.Storage.Blob;
 
     public class BlobSnapshotter<T> : ISnapshotter
@@ -12,15 +12,15 @@
         private static readonly Encoding _encoding = Encoding.UTF8;
 
         private readonly IStateRehydrator<T> _rehydrator;
-        private readonly IJsonSerializer _serializer;
+        private readonly IJsonProcessor _jsonProcessor;
         private readonly CloudBlobContainer _container;
 
         public BlobSnapshotter(IStateRehydrator<T> rehydrator,
-                               IJsonSerializer serializer,
+                               IJsonProcessor jsonProcessor,
                                CloudBlobContainer container)
         {
             _rehydrator = rehydrator;
-            _serializer = serializer;
+            _jsonProcessor = jsonProcessor;
             _container = container;
         }
 
@@ -46,7 +46,7 @@
 
         private async Task SetContent(CloudBlockBlob blob, T state)
         {
-            string content = _serializer.Serialize(state);
+            string content = _jsonProcessor.ToJson(state);
             using (var source = new MemoryStream(_encoding.GetBytes(content)))
             {
                 await blob.UploadFromStreamAsync(source).ConfigureAwait(continueOnCapturedContext: false);

@@ -4,18 +4,19 @@
     using System.IO;
     using System.Text;
     using System.Threading.Tasks;
-    using Loom.EventSourcing.Serialization;
+    using Loom.Json;
     using Microsoft.Azure.Storage.Blob;
 
     public class BlobSnapshotReader<T> : ISnapshotReader<T>
     {
         private readonly CloudBlobContainer _container;
-        private readonly IJsonSerializer _serializer;
+        private readonly IJsonProcessor _jsonProcessor;
 
-        public BlobSnapshotReader(CloudBlobContainer container, IJsonSerializer serializer)
+        public BlobSnapshotReader(CloudBlobContainer container,
+                                  IJsonProcessor jsonProcessor)
         {
             _container = container;
-            _serializer = serializer;
+            _jsonProcessor = jsonProcessor;
         }
 
         public async Task<T> TryRestoreSnapshot(Guid streamId)
@@ -37,7 +38,7 @@
             {
                 await blob.DownloadToStreamAsync(stream).ConfigureAwait(continueOnCapturedContext: false);
                 string content = Encoding.UTF8.GetString(stream.ToArray());
-                return (T)_serializer.Deserialize(content, dataType: typeof(T));
+                return (T)_jsonProcessor.FromJson(content, dataType: typeof(T));
             }
         }
     }

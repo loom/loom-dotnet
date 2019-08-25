@@ -2,15 +2,15 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <RootNamespace>Loom.EventSourcing.Azure</RootNamespace>
+    <RootNamespace>Loom.Json</RootNamespace>
     <LangVersion>latest</LangVersion>
     <CodeAnalysisRuleSet>..\RuleSets\Loom.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 
   <PropertyGroup>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <PackageId>Loom.EventSourcing.Azure</PackageId>
-    <Description>Microsoft Azure based event sourcing implementation.</Description>
+    <PackageId>Loom.Json.Interfaces</PackageId>
+    <Description>Defines interfaces for JSON serialization.</Description>
     <Version>0.12.0</Version>
     <Authors>Gyuwon</Authors>
     <Copyright>Copyright (c) 2019 Yi Gyuwon</Copyright>
@@ -19,8 +19,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Azure.Cosmos.Table" Version="1.0.1" />
-    <PackageReference Include="Microsoft.Azure.Storage.Blob" Version="10.0.2" />
     <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.3">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
@@ -28,18 +26,6 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Loom.EventSourcing.Abstraction" Version="0.12.0" Exclude="*" />
-    <PackageReference Include="Loom.Json.Interfaces" Version="0.12.0" Exclude="*" />
-    <PackageReference Include="Loom.Messaging.Abstraction" Version="0.12.0" Exclude="*" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Loom.EventSourcing.Abstraction\Loom.EventSourcing.Abstraction.csproj" />
-    <ProjectReference Include="..\Loom.Json.Interfaces\Loom.Json.Interfaces.csproj" />
-    <ProjectReference Include="..\Loom.Messaging.Abstraction\Loom.Messaging.Abstraction.csproj" />
   </ItemGroup>
 
 </Project>
