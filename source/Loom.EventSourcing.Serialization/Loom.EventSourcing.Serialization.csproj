@@ -1,0 +1,39 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <CodeAnalysisRuleSet>..\RuleSets\Loom.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageId>Loom.EventSourcing.Serialization</PackageId>
+    <Description>Support serialization for event sourcing.</Description>
+    <Version>0.11.0</Version>
+    <Authors>Gyuwon</Authors>
+    <Copyright>Copyright (c) 2019 Yi Gyuwon</Copyright>
+    <PackageProjectUrl>https://github.com/loom/loom-dotnet</PackageProjectUrl>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.3">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Loom.EventSourcing.Abstraction" Version="0.11.0" Exclude="*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Loom.EventSourcing.Abstraction\Loom.EventSourcing.Abstraction.csproj" />
+  </ItemGroup>
+
+</Project>
