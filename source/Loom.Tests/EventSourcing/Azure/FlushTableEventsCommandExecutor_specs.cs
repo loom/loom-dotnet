@@ -3,6 +3,7 @@
     using System;
     using System.Threading.Tasks;
     using FluentAssertions;
+    using Loom.EventSourcing.Serialization;
     using Loom.Messaging;
     using Loom.Testing;
     using Microsoft.Azure.Cosmos.Table;
@@ -11,17 +12,25 @@
     [TestClass]
     public class FlushTableEventsCommandExecutor_specs
     {
-        private static CloudTable Table { get; } = StorageEmulator.EventStoreTable;
+        private CloudTable Table { get; } = StorageEmulator.EventStoreTable;
 
-        private static TypeResolver TypeResolver { get; } = new TypeResolver(
+        private TypeResolver TypeResolver { get; } = new TypeResolver(
             new FullNameTypeNameResolvingStrategy(),
             new TypeResolvingStrategy());
+
+        private IJsonSerializer Serializer { get; } = new DefaultJsonSerializer();
 
         [TestMethod]
         public void sut_implements_IMessageHandler()
         {
             typeof(FlushTableEventsCommandExecutor).Should().Implement<IMessageHandler>();
         }
+
+        private FlushTableEventsCommandExecutor GenerateSut(IMessageBus eventBus) =>
+            new FlushTableEventsCommandExecutor(Table, TypeResolver, Serializer, eventBus);
+
+        private TableEventStore<State1> GenerateEventStore(IMessageBus eventBus) =>
+            new TableEventStore<State1>(Table, TypeResolver, Serializer, eventBus);
 
         [TestMethod, AutoData]
         public void CanHandle_returns_true_for_FlushTableEvents_command_message(
@@ -31,7 +40,7 @@
             IMessageBus eventBus)
         {
             var message = new Message(id: commandId, data: command, tracingProperties);
-            var sut = new FlushTableEventsCommandExecutor(Table, TypeResolver, eventBus);
+            FlushTableEventsCommandExecutor sut = GenerateSut(eventBus);
 
             bool actual = sut.CanHandle(message);
 
@@ -46,7 +55,7 @@
             IMessageBus eventBus)
         {
             var message = new Message(id, data, tracingProperties);
-            var sut = new FlushTableEventsCommandExecutor(Table, TypeResolver, eventBus);
+            FlushTableEventsCommandExecutor sut = GenerateSut(eventBus);
 
             bool actual = sut.CanHandle(message);
 
@@ -64,10 +73,10 @@
         {
             // Arrange
             var brokenEventBus = new MessageBusDouble(errors: 1);
-            var eventStore = new TableEventStore<State1>(Table, TypeResolver, brokenEventBus);
-            await TryForget(() => eventStore.CollectEvents(streamId, startVersion, events));
+            TableEventStore<State1> eventStore = GenerateEventStore(brokenEventBus);
+            await TryCatchIgnore(() => eventStore.CollectEvents(streamId, startVersion, events));
 
-            var sut = new FlushTableEventsCommandExecutor(Table, TypeResolver, eventBus);
+            FlushTableEventsCommandExecutor sut = GenerateSut(eventBus);
             var command = new FlushTableEvents(TypeResolver.ResolveTypeName<State1>(), streamId);
             var message = new Message(id: commandId, data: command, tracingProperties);
 
@@ -89,10 +98,10 @@
         {
             // Arrange
             var brokenEventBus = new MessageBusDouble(errors: 1);
-            var eventStore = new TableEventStore<State1>(Table, TypeResolver, brokenEventBus);
-            await TryForget(() => eventStore.CollectEvents(streamId, startVersion, events));
+            TableEventStore<State1> eventStore = GenerateEventStore(brokenEventBus);
+            await TryCatchIgnore(() => eventStore.CollectEvents(streamId, startVersion, events));
 
-            var sut = new FlushTableEventsCommandExecutor(Table, TypeResolver, eventBus);
+            FlushTableEventsCommandExecutor sut = GenerateSut(eventBus);
             var command = new FlushTableEvents(TypeResolver.ResolveTypeName<State1>(), streamId);
             var message = new Message(id: commandId, data: command, tracingProperties);
 
@@ -104,7 +113,7 @@
             eventBus.Calls.Should().BeEquivalentTo(brokenEventBus.Calls);
         }
 
-        private static async Task TryForget(Func<Task> action)
+        private static async Task TryCatchIgnore(Func<Task> action)
         {
             try
             {

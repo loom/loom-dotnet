@@ -2,9 +2,9 @@
 {
     using System;
     using System.Reflection;
+    using Loom.EventSourcing.Serialization;
     using Loom.Messaging;
     using Microsoft.Azure.Cosmos.Table;
-    using Newtonsoft.Json;
 
     internal class StreamEvent : TableEntity
     {
@@ -66,27 +66,38 @@
 
         public static string FormatVersion(long version) => $"{version:D19}";
 
-        private object DeserializePayload(Type type)
-            => JsonConvert.DeserializeObject(Payload, type);
+        private object DeserializePayload(IJsonSerializer serializer, Type type)
+            => serializer.Deserialize(json: Payload, dataType: type);
 
-        public object DeserializePayload(TypeResolver typeResolver)
-            => DeserializePayload(type: typeResolver.TryResolveType(EventType));
+        public object DeserializePayload(
+            TypeResolver typeResolver, IJsonSerializer serializer)
+        {
+            Type type = typeResolver.TryResolveType(EventType);
+            return DeserializePayload(serializer, type);
+        }
 
-        public Message GenerateMessage(TypeResolver typeResolver)
+        public Message GenerateMessage(
+            TypeResolver typeResolver, IJsonSerializer serializer)
         {
             Type type = typeResolver.TryResolveType(EventType);
 
             ConstructorInfo constructor = typeof(StreamEvent<>)
                 .MakeGenericType(type)
                 .GetTypeInfo()
-                .GetConstructor(new[] { typeof(Guid), typeof(long), typeof(DateTime), type });
+                .GetConstructor(types: new[]
+                {
+                    typeof(Guid),
+                    typeof(long),
+                    typeof(DateTime),
+                    type,
+                });
 
             object data = constructor.Invoke(parameters: new object[]
             {
                 StreamId,
                 Version,
                 RaisedTimeUtc,
-                DeserializePayload(type),
+                DeserializePayload(serializer, type),
             });
 
             return new Message(id: MessageId, data, TracingProperties);

@@ -8,17 +8,21 @@
     using Loom.Testing;
     using Microsoft.Azure.Cosmos.Table;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using Moq;
 
     [TestClass]
     public class TableEventStore_specs :
         EventStoreUnitTests<TableEventStore<State1>>
     {
-        protected override TableEventStore<State1> GenerateEventStore(
-            TypeResolver typeResolver, IMessageBus eventBus)
+        private CloudTable Table { get; } = StorageEmulator.EventStoreTable;
+
+        protected override TableEventStore<State1> GenerateEventStore(IMessageBus eventBus)
         {
-            CloudTable table = StorageEmulator.EventStoreTable;
-            return new TableEventStore<State1>(table, typeResolver, eventBus);
+            return GenerateEventStore<State1>(eventBus);
+        }
+
+        private TableEventStore<T> GenerateEventStore<T>(IMessageBus eventBus)
+        {
+            return new TableEventStore<T>(Table, TypeResolver, Serializer, eventBus);
         }
 
         [TestMethod, AutoData]
@@ -26,14 +30,8 @@
             IMessageBus eventBus, Guid streamId, Event1 evt1, Event2 evt2)
         {
             // Arrange
-            CloudTable table = StorageEmulator.EventStoreTable;
-
-            var typeResolver = new TypeResolver(
-                new FullNameTypeNameResolvingStrategy(),
-                new TypeResolvingStrategy());
-
-            var store1 = new TableEventStore<State1>(table, typeResolver, eventBus);
-            var store2 = new TableEventStore<State2>(table, typeResolver, eventBus);
+            TableEventStore<State1> store1 = GenerateEventStore<State1>(eventBus);
+            TableEventStore<State2> store2 = GenerateEventStore<State2>(eventBus);
 
             int startVersion = 1;
 
@@ -58,19 +56,8 @@
         public async Task CollectEvents_does_not_fail_for_empty_event_list(
             IMessageBus eventBus, Guid streamId)
         {
-            // Arrange
-            CloudTable table = StorageEmulator.EventStoreTable;
-
-            var typeResolver = new TypeResolver(
-                new FullNameTypeNameResolvingStrategy(),
-                new TypeResolvingStrategy());
-
-            var sut = new TableEventStore<State1>(table, typeResolver, eventBus);
-
-            // Act
+            TableEventStore<State1> sut = GenerateEventStore(eventBus);
             Func<Task> action = () => sut.CollectEvents(streamId, startVersion: 1, Array.Empty<object>());
-
-            // Assert
             await action.Should().NotThrowAsync();
         }
     }

@@ -4,21 +4,26 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
+    using Loom.EventSourcing.Serialization;
     using Loom.Messaging;
     using Microsoft.Azure.Cosmos.Table;
-    using Newtonsoft.Json;
 
     public class TableEventStore<T> : IEventStore<T>, IEventCollector, IEventReader
     {
         private readonly CloudTable _table;
         private readonly TypeResolver _typeResolver;
+        private readonly IJsonSerializer _serializer;
         private readonly EventPublisher _publisher;
 
-        public TableEventStore(CloudTable table, TypeResolver typeResolver, IMessageBus eventBus)
+        public TableEventStore(CloudTable table,
+                               TypeResolver typeResolver,
+                               IJsonSerializer serializer,
+                               IMessageBus eventBus)
         {
             _table = table;
             _typeResolver = typeResolver;
-            _publisher = new EventPublisher(table, typeResolver, eventBus);
+            _serializer = serializer;
+            _publisher = new EventPublisher(table, typeResolver, serializer, eventBus);
         }
 
         public Task CollectEvents(Guid streamId,
@@ -70,7 +75,7 @@
                         version: startVersion + i,
                         raisedTimeUtc: DateTime.UtcNow,
                         eventType: _typeResolver.ResolveTypeName(source.GetType()),
-                        payload: JsonConvert.SerializeObject(source),
+                        payload: _serializer.Serialize(source),
                         messageId: $"{Guid.NewGuid()}",
                         tracingProperties.OperationId,
                         tracingProperties.Contributor,
@@ -96,7 +101,7 @@
 
         private object DeserializeEvent(StreamEvent streamEvent)
         {
-            return streamEvent.DeserializePayload(_typeResolver);
+            return streamEvent.DeserializePayload(_typeResolver, _serializer);
         }
     }
 }

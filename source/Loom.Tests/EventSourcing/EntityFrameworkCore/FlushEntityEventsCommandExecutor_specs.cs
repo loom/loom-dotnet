@@ -3,6 +3,7 @@
     using System;
     using System.Threading.Tasks;
     using FluentAssertions;
+    using Loom.EventSourcing.Serialization;
     using Loom.Messaging;
     using Loom.Testing;
     using Microsoft.Data.Sqlite;
@@ -19,6 +20,8 @@
         private TypeResolver TypeResolver { get; } = new TypeResolver(
             new FullNameTypeNameResolvingStrategy(),
             new TypeResolvingStrategy());
+
+        private IJsonSerializer Serializer { get; } = new DefaultJsonSerializer();
 
         [TestInitialize]
         public async Task TestInitialize()
@@ -39,6 +42,13 @@
             typeof(FlushEntityEventsCommandExecutor).Should().Implement<IMessageHandler>();
         }
 
+        private FlushEntityEventsCommandExecutor GenerateSut(IMessageBus eventBus) =>
+            new FlushEntityEventsCommandExecutor(
+                ContextFactory, TypeResolver, Serializer, eventBus);
+
+        private EntityEventStore<T> GenerateEventStore<T>(IMessageBus eventBus) =>
+            new EntityEventStore<T>(ContextFactory, TypeResolver, Serializer, eventBus);
+
         [TestMethod, AutoData]
         public void CanHandle_returns_true_for_FlushEntityFrameworkEvents_command_message(
             string commandId,
@@ -47,7 +57,7 @@
             IMessageBus eventBus)
         {
             var message = new Message(id: commandId, data: command, tracingProperties);
-            var sut = new FlushEntityEventsCommandExecutor(ContextFactory, TypeResolver, eventBus);
+            FlushEntityEventsCommandExecutor sut = GenerateSut(eventBus);
 
             bool actual = sut.CanHandle(message);
 
@@ -62,7 +72,7 @@
             IMessageBus eventBus)
         {
             var message = new Message(id, data, tracingProperties);
-            var sut = new FlushEntityEventsCommandExecutor(ContextFactory, TypeResolver, eventBus);
+            FlushEntityEventsCommandExecutor sut = GenerateSut(eventBus);
 
             bool actual = sut.CanHandle(message);
 
@@ -80,10 +90,10 @@
         {
             // Arrange
             var brokenEventBus = new MessageBusDouble(errors: 1);
-            var eventStore = new EntityEventStore<State1>(ContextFactory, TypeResolver, brokenEventBus);
-            await TryForget(() => eventStore.CollectEvents(streamId, startVersion, events));
+            EntityEventStore<State1> eventStore = GenerateEventStore<State1>(brokenEventBus);
+            await TryCatchIgnore(() => eventStore.CollectEvents(streamId, startVersion, events));
 
-            var sut = new FlushEntityEventsCommandExecutor(ContextFactory, TypeResolver, eventBus);
+            FlushEntityEventsCommandExecutor sut = GenerateSut(eventBus);
             var command = new FlushEntityEvents(TypeResolver.ResolveTypeName<State1>(), streamId);
             var message = new Message(id: commandId, data: command, tracingProperties);
 
@@ -105,10 +115,10 @@
         {
             // Arrange
             var brokenEventBus = new MessageBusDouble(errors: 1);
-            var eventStore = new EntityEventStore<State1>(ContextFactory, TypeResolver, brokenEventBus);
-            await TryForget(() => eventStore.CollectEvents(streamId, startVersion, events));
+            EntityEventStore<State1> eventStore = GenerateEventStore<State1>(brokenEventBus);
+            await TryCatchIgnore(() => eventStore.CollectEvents(streamId, startVersion, events));
 
-            var sut = new FlushEntityEventsCommandExecutor(ContextFactory, TypeResolver, eventBus);
+            FlushEntityEventsCommandExecutor sut = GenerateSut(eventBus);
             var command = new FlushEntityEvents(TypeResolver.ResolveTypeName<State1>(), streamId);
             var message = new Message(id: commandId, data: command, tracingProperties);
 
@@ -120,7 +130,7 @@
             eventBus.Calls.Should().BeEquivalentTo(brokenEventBus.Calls);
         }
 
-        private static async Task TryForget(Func<Task> action)
+        private static async Task TryCatchIgnore(Func<Task> action)
         {
             try
             {

@@ -5,6 +5,7 @@
     using System.Linq;
     using System.Threading.Tasks;
     using FluentAssertions;
+    using Loom.EventSourcing.Serialization;
     using Loom.Messaging;
     using Loom.Testing;
     using Microsoft.Data.Sqlite;
@@ -22,6 +23,8 @@
             new FullNameTypeNameResolvingStrategy(),
             new TypeResolvingStrategy());
 
+        private IJsonSerializer Serializer { get; } = new DefaultJsonSerializer();
+
         [TestInitialize]
         public async Task TestInitialize()
         {
@@ -38,14 +41,17 @@
         [TestCleanup]
         public void TestCleanup() => Connection.Dispose();
 
+        private EntityEventStore<T> GenerateEventStore<T>(IMessageBus eventBus) =>
+            new EntityEventStore<T>(ContextFactory, TypeResolver, Serializer, eventBus);
+
         [TestMethod, AutoData]
         public async Task sut_sends_flush_commands_for_streams_containing_cold_pending_events(
             Guid streamId, long startVersion, Event1[] events, MessageBusDouble commandBus)
         {
             // Arrange
             var eventBus = new MessageBusDouble(errors: 1);
-            var eventStore = new EntityEventStore<State1>(ContextFactory, TypeResolver, eventBus);
-            await TryForget(() => eventStore.CollectEvents(streamId, startVersion, events));
+            EntityEventStore<State1> eventStore = GenerateEventStore<State1>(eventBus);
+            await TryCatchIgnore(() => eventStore.CollectEvents(streamId, startVersion, events));
 
             var sut = new PendingEntityEventScanner(ContextFactory, commandBus);
 
@@ -78,8 +84,8 @@
         {
             // Arrange
             var eventBus = new MessageBusDouble(errors: 1);
-            var eventStore = new EntityEventStore<State1>(ContextFactory, TypeResolver, eventBus);
-            await TryForget(() => eventStore.CollectEvents(streamId, startVersion, events));
+            EntityEventStore<State1> eventStore = GenerateEventStore<State1>(eventBus);
+            await TryCatchIgnore(() => eventStore.CollectEvents(streamId, startVersion, events));
 
             var sut = new PendingEntityEventScanner(ContextFactory, commandBus);
 
@@ -99,9 +105,9 @@
         {
             // Arrange
             var eventBus = new MessageBusDouble(errors: 2);
-            var eventStore = new EntityEventStore<State1>(ContextFactory, TypeResolver, eventBus);
-            await TryForget(() => eventStore.CollectEvents(streamId, startVersion, events));
-            await TryForget(() => eventStore.CollectEvents(streamId, startVersion + events.Length, events));
+            EntityEventStore<State1> eventStore = GenerateEventStore<State1>(eventBus);
+            await TryCatchIgnore(() => eventStore.CollectEvents(streamId, startVersion, events));
+            await TryCatchIgnore(() => eventStore.CollectEvents(streamId, startVersion + events.Length, events));
 
             var sut = new PendingEntityEventScanner(ContextFactory, commandBus);
 
@@ -118,8 +124,8 @@
         {
             // Arrange
             var eventBus = new MessageBusDouble(errors: 1);
-            var eventStore = new EntityEventStore<State1>(ContextFactory, TypeResolver, eventBus);
-            await TryForget(() => eventStore.CollectEvents(streamId, startVersion, events));
+            EntityEventStore<State1> eventStore = GenerateEventStore<State1>(eventBus);
+            await TryCatchIgnore(() => eventStore.CollectEvents(streamId, startVersion, events));
 
             var minimumPendingTime = TimeSpan.FromSeconds(1);
             var sut = new PendingEntityEventScanner(ContextFactory, commandBus, minimumPendingTime);
@@ -131,7 +137,7 @@
             commandBus.Calls.Should().BeEmpty();
         }
 
-        private static async Task TryForget(Func<Task> action)
+        private static async Task TryCatchIgnore(Func<Task> action)
         {
             try
             {

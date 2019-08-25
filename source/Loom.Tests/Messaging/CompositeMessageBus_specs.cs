@@ -38,13 +38,13 @@
             var sut = new CompositeMessageBus(buses);
 
             // Act
-            await TryForget(() => sut.Send(messages, partitionKey));
+            await TryCatchIgnore(() => sut.Send(messages, partitionKey));
 
             // Assert
             buses.Select(Mock.Get).ForEach(bus => bus.Verify(x => x.Send(messages, partitionKey), Times.Once()));
         }
 
-        private async Task TryForget(Func<Task> action)
+        private async Task TryCatchIgnore(Func<Task> action)
         {
             try
             {

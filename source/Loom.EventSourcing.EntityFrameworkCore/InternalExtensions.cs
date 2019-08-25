@@ -3,8 +3,8 @@
     using System;
     using System.Linq;
     using System.Reflection;
+    using Loom.EventSourcing.Serialization;
     using Loom.Messaging;
-    using Newtonsoft.Json;
 
     internal static class InternalExtensions
     {
@@ -19,8 +19,9 @@
                    select e;
         }
 
-        public static Message GenerateMessage(
-            this PendingEvent entity, TypeResolver typeResolver)
+        public static Message GenerateMessage(this PendingEvent entity,
+                                              TypeResolver typeResolver,
+                                              IJsonSerializer serializer)
         {
             Type type = typeResolver.TryResolveType(entity.EventType);
 
@@ -34,7 +35,7 @@
                 entity.StreamId,
                 entity.Version,
                 new DateTime(entity.RaisedTimeUtc.Ticks, DateTimeKind.Utc),
-                JsonConvert.DeserializeObject(entity.Payload, type),
+                serializer.Deserialize(entity.Payload, type),
             });
 
             return new Message(id: entity.MessageId, data, entity.TracingProperties);

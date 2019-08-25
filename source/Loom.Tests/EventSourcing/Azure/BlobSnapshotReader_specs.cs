@@ -4,6 +4,7 @@
     using System.Threading.Tasks;
     using AutoFixture;
     using FluentAssertions;
+    using Loom.EventSourcing.Serialization;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Moq;
     using static StorageEmulator;
@@ -27,6 +28,8 @@
             public Guid Value3 { get; }
         }
 
+        private IJsonSerializer Serializer { get; } = new DefaultJsonSerializer();
+
         [TestMethod]
         public void sut_implements_ISnapshotReaderT()
         {
@@ -34,10 +37,13 @@
                 .Should().Implement<ISnapshotReader<State>>();
         }
 
+        private BlobSnapshotReader<State> GenerateSut() =>
+            new BlobSnapshotReader<State>(SnapshotContainer, Serializer);
+
         [TestMethod]
         public async Task TryRestoreSnapshot_returns_null_if_snapshot_not_exists()
         {
-            var sut = new BlobSnapshotReader<State>(SnapshotContainer);
+            BlobSnapshotReader<State> sut = GenerateSut();
             var streamId = Guid.NewGuid();
 
             State actual = await sut.TryRestoreSnapshot(streamId);
@@ -49,7 +55,7 @@
         public async Task TryRestoreSnapshot_restores_snapshot_correctly_if_it_exists()
         {
             // Arrange
-            var sut = new BlobSnapshotReader<State>(SnapshotContainer);
+            BlobSnapshotReader<State> sut = GenerateSut();
             var streamId = Guid.NewGuid();
 
             State state = new Fixture().Create<State>();
@@ -61,7 +67,7 @@
                 .ReturnsAsync(state);
 
             var snapshotter = new BlobSnapshotter<State>(
-                rehydrator, SnapshotContainer);
+                rehydrator, Serializer, SnapshotContainer);
             await snapshotter.TakeSnapshot(streamId);
 
             // Act

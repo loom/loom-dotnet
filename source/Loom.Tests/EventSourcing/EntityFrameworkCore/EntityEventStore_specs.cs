@@ -35,11 +35,15 @@
             _connection.Dispose();
         }
 
-        protected override EntityEventStore<State1> GenerateEventStore(
-            TypeResolver typeResolver, IMessageBus eventBus)
+        protected override EntityEventStore<State1> GenerateEventStore(IMessageBus eventBus)
+        {
+            return GenerateEventStore<State1>(eventBus);
+        }
+
+        protected EntityEventStore<T> GenerateEventStore<T>(IMessageBus eventBus)
         {
             EventStoreContext factory() => new EventStoreContext(_options);
-            return new EntityEventStore<State1>(factory, typeResolver, eventBus);
+            return new EntityEventStore<T>(factory, TypeResolver, Serializer, eventBus);
         }
 
         [TestMethod, AutoData]
@@ -47,14 +51,8 @@
             IMessageBus eventBus, Guid streamId, Event1 evt1, Event2 evt2)
         {
             // Arrange
-            EventStoreContext factory() => new EventStoreContext(_options);
-
-            var typeResolver = new TypeResolver(
-                new FullNameTypeNameResolvingStrategy(),
-                new TypeResolvingStrategy());
-
-            var store1 = new EntityEventStore<State1>(factory, typeResolver, eventBus);
-            var store2 = new EntityEventStore<State2>(factory, typeResolver, eventBus);
+            EntityEventStore<State1> store1 = GenerateEventStore<State1>(eventBus);
+            EntityEventStore<State2> store2 = GenerateEventStore<State2>(eventBus);
 
             int startVersion = 1;
 

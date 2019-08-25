@@ -4,20 +4,23 @@
     using System.IO;
     using System.Text;
     using System.Threading.Tasks;
+    using Loom.EventSourcing.Serialization;
     using Microsoft.Azure.Storage.Blob;
-    using Newtonsoft.Json;
 
     public class BlobSnapshotter<T> : ISnapshotter
     {
         private static readonly Encoding _encoding = Encoding.UTF8;
 
         private readonly IStateRehydrator<T> _rehydrator;
+        private readonly IJsonSerializer _serializer;
         private readonly CloudBlobContainer _container;
 
-        public BlobSnapshotter(
-            IStateRehydrator<T> rehydrator, CloudBlobContainer container)
+        public BlobSnapshotter(IStateRehydrator<T> rehydrator,
+                               IJsonSerializer serializer,
+                               CloudBlobContainer container)
         {
             _rehydrator = rehydrator;
+            _serializer = serializer;
             _container = container;
         }
 
@@ -41,9 +44,9 @@
             return _container.GetBlockBlobReference($"{streamId}.json");
         }
 
-        private static async Task SetContent(CloudBlockBlob blob, T state)
+        private async Task SetContent(CloudBlockBlob blob, T state)
         {
-            string content = JsonConvert.SerializeObject(state);
+            string content = _serializer.Serialize(state);
             using (var source = new MemoryStream(_encoding.GetBytes(content)))
             {
                 await blob.UploadFromStreamAsync(source).ConfigureAwait(continueOnCapturedContext: false);

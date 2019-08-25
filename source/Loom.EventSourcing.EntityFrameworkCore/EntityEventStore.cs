@@ -5,24 +5,27 @@
     using System.Collections.Immutable;
     using System.Linq;
     using System.Threading.Tasks;
+    using Loom.EventSourcing.Serialization;
     using Loom.Messaging;
     using Microsoft.EntityFrameworkCore;
-    using Newtonsoft.Json;
 
     public class EntityEventStore<T> :
         IEventStore<T>, IEventCollector, IEventReader
     {
         private readonly Func<EventStoreContext> _contextFactory;
         private readonly TypeResolver _typeResolver;
+        private readonly IJsonSerializer _serializer;
         private readonly EventPublisher _publisher;
 
         public EntityEventStore(Func<EventStoreContext> contextFactory,
                                 TypeResolver typeResolver,
+                                IJsonSerializer serializer,
                                 IMessageBus eventBus)
         {
             _contextFactory = contextFactory;
             _typeResolver = typeResolver;
-            _publisher = new EventPublisher(contextFactory, typeResolver, eventBus);
+            _serializer = serializer;
+            _publisher = new EventPublisher(contextFactory, typeResolver, serializer, eventBus);
         }
 
         public Task CollectEvents(Guid streamId,
@@ -62,7 +65,7 @@
                             version: startVersion + i,
                             raisedTimeUtc: DateTime.UtcNow,
                             eventType: _typeResolver.ResolveTypeName(source.GetType()),
-                            payload: JsonConvert.SerializeObject(source),
+                            payload: _serializer.Serialize(source),
                             messageId: $"{Guid.NewGuid()}",
                             tracingProperties.OperationId,
                             tracingProperties.Contributor,
@@ -103,7 +106,7 @@
                         .ConfigureAwait(continueOnCapturedContext: false)
                     let value = e.Payload
                     let type = _typeResolver.TryResolveType(e.EventType)
-                    select JsonConvert.DeserializeObject(value, type);
+                    select _serializer.Deserialize(value, type);
 
                 return sequence.ToImmutableArray();
             }

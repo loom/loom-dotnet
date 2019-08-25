@@ -8,6 +8,7 @@
     using System.Threading.Tasks;
     using FluentAssertions;
     using FluentAssertions.Equivalency;
+    using Loom.EventSourcing.Serialization;
     using Loom.Messaging;
     using Loom.Testing;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -16,11 +17,13 @@
     public abstract class EventStoreUnitTests<T>
         where T : IEventCollector, IEventReader
     {
-        private static readonly TypeResolver _typeResolver = new TypeResolver(
+        protected static TypeResolver TypeResolver { get; } = new TypeResolver(
             new FullNameTypeNameResolvingStrategy(),
             new TypeResolvingStrategy());
 
-        protected abstract T GenerateEventStore(TypeResolver typeResolver, IMessageBus eventBus);
+        protected static IJsonSerializer Serializer { get; } = new DefaultJsonSerializer();
+
+        protected abstract T GenerateEventStore(IMessageBus eventBus);
 
         [TestMethod, AutoData]
         public async Task QueryEvents_restores_events_correctly(
@@ -32,7 +35,7 @@
             Event4 evt4)
         {
             // Arrange
-            T sut = GenerateEventStore(_typeResolver, eventBus);
+            T sut = GenerateEventStore(eventBus);
             var events = new List<object>(
                 from e in new object[] { evt1, evt2, evt3, evt4 }
                 orderby e.GetHashCode()
@@ -58,7 +61,7 @@
             Event4 evt4)
         {
             // Arrange
-            T sut = GenerateEventStore(_typeResolver, eventBus);
+            T sut = GenerateEventStore(eventBus);
             int startVersion = 1;
             var events = new List<object>(
                 from e in new object[] { evt1, evt2, evt3, evt4 }
@@ -85,7 +88,7 @@
             Event4 evt4)
         {
             // Arrange
-            T sut = GenerateEventStore(_typeResolver, eventBus);
+            T sut = GenerateEventStore(eventBus);
             var events = new List<object>(
                 from e in new object[] { evt1, evt2, evt3, evt4 }
                 orderby e.GetHashCode()
@@ -105,7 +108,7 @@
             IMessageBus eventBus, Guid streamId, Event4 evt)
         {
             // Arrange
-            T sut = GenerateEventStore(_typeResolver, eventBus);
+            T sut = GenerateEventStore(eventBus);
             int version = 1;
             object[] events = new[] { evt };
             await sut.CollectEvents(streamId, startVersion: version, events);
@@ -129,7 +132,7 @@
             TracingProperties tracingProperties)
         {
             // Arrange
-            T sut = GenerateEventStore(_typeResolver, eventBus: spy);
+            T sut = GenerateEventStore(eventBus: spy);
             object[] events = new object[] { evt1, evt2, evt3, evt4 };
 
             // Act
@@ -168,7 +171,7 @@
             MessageBusDouble spy, Guid streamId, int version, Event1 evt1, Event2 evt2)
         {
             // Arrange
-            T sut = GenerateEventStore(_typeResolver, eventBus: spy);
+            T sut = GenerateEventStore(eventBus: spy);
             await sut.CollectEvents(streamId, startVersion: version, new[] { evt1 });
             spy.Clear();
 
@@ -191,7 +194,7 @@
             Event4 evt4)
         {
             // Arrange
-            T sut = GenerateEventStore(_typeResolver, eventBus: stub);
+            T sut = GenerateEventStore(eventBus: stub);
 
             Mock.Get(stub)
                 .Setup(x => x.Send(It.IsAny<IEnumerable<Message>>(), It.IsAny<string>()))
@@ -244,7 +247,7 @@
             Event4 evt4)
         {
             // Arrange
-            T sut = GenerateEventStore(_typeResolver, eventBus: spy);
+            T sut = GenerateEventStore(eventBus: spy);
 
             // Act
             await sut.CollectEvents(streamId, startVersion, new object[] { evt1, evt2 });
@@ -281,7 +284,7 @@
             Event4 evt4)
         {
             // Arrange
-            T sut = GenerateEventStore(_typeResolver, eventBus: spy);
+            T sut = GenerateEventStore(eventBus: spy);
 
             // Act
             await sut.CollectEvents(streamId, startVersion, new object[] { evt1, evt2 });
@@ -301,7 +304,7 @@
             Event2 evt2)
         {
             // Arrange
-            T sut = GenerateEventStore(_typeResolver, eventBus: stub);
+            T sut = GenerateEventStore(eventBus: stub);
 
             // Act
             Mock.Get(stub)
@@ -334,7 +337,7 @@
             MessageBusDouble spy, Guid streamId, Event1 evt)
         {
             // Arrange
-            T sut = GenerateEventStore(_typeResolver, eventBus: spy);
+            T sut = GenerateEventStore(eventBus: spy);
             int startVersion = 1;
             DateTime nowUtc = DateTime.UtcNow;
 
@@ -358,7 +361,7 @@
             Event2 evt2)
         {
             // Arrange
-            T sut = GenerateEventStore(_typeResolver, eventBus: stub);
+            T sut = GenerateEventStore(eventBus: stub);
 
             // Act
             Mock.Get(stub)

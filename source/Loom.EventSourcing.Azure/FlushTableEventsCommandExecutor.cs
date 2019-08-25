@@ -1,6 +1,7 @@
 ﻿namespace Loom.EventSourcing.Azure
 {
     using System.Threading.Tasks;
+    using Loom.EventSourcing.Serialization;
     using Loom.Messaging;
     using Microsoft.Azure.Cosmos.Table;
 
@@ -9,9 +10,12 @@
         private readonly EventPublisher _publisher;
 
         public FlushTableEventsCommandExecutor(
-            CloudTable table, TypeResolver typeResolver, IMessageBus eventBus)
+            CloudTable table,
+            TypeResolver typeResolver,
+            IJsonSerializer serializer,
+            IMessageBus eventBus)
         {
-            _publisher = new EventPublisher(table, typeResolver, eventBus);
+            _publisher = new EventPublisher(table, typeResolver, serializer, eventBus);
         }
 
         public bool CanHandle(Message message)
