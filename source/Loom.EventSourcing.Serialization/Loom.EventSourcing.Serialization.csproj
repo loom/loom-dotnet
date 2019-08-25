@@ -10,7 +10,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>Loom.EventSourcing.Serialization</PackageId>
     <Description>Support serialization for event sourcing.</Description>
-    <Version>0.11.0</Version>
+    <Version>0.12.0</Version>
     <Authors>Gyuwon</Authors>
     <Copyright>Copyright (c) 2019 Yi Gyuwon</Copyright>
     <PackageProjectUrl>https://github.com/loom/loom-dotnet</PackageProjectUrl>
@@ -29,7 +29,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Loom.EventSourcing.Abstraction" Version="0.11.0" Exclude="*" />
+    <PackageReference Include="Loom.EventSourcing.Abstraction" Version="0.12.0" Exclude="*" />
   </ItemGroup>
 
   <ItemGroup>
