@@ -12,4 +12,8 @@
                            IEnumerable<object> events,
                            TracingProperties tracingProperties = default);
     }
+
+    public interface IEventCollector<T> : IEventCollector
+    {
+    }
 }
