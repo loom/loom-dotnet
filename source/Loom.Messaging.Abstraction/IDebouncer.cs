@@ -7,7 +7,7 @@
     {
         Task Register(IDebouncable debouncable);
 
-        Task<bool> TryProceed<T>(T debouncable, Func<T, Task> proceed)
+        Task<bool> TryConsume<T>(T debouncable, Func<T, Task> consumer)
             where T : IDebouncable;
     }
 }

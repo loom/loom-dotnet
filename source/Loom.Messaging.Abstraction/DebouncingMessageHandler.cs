@@ -19,7 +19,7 @@
 
         public Task Handle(Message message)
             => message?.Data is IDebouncable debouncable
-            ? _debouncer.TryProceed(debouncable, _ => _handler.Handle(message))
+            ? _debouncer.TryConsume(debouncable, _ => _handler.Handle(message))
             : _handler.Handle(message);
     }
 }
