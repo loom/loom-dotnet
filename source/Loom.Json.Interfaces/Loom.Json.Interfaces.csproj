@@ -11,7 +11,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>Loom.Json.Interfaces</PackageId>
     <Description>Defines interfaces for JSON serialization.</Description>
-    <Version>0.14.0</Version>
+    <Version>0.15.0</Version>
     <Authors>Gyuwon</Authors>
     <Copyright>Copyright (c) 2019 Yi Gyuwon</Copyright>
     <PackageProjectUrl>https://github.com/loom/loom-dotnet</PackageProjectUrl>
