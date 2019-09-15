@@ -12,7 +12,7 @@
     using Newtonsoft.Json;
 
     [TestClass]
-    public class FlushEntityEventsCommandExecutor_specs
+    public class EntityFlushEventsCommandExecutor_specs
     {
         private SqliteConnection Connection { get; set; }
 
@@ -40,11 +40,11 @@
         [TestMethod]
         public void sut_implements_IMessageHandler()
         {
-            typeof(FlushEntityEventsCommandExecutor).Should().Implement<IMessageHandler>();
+            typeof(EntityFlushEventsCommandExecutor).Should().Implement<IMessageHandler>();
         }
 
-        private FlushEntityEventsCommandExecutor GenerateSut(IMessageBus eventBus) =>
-            new FlushEntityEventsCommandExecutor(
+        private EntityFlushEventsCommandExecutor GenerateSut(IMessageBus eventBus) =>
+            new EntityFlushEventsCommandExecutor(
                 ContextFactory, TypeResolver, JsonProcessor, eventBus);
 
         private EntityEventStore<T> GenerateEventStore<T>(IMessageBus eventBus) =>
@@ -58,7 +58,7 @@
             IMessageBus eventBus)
         {
             var message = new Message(id: commandId, data: command, tracingProperties);
-            FlushEntityEventsCommandExecutor sut = GenerateSut(eventBus);
+            EntityFlushEventsCommandExecutor sut = GenerateSut(eventBus);
 
             bool actual = sut.CanHandle(message);
 
@@ -73,7 +73,7 @@
             IMessageBus eventBus)
         {
             var message = new Message(id, data, tracingProperties);
-            FlushEntityEventsCommandExecutor sut = GenerateSut(eventBus);
+            EntityFlushEventsCommandExecutor sut = GenerateSut(eventBus);
 
             bool actual = sut.CanHandle(message);
 
@@ -94,7 +94,7 @@
             EntityEventStore<State1> eventStore = GenerateEventStore<State1>(brokenEventBus);
             await TryCatchIgnore(() => eventStore.CollectEvents(streamId, startVersion, events));
 
-            FlushEntityEventsCommandExecutor sut = GenerateSut(eventBus);
+            EntityFlushEventsCommandExecutor sut = GenerateSut(eventBus);
             var command = new FlushEvents(TypeResolver.ResolveTypeName<State1>(), streamId);
             var message = new Message(id: commandId, data: command, tracingProperties);
 
@@ -119,7 +119,7 @@
             EntityEventStore<State1> eventStore = GenerateEventStore<State1>(brokenEventBus);
             await TryCatchIgnore(() => eventStore.CollectEvents(streamId, startVersion, events));
 
-            FlushEntityEventsCommandExecutor sut = GenerateSut(eventBus);
+            EntityFlushEventsCommandExecutor sut = GenerateSut(eventBus);
             var command = new FlushEvents(TypeResolver.ResolveTypeName<State1>(), streamId);
             var message = new Message(id: commandId, data: command, tracingProperties);
 

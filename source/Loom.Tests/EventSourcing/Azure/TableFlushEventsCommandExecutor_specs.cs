@@ -11,7 +11,7 @@
     using Newtonsoft.Json;
 
     [TestClass]
-    public class FlushTableEventsCommandExecutor_specs
+    public class TableFlushEventsCommandExecutor_specs
     {
         private CloudTable Table { get; } = StorageEmulator.EventStoreTable;
 
@@ -24,11 +24,11 @@
         [TestMethod]
         public void sut_implements_IMessageHandler()
         {
-            typeof(FlushTableEventsCommandExecutor).Should().Implement<IMessageHandler>();
+            typeof(TableFlushEventsCommandExecutor).Should().Implement<IMessageHandler>();
         }
 
-        private FlushTableEventsCommandExecutor GenerateSut(IMessageBus eventBus) =>
-            new FlushTableEventsCommandExecutor(Table, TypeResolver, JsonProcessor, eventBus);
+        private TableFlushEventsCommandExecutor GenerateSut(IMessageBus eventBus) =>
+            new TableFlushEventsCommandExecutor(Table, TypeResolver, JsonProcessor, eventBus);
 
         private TableEventStore<State1> GenerateEventStore(IMessageBus eventBus) =>
             new TableEventStore<State1>(Table, TypeResolver, JsonProcessor, eventBus);
@@ -41,7 +41,7 @@
             IMessageBus eventBus)
         {
             var message = new Message(id: commandId, data: command, tracingProperties);
-            FlushTableEventsCommandExecutor sut = GenerateSut(eventBus);
+            TableFlushEventsCommandExecutor sut = GenerateSut(eventBus);
 
             bool actual = sut.CanHandle(message);
 
@@ -56,7 +56,7 @@
             IMessageBus eventBus)
         {
             var message = new Message(id, data, tracingProperties);
-            FlushTableEventsCommandExecutor sut = GenerateSut(eventBus);
+            TableFlushEventsCommandExecutor sut = GenerateSut(eventBus);
 
             bool actual = sut.CanHandle(message);
 
@@ -77,7 +77,7 @@
             TableEventStore<State1> eventStore = GenerateEventStore(brokenEventBus);
             await TryCatchIgnore(() => eventStore.CollectEvents(streamId, startVersion, events));
 
-            FlushTableEventsCommandExecutor sut = GenerateSut(eventBus);
+            TableFlushEventsCommandExecutor sut = GenerateSut(eventBus);
             var command = new FlushEvents(TypeResolver.ResolveTypeName<State1>(), streamId);
             var message = new Message(id: commandId, data: command, tracingProperties);
 
@@ -102,7 +102,7 @@
             TableEventStore<State1> eventStore = GenerateEventStore(brokenEventBus);
             await TryCatchIgnore(() => eventStore.CollectEvents(streamId, startVersion, events));
 
-            FlushTableEventsCommandExecutor sut = GenerateSut(eventBus);
+            TableFlushEventsCommandExecutor sut = GenerateSut(eventBus);
             var command = new FlushEvents(TypeResolver.ResolveTypeName<State1>(), streamId);
             var message = new Message(id: commandId, data: command, tracingProperties);
 

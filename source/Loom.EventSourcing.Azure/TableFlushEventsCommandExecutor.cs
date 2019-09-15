@@ -5,11 +5,11 @@
     using Loom.Messaging;
     using Microsoft.Azure.Cosmos.Table;
 
-    public sealed class FlushTableEventsCommandExecutor : IMessageHandler
+    public sealed class TableFlushEventsCommandExecutor : IMessageHandler
     {
         private readonly EventPublisher _publisher;
 
-        public FlushTableEventsCommandExecutor(
+        public TableFlushEventsCommandExecutor(
             CloudTable table,
             TypeResolver typeResolver,
             IJsonProcessor jsonProcessor,

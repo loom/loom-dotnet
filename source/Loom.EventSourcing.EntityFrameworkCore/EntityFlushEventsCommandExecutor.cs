@@ -5,11 +5,11 @@
     using Loom.Json;
     using Loom.Messaging;
 
-    public sealed class FlushEntityEventsCommandExecutor : IMessageHandler
+    public sealed class EntityFlushEventsCommandExecutor : IMessageHandler
     {
         private readonly EventPublisher _publisher;
 
-        public FlushEntityEventsCommandExecutor(
+        public EntityFlushEventsCommandExecutor(
             Func<EventStoreContext> contextFactory,
             TypeResolver typeResolver,
             IJsonProcessor jsonProcessor,
