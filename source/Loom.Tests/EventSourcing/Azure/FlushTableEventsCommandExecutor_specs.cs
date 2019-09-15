@@ -36,7 +36,7 @@
         [TestMethod, AutoData]
         public void CanHandle_returns_true_for_FlushTableEvents_command_message(
             string commandId,
-            FlushTableEvents command,
+            FlushEvents command,
             TracingProperties tracingProperties,
             IMessageBus eventBus)
         {
@@ -78,7 +78,7 @@
             await TryCatchIgnore(() => eventStore.CollectEvents(streamId, startVersion, events));
 
             FlushTableEventsCommandExecutor sut = GenerateSut(eventBus);
-            var command = new FlushTableEvents(TypeResolver.ResolveTypeName<State1>(), streamId);
+            var command = new FlushEvents(TypeResolver.ResolveTypeName<State1>(), streamId);
             var message = new Message(id: commandId, data: command, tracingProperties);
 
             // Act
@@ -103,7 +103,7 @@
             await TryCatchIgnore(() => eventStore.CollectEvents(streamId, startVersion, events));
 
             FlushTableEventsCommandExecutor sut = GenerateSut(eventBus);
-            var command = new FlushTableEvents(TypeResolver.ResolveTypeName<State1>(), streamId);
+            var command = new FlushEvents(TypeResolver.ResolveTypeName<State1>(), streamId);
             var message = new Message(id: commandId, data: command, tracingProperties);
 
             // Act

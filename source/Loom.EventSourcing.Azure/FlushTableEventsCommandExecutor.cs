@@ -19,12 +19,12 @@
         }
 
         public bool CanHandle(Message message)
-            => message?.Data is FlushTableEvents;
+            => message?.Data is FlushEvents;
 
         public Task Handle(Message message)
-            => Execute(command: (FlushTableEvents)message?.Data);
+            => Execute(command: (FlushEvents)message?.Data);
 
-        private Task Execute(FlushTableEvents command)
+        private Task Execute(FlushEvents command)
             => _publisher.PublishEvents(command.StateType, command.StreamId);
     }
 }

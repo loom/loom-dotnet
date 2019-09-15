@@ -69,7 +69,7 @@
             Guid.TryParse(message.Id, out Guid id).Should().BeTrue();
             id.Should().NotBeEmpty();
 
-            message.Data.Should().BeOfType<FlushEntityEvents>();
+            message.Data.Should().BeOfType<FlushEvents>();
             message.Data.Should().BeEquivalentTo(new
             {
                 StateType = TypeResolver.ResolveTypeName<State1>(),

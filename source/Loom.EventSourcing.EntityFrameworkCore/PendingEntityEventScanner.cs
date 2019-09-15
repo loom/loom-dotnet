@@ -45,11 +45,11 @@
 
         private Task SendFlushCommand(string stateType, Guid streamId)
         {
-            Message message = Envelop(command: new FlushEntityEvents(stateType, streamId));
+            Message message = Envelop(command: new FlushEvents(stateType, streamId));
             return Send(message, partitionKey: $"{streamId}");
         }
 
-        private static Message Envelop(FlushEntityEvents command)
+        private static Message Envelop(FlushEvents command)
         {
             string commandId = $"{Guid.NewGuid()}";
             string operationId = $"{Guid.NewGuid()}";

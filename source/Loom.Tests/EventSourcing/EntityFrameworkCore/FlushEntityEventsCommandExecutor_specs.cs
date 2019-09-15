@@ -53,7 +53,7 @@
         [TestMethod, AutoData]
         public void CanHandle_returns_true_for_FlushEntityFrameworkEvents_command_message(
             string commandId,
-            FlushEntityEvents command,
+            FlushEvents command,
             TracingProperties tracingProperties,
             IMessageBus eventBus)
         {
@@ -95,7 +95,7 @@
             await TryCatchIgnore(() => eventStore.CollectEvents(streamId, startVersion, events));
 
             FlushEntityEventsCommandExecutor sut = GenerateSut(eventBus);
-            var command = new FlushEntityEvents(TypeResolver.ResolveTypeName<State1>(), streamId);
+            var command = new FlushEvents(TypeResolver.ResolveTypeName<State1>(), streamId);
             var message = new Message(id: commandId, data: command, tracingProperties);
 
             // Act
@@ -120,7 +120,7 @@
             await TryCatchIgnore(() => eventStore.CollectEvents(streamId, startVersion, events));
 
             FlushEntityEventsCommandExecutor sut = GenerateSut(eventBus);
-            var command = new FlushEntityEvents(TypeResolver.ResolveTypeName<State1>(), streamId);
+            var command = new FlushEvents(TypeResolver.ResolveTypeName<State1>(), streamId);
             var message = new Message(id: commandId, data: command, tracingProperties);
 
             // Act

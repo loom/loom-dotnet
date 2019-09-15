@@ -1,10 +1,10 @@
-﻿namespace Loom.EventSourcing.Azure
+﻿namespace Loom.EventSourcing
 {
     using System;
 
-    public sealed class FlushTableEvents
+    public sealed class FlushEvents
     {
-        public FlushTableEvents(string stateType, Guid streamId)
+        public FlushEvents(string stateType, Guid streamId)
         {
             StateType = stateType;
             StreamId = streamId;
