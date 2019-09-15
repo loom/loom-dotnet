@@ -14,7 +14,7 @@
     using Newtonsoft.Json;
 
     [TestClass]
-    public class PendingEntityEventScanner_specs
+    public class EntityPendingEventScanner_specs
     {
         private SqliteConnection Connection { get; set; }
 
@@ -54,7 +54,7 @@
             EntityEventStore<State1> eventStore = GenerateEventStore<State1>(eventBus);
             await TryCatchIgnore(() => eventStore.CollectEvents(streamId, startVersion, events));
 
-            var sut = new PendingEntityEventScanner(ContextFactory, commandBus);
+            var sut = new EntityPendingEventScanner(ContextFactory, commandBus);
 
             // Act
             await sut.ScanPendingEvents();
@@ -88,7 +88,7 @@
             EntityEventStore<State1> eventStore = GenerateEventStore<State1>(eventBus);
             await TryCatchIgnore(() => eventStore.CollectEvents(streamId, startVersion, events));
 
-            var sut = new PendingEntityEventScanner(ContextFactory, commandBus);
+            var sut = new EntityPendingEventScanner(ContextFactory, commandBus);
 
             // Act
             await sut.ScanPendingEvents();
@@ -96,7 +96,7 @@
             // Assert
             TracingProperties actual = commandBus.Calls.Single().messages.Single().TracingProperties;
             actual.OperationId.Should().NotBeNullOrWhiteSpace();
-            actual.Contributor.Should().Be("Loom.EventSourcing.EntityFrameworkCore.PendingEntityEventScanner");
+            actual.Contributor.Should().Be("Loom.EventSourcing.EntityFrameworkCore.EntityPendingEventScanner");
             actual.ParentId.Should().BeNull();
         }
 
@@ -110,7 +110,7 @@
             await TryCatchIgnore(() => eventStore.CollectEvents(streamId, startVersion, events));
             await TryCatchIgnore(() => eventStore.CollectEvents(streamId, startVersion + events.Length, events));
 
-            var sut = new PendingEntityEventScanner(ContextFactory, commandBus);
+            var sut = new EntityPendingEventScanner(ContextFactory, commandBus);
 
             // Act
             await sut.ScanPendingEvents();
@@ -129,7 +129,7 @@
             await TryCatchIgnore(() => eventStore.CollectEvents(streamId, startVersion, events));
 
             var minimumPendingTime = TimeSpan.FromSeconds(1);
-            var sut = new PendingEntityEventScanner(ContextFactory, commandBus, minimumPendingTime);
+            var sut = new EntityPendingEventScanner(ContextFactory, commandBus, minimumPendingTime);
 
             // Act
             await sut.ScanPendingEvents();
