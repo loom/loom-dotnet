@@ -3,6 +3,7 @@
     using System;
     using Loom.Messaging;
 
+    [Obsolete("StreamCommandFailed<T> class is deprecated. Use your own types instead.")]
     public sealed class StreamCommandFailed<T>
     {
         // TODO: Remove guard clauses after apply C# 8.0.
