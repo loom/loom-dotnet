@@ -10,9 +10,9 @@
         {
         }
 
-        public DbSet<StreamEvent> StreamEvents { get; private set; }
+        public DbSet<StreamEvent> StreamEvents { get; protected set; }
 
-        public DbSet<PendingEvent> PendingEvents { get; private set; }
+        public DbSet<PendingEvent> PendingEvents { get; protected set; }
 
 // TODO: Use nullable-reference in C# 8.0 and remove the following preprocessor.
 #pragma warning disable CA1062 // Validate arguments of public methods

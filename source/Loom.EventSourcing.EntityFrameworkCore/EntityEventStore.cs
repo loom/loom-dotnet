@@ -9,15 +9,16 @@
     using Loom.Messaging;
     using Microsoft.EntityFrameworkCore;
 
-    public class EntityEventStore<T> :
-        IEventStore<T>, IEventCollector, IEventReader
+    public class EntityEventStore<TContext, TState> :
+        IEventStore<TState>, IEventCollector, IEventReader
+        where TContext : EventStoreContext
     {
-        private readonly Func<EventStoreContext> _contextFactory;
+        private readonly Func<TContext> _contextFactory;
         private readonly TypeResolver _typeResolver;
         private readonly IJsonProcessor _jsonProcessor;
         private readonly EventPublisher _publisher;
 
-        public EntityEventStore(Func<EventStoreContext> contextFactory,
+        public EntityEventStore(Func<TContext> contextFactory,
                                 TypeResolver typeResolver,
                                 IJsonProcessor jsonProcessor,
                                 IMessageBus eventBus)
@@ -33,83 +34,95 @@
                                   IEnumerable<object> events,
                                   TracingProperties tracingProperties = default)
         {
-            return SaveAndPublish(stateType: _typeResolver.ResolveTypeName<T>(),
-                                  transaction: Guid.NewGuid(),
-                                  streamId,
-                                  startVersion,
-                                  events.ToImmutableArray(),
-                                  tracingProperties);
+            return SaveAndPublish(stateType: _typeResolver.ResolveTypeName<TState>(),
+                streamId: streamId,
+                startVersion: startVersion,
+                events: events.ToImmutableArray(),
+                tracingProperties: tracingProperties,
+                transaction: Guid.NewGuid());
         }
 
         private async Task SaveAndPublish(string stateType,
-                                          Guid transaction,
                                           Guid streamId,
                                           long startVersion,
                                           ImmutableArray<object> events,
-                                          TracingProperties tracingProperties = default)
+                                          TracingProperties tracingProperties,
+                                          Guid transaction)
         {
             await SaveEvents().ConfigureAwait(continueOnCapturedContext: false);
             await PublishPendingEvents().ConfigureAwait(continueOnCapturedContext: false);
 
             async Task SaveEvents()
             {
-                using (EventStoreContext context = _contextFactory.Invoke())
-                {
-                    for (int i = 0; i < events.Length; i++)
-                    {
-                        object source = events[i];
-
-                        var streamEvent = new StreamEvent(
-                            stateType,
-                            streamId,
-                            version: startVersion + i,
-                            raisedTimeUtc: DateTime.UtcNow,
-                            eventType: _typeResolver.ResolveTypeName(source.GetType()),
-                            payload: _jsonProcessor.ToJson(source),
-                            messageId: $"{Guid.NewGuid()}",
-                            tracingProperties.OperationId,
-                            tracingProperties.Contributor,
-                            tracingProperties.ParentId,
-                            transaction);
-
-                        context.Add(streamEvent);
-                        context.Add(new PendingEvent(streamEvent));
-                    }
-
-                    await context.SaveChangesAsync().ConfigureAwait(continueOnCapturedContext: false);
-                }
+                using TContext context = _contextFactory.Invoke();
+                AddEntities(context, stateType, streamId, startVersion, events, tracingProperties, transaction);
+                await context.SaveChangesAsync().ConfigureAwait(continueOnCapturedContext: false);
             }
 
             Task PublishPendingEvents() => _publisher.PublishEvents(stateType, streamId);
         }
 
+        protected virtual void AddEntities(TContext context,
+                                           string stateType,
+                                           Guid streamId,
+                                           long startVersion,
+                                           ImmutableArray<object> events,
+                                           TracingProperties tracingProperties,
+                                           Guid transaction)
+        {
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            for (int i = 0; i < events.Length; i++)
+            {
+                object source = events[i];
+
+                var streamEvent = new StreamEvent(
+                    stateType,
+                    streamId,
+                    version: startVersion + i,
+                    raisedTimeUtc: DateTime.UtcNow,
+                    eventType: _typeResolver.ResolveTypeName(source.GetType()),
+                    payload: _jsonProcessor.ToJson(source),
+                    messageId: $"{Guid.NewGuid()}",
+                    tracingProperties.OperationId,
+                    tracingProperties.Contributor,
+                    tracingProperties.ParentId,
+                    transaction);
+
+                context.Add(streamEvent);
+                context.Add(new PendingEvent(streamEvent));
+            }
+        }
+
         public async Task<IEnumerable<object>> QueryEvents(
             Guid streamId, long fromVersion)
         {
-            using (EventStoreContext context = _contextFactory.Invoke())
-            {
-                string stateType = _typeResolver.ResolveTypeName<T>();
+            using TContext context = _contextFactory.Invoke();
 
-                IQueryable<StreamEvent> query =
-                    from e in context.StreamEvents
-                    where
-                        e.StateType == stateType &&
-                        e.StreamId == streamId &&
-                        e.Version >= fromVersion
-                    orderby e.Version ascending
-                    select e;
+            string stateType = _typeResolver.ResolveTypeName<TState>();
 
-                IEnumerable<object> sequence =
-                    from e in await query
-                        .AsNoTracking()
-                        .ToListAsync()
-                        .ConfigureAwait(continueOnCapturedContext: false)
-                    let value = e.Payload
-                    let type = _typeResolver.TryResolveType(e.EventType)
-                    select _jsonProcessor.FromJson(value, type);
+            IQueryable<StreamEvent> query =
+                from e in context.StreamEvents
+                where
+                    e.StateType == stateType &&
+                    e.StreamId == streamId &&
+                    e.Version >= fromVersion
+                orderby e.Version ascending
+                select e;
 
-                return sequence.ToImmutableArray();
-            }
+            IEnumerable<object> sequence =
+                from e in await query
+                    .AsNoTracking()
+                    .ToListAsync()
+                    .ConfigureAwait(continueOnCapturedContext: false)
+                let value = e.Payload
+                let type = _typeResolver.TryResolveType(e.EventType)
+                select _jsonProcessor.FromJson(value, type);
+
+            return sequence.ToImmutableArray();
         }
     }
 }
