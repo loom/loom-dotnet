@@ -2,6 +2,8 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.Immutable;
+    using System.Linq;
     using System.Threading.Tasks;
     using FluentAssertions;
     using Loom.Messaging;
@@ -17,16 +19,16 @@
         private static SqliteConnection _connection;
         private static DbContextOptions _options;
 
+        public TestContext TestContext { get; set; }
+
         [ClassInitialize]
         public static async Task ClassInitialize(TestContext context)
         {
             _connection = new SqliteConnection("DataSource=:memory:");
             await _connection.OpenAsync();
             _options = new DbContextOptionsBuilder().UseSqlite(_connection).Options;
-            using (var db = new EventStoreContext(_options))
-            {
-                await db.Database.EnsureCreatedAsync();
-            }
+            using var db = new EventStoreContext(_options);
+            await db.Database.EnsureCreatedAsync();
         }
 
         [ClassCleanup]
@@ -44,6 +46,19 @@
         {
             EventStoreContext factory() => new EventStoreContext(_options);
             return new EntityEventStore<T>(factory, TypeResolver, JsonProcessor, eventBus);
+        }
+
+        public EntityEventStore<State1> GenerateEventStore(
+            IUniquePropertyDetector uniquePropertyDetector, IMessageBus eventBus)
+        {
+            return GenerateEventStore<State1>(uniquePropertyDetector, eventBus);
+        }
+
+        public EntityEventStore<T> GenerateEventStore<T>(
+            IUniquePropertyDetector uniquePropertyDetector, IMessageBus eventBus)
+        {
+            EventStoreContext factory() => new EventStoreContext(_options);
+            return new EntityEventStore<T>(factory, uniquePropertyDetector, TypeResolver, JsonProcessor, eventBus);
         }
 
         [TestMethod, AutoData]
@@ -71,6 +86,113 @@
 
             IEnumerable<object> actual2 = await store2.QueryEvents(streamId, fromVersion: 1);
             actual2.Should().BeEquivalentTo(evt2);
+        }
+
+        public class UniquePropertyDetector : IUniquePropertyDetector
+        {
+            public IReadOnlyDictionary<string, string> GetUniqueProperties(object source) => source switch
+            {
+                Event1 e => new Dictionary<string, string> { ["Event1.Value"] = e.Value.ToString() },
+                Event3 e => new Dictionary<string, string> { ["Event3.Value"] = e.Value },
+                _ => ImmutableDictionary<string, string>.Empty,
+            };
+        }
+
+        [TestMethod, AutoData]
+        public async Task sut_supports_unique_constraint(
+            UniquePropertyDetector uniquePropertyDetector,
+            IMessageBus eventBus,
+            Guid[] streams,
+            Event3 evt)
+        {
+            // Arrange
+            EntityEventStore<State1> store = GenerateEventStore<State1>(uniquePropertyDetector, eventBus);
+
+            // Act
+            try
+            {
+                await Task.WhenAll(streams.Select(streamId => store.CollectEvents(streamId, 1, new[] { evt })));
+            }
+            catch (Exception exception)
+            {
+                TestContext.WriteLine(exception.ToString());
+            }
+
+            // Assert
+            var events = new List<object>();
+            foreach (Guid streamId in streams)
+            {
+                events.AddRange(await store.QueryEvents(streamId, fromVersion: 1));
+            }
+
+            events.Should().ContainSingle();
+        }
+
+        [TestMethod, AutoData]
+        public async Task same_unique_value_is_allowed_for_different_properties(
+            UniquePropertyDetector uniquePropertyDetector,
+            IMessageBus eventBus,
+            Guid stream1,
+            Guid stream2,
+            int value)
+        {
+            EntityEventStore<State1> store = GenerateEventStore<State1>(uniquePropertyDetector, eventBus);
+            await store.CollectEvents(stream1, 1, new[] { new Event1(value) });
+
+            Func<Task> action = () => store.CollectEvents(stream2, 1, new[] { new Event3(value.ToString()) });
+
+            await action.Should().NotThrowAsync();
+        }
+
+        [TestMethod, AutoData]
+        public async Task same_unique_value_is_allowed_for_different_state_type(
+            UniquePropertyDetector uniquePropertyDetector,
+            IMessageBus eventBus,
+            Guid stream,
+            Event3 evt)
+        {
+            EntityEventStore<State1> store1 = GenerateEventStore<State1>(uniquePropertyDetector, eventBus);
+            await store1.CollectEvents(stream, 1, new[] { evt });
+
+            EntityEventStore<State2> store2 = GenerateEventStore<State2>(uniquePropertyDetector, eventBus);
+            Func<Task> action = () => store2.CollectEvents(stream, 1, new[] { evt });
+
+            await action.Should().NotThrowAsync();
+        }
+
+        [TestMethod, AutoData]
+        public async Task replaced_unique_value_is_available(
+            UniquePropertyDetector uniquePropertyDetector,
+            IMessageBus eventBus,
+            Guid stream1,
+            Guid stream2,
+            string value1,
+            string value2)
+        {
+            EntityEventStore<State1> store = GenerateEventStore<State1>(uniquePropertyDetector, eventBus);
+            await store.CollectEvents(stream1, 1, new[] { new Event3(value1) });
+            await store.CollectEvents(stream1, 2, new[] { new Event3(value2) });
+
+            Func<Task> action = () => store.CollectEvents(stream2, 1, new[] { new Event3(value1) });
+
+            await action.Should().NotThrowAsync();
+        }
+
+        [TestMethod, AutoData]
+        public async Task deleted_unique_value_is_available(
+            UniquePropertyDetector uniquePropertyDetector,
+            IMessageBus eventBus,
+            Guid stream1,
+            Guid stream2,
+            string value)
+        {
+            EntityEventStore<State1> store = GenerateEventStore<State1>(uniquePropertyDetector, eventBus);
+            await store.CollectEvents(stream1, 1, new[] { new Event3(value) });
+            await store.CollectEvents(stream1, 2, new[] { new Event3(null) });
+
+            Func<Task> action = () => store.CollectEvents(stream2, 1, new[] { new Event3(value) });
+
+            await action.Should().NotThrowAsync();
         }
     }
 }

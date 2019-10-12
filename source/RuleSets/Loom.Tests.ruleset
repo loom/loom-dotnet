@@ -107,7 +107,7 @@
   <Rules AnalyzerId="Microsoft.NetCore.Analyzers" RuleNamespace="Microsoft.NetCore.Analyzers">
     <Rule Id="CA1303" Action="None" /> <!-- Do not pass literals as localized parameters -->
     <Rule Id="CA1304" Action="Error" /> <!-- Specify CultureInfo -->
-    <Rule Id="CA1305" Action="Error" /> <!-- Specify IFormatProvider -->
+    <Rule Id="CA1305" Action="None" /> <!-- Specify IFormatProvider -->
     <Rule Id="CA1307" Action="Error" /> <!-- Specify StringComparison -->
     <Rule Id="CA1308" Action="Error" /> <!-- Normalize strings to uppercase -->
     <Rule Id="CA1401" Action="Error" /> <!-- P/Invokes should not be visible -->

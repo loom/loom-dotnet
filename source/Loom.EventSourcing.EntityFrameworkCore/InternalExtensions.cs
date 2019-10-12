@@ -1,6 +1,7 @@
 ﻿namespace Loom.EventSourcing.EntityFrameworkCore
 {
     using System;
+    using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
     using Loom.Json;
@@ -39,6 +40,14 @@
             });
 
             return new Message(id: entity.MessageId, data, entity.TracingProperties);
+        }
+
+        public static void Deconstruct<TKey, TValue>(
+            this KeyValuePair<TKey, TValue> pair,
+            out TKey key,
+            out TValue value)
+        {
+            (key, value) = (pair.Key, pair.Value);
         }
     }
 }

@@ -42,6 +42,7 @@
             using var context = new EventStoreDbContext(_options);
             context.StreamEvents.Should().NotBeNull();
             context.PendingEvents.Should().NotBeNull();
+            context.UniqueProperties.Should().NotBeNull();
         }
     }
 }
