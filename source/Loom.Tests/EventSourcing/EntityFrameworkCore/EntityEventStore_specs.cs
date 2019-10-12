@@ -145,7 +145,7 @@
         }
 
         [TestMethod, AutoData]
-        public async Task same_unique_value_is_allowed_for_different_state_type(
+        public async Task same_unique_value_is_allowed_for_different_state_types(
             UniquePropertyDetector uniquePropertyDetector,
             IMessageBus eventBus,
             Guid stream,

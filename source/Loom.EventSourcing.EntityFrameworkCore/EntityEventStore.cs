@@ -87,7 +87,7 @@
                     context.Add(new PendingEvent(streamEvent));
                 }
 
-                List<UniqueProperty> properties = await context
+                List<UniqueProperty> uniqueProperties = await context
                     .Set<UniqueProperty>()
                     .Where(p => p.StateType == stateType && p.StreamId == streamId)
                     .AsNoTracking()
@@ -96,7 +96,7 @@
 
                 foreach ((string name, string value) in GetUniqueProperties(events))
                 {
-                    UniqueProperty property = properties.Find(p => p.Name == name);
+                    UniqueProperty property = uniqueProperties.Find(p => p.Name == name);
 
                     if (value == null)
                     {
