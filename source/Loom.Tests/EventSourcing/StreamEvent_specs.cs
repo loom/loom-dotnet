@@ -18,12 +18,10 @@
         public void factory_creates_instance_correctly(
             Guid streamId,
             long version,
-            DateTime raisedTimeUtcSource,
+            DateTime raisedTimeUtc,
             Event1 payload)
         {
-            var raisedTimeUtc = new DateTime(raisedTimeUtcSource.Ticks, DateTimeKind.Utc);
-
-            StreamEvent<Event1> actual = StreamEvent.Create(streamId, version, raisedTimeUtc, payload);
+            var actual = StreamEvent.Create(streamId, version, raisedTimeUtc, payload);
 
             actual.StreamId.Should().Be(streamId);
             actual.Version.Should().Be(version);

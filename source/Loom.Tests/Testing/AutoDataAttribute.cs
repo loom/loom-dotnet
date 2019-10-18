@@ -27,8 +27,14 @@
             yield return arguments.ToArray();
         }
 
-        private static IFixture CreateGenerator() =>
-            new Fixture { Behaviors = { new OmitOnRecursionBehavior() } }.Customize(new AutoMoqCustomization());
+        private static IFixture CreateGenerator()
+        {
+            ICustomization customization = new CompositeCustomization(
+                new AutoMoqCustomization(),
+                new DateTimeCustomization());
+
+            return new Fixture { Behaviors = { new OmitOnRecursionBehavior() } }.Customize(customization);
+        }
 
         public string GetDisplayName(MethodInfo methodInfo, object[] data)
         {
