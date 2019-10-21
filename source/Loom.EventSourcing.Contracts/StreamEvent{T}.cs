@@ -19,5 +19,16 @@
         public DateTime RaisedTimeUtc { get; }
 
         public T Payload { get; }
+
+        internal void Deconstruct(out Guid streamId,
+                                  out long version,
+                                  out DateTime raisedTimeUtc,
+                                  out T payload)
+        {
+            streamId = StreamId;
+            version = Version;
+            raisedTimeUtc = RaisedTimeUtc;
+            payload = Payload;
+        }
     }
 }
