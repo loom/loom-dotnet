@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
 
+    [Obsolete("Use ActivityError class instead.")]
     public class HandlerError
     {
         // TODO: Remove guard clauses after apply C# 8.0.
