@@ -1,0 +1,42 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <CodeAnalysisRuleSet>..\RuleSets\Loom.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageId>Loom.Messaging.Azure</PackageId>
+    <Description>Microsoft Azure based messaging service implementations.</Description>
+    <Version>0.18.0</Version>
+    <Authors>Gyuwon</Authors>
+    <Copyright>Copyright (c) 2019 Yi Gyuwon</Copyright>
+    <PackageProjectUrl>https://github.com/loom/loom-dotnet</PackageProjectUrl>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Azure.EventHubs" Version="2.1.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.3">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Loom.Json.Interfaces" Version="0.18.0" Exclude="*" />
+    <PackageReference Include="Loom.Messaging.Abstraction" Version="0.18.0" Exclude="*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Loom.Json.Interfaces\Loom.Json.Interfaces.csproj" />
+    <ProjectReference Include="..\Loom.Messaging.Abstraction\Loom.Messaging.Abstraction.csproj" />
+  </ItemGroup>
+
+</Project>

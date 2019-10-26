@@ -31,6 +31,7 @@
     <ProjectReference Include="..\Loom.EventSourcing.Azure\Loom.EventSourcing.Azure.csproj" />
     <ProjectReference Include="..\Loom.EventSourcing.EntityFrameworkCore\Loom.EventSourcing.EntityFrameworkCore.csproj" />
     <ProjectReference Include="..\Loom.Json\Loom.Json.csproj" />
+    <ProjectReference Include="..\Loom.Messaging.Azure\Loom.Messaging.Azure.csproj" />
     <ProjectReference Include="..\Loom.Tests.Dependency\Loom.Tests.Dependency.csproj" />
   </ItemGroup>
 

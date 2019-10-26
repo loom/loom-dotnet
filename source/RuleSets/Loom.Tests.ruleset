@@ -63,7 +63,7 @@
     <Rule Id="CA1812" Action="Error" /> <!-- Avoid uninstantiated internal classes -->
     <Rule Id="CA1814" Action="Error" /> <!-- Prefer jagged arrays over multidimensional -->
     <Rule Id="CA1815" Action="None" /> <!-- Override equals and operator equals on value types -->
-    <Rule Id="CA1819" Action="Error" /> <!-- Properties should not return arrays -->
+    <Rule Id="CA1819" Action="None" /> <!-- Properties should not return arrays -->
     <Rule Id="CA1822" Action="None" /> <!-- Mark members as static -->
     <Rule Id="CA1823" Action="Error" /> <!-- Avoid unused private fields -->
     <Rule Id="CA2007" Action="None" /> <!-- Consider calling ConfigureAwait on the awaited task -->
