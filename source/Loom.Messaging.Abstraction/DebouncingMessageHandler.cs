@@ -2,7 +2,6 @@
 {
     using System.Threading.Tasks;
 
-    // TODO: Should be unit tested.
     public sealed class DebouncingMessageHandler : IMessageHandler
     {
         private readonly IDebouncer _debouncer;

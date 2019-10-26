@@ -10,20 +10,35 @@
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true, Inherited = false)]
-    public sealed class AutoDataAttribute : Attribute, ITestDataSource
+    public sealed class InlineAutoDataAttribute : Attribute, ITestDataSource
     {
+        private readonly object[] _arguments;
+
+        public InlineAutoDataAttribute(params object[] arguments)
+        {
+            _arguments = arguments;
+        }
+
         public IEnumerable<object[]> GetData(MethodInfo methodInfo)
+        {
+            object[] controlledValues = _arguments;
+            ParameterInfo[] parameters = methodInfo.GetParameters();
+            IEnumerable<object> generatedValues = Generate(parameters.Skip(controlledValues.Length));
+            yield return controlledValues.Concat(generatedValues).ToArray();
+        }
+
+        private IEnumerable<object> Generate(IEnumerable<ParameterInfo> parameters)
         {
             IFixture generator = CreateGenerator();
 
             var arguments = new List<object>();
-            foreach (ParameterInfo parameter in methodInfo.GetParameters())
+            foreach (ParameterInfo parameter in parameters)
             {
                 CustomizeFixture(generator, parameter);
                 arguments.Add(Resolve(generator, parameter));
             }
 
-            yield return arguments.ToArray();
+            return arguments;
         }
 
         private static IFixture CreateGenerator()
@@ -58,7 +73,7 @@
         {
             ParameterInfo[] parameters = methodInfo.GetParameters();
             IEnumerable<string> values =
-                from t in parameters.Zip(data, (p, a) => (parameter: p, argument: a))
+                from t in parameters.Zip(data, (parameter, argument) => (parameter, argument))
                 select DumpArgument(t.parameter, t.argument);
             return string.Join(", ", values);
         }
