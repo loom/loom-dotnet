@@ -20,8 +20,7 @@
 
         public string ResolveTypeName<T>() => ResolveTypeName(typeof(T));
 
-        // TODO: Change return type to Type?.
-        public Type TryResolveType(string typeName)
+        public Type? TryResolveType(string typeName)
             => _typeResolvingStrategy.TryResolveType(typeName);
     }
 }

@@ -4,6 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>Loom.Json</RootNamespace>
     <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
     <CodeAnalysisRuleSet>..\RuleSets\Loom.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 

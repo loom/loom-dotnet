@@ -16,7 +16,7 @@
     <Rule Id="CA1027" Action="Error" /> <!-- Mark enums with FlagsAttribute -->
     <Rule Id="CA1028" Action="Error" /> <!-- Enum Storage should be Int32 -->
     <Rule Id="CA1030" Action="Error" /> <!-- Use events where appropriate -->
-    <Rule Id="CA1031" Action="Error" /> <!-- Do not catch general exception types -->
+    <Rule Id="CA1031" Action="None" /> <!-- Do not catch general exception types -->
     <Rule Id="CA1033" Action="Error" /> <!-- Interface methods should be callable by child types -->
     <Rule Id="CA1034" Action="Error" /> <!-- Nested types should not be visible -->
     <Rule Id="CA1036" Action="Error" /> <!-- Override methods on comparable types -->
