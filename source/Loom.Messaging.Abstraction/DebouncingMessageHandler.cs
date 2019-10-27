@@ -1,5 +1,6 @@
 ﻿namespace Loom.Messaging
 {
+    using System;
     using System.Threading.Tasks;
 
     public sealed class DebouncingMessageHandler : IMessageHandler
@@ -17,8 +18,15 @@
         public bool CanHandle(Message message) => _handler.CanHandle(message);
 
         public Task Handle(Message message)
-            => message?.Data is IDebouncable debouncable
-            ? _debouncer.TryConsume(debouncable, _ => _handler.Handle(message))
-            : _handler.Handle(message);
+        {
+            if (message is null)
+            {
+                throw new ArgumentNullException(nameof(message));
+            }
+
+            return message.Data is IDebouncable debouncable
+                ? _debouncer.TryConsume(debouncable, _ => _handler.Handle(message))
+                : _handler.Handle(message);
+        }
     }
 }
