@@ -3,15 +3,12 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Text;
     using System.Threading.Tasks;
     using AutoFixture;
     using FluentAssertions;
-    using Loom.Json;
     using Loom.Testing;
     using Microsoft.Azure.EventHubs;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using Newtonsoft.Json;
 
     [TestClass]
     public class EventHubMessageBus_specs
@@ -19,12 +16,6 @@
         public static EventHubClient EventHub { get; set; }
 
         public static EventHubRuntimeInformation EventHubInformation { get; set; }
-
-        public static JsonProcessor JsonProcessor { get; set; }
-
-        public static TypeResolver TypeResolver { get; set; }
-
-        public static EventHubMessageBus Sut { get; set; }
 
         public PartitionReceiver[] Receivers { get; set; }
 
@@ -39,9 +30,6 @@
                 var connectionStringBuilder = new EventHubsConnectionStringBuilder(connectionString) { EntityPath = eventHubName };
                 EventHub = EventHubClient.CreateFromConnectionString(connectionStringBuilder.ToString());
                 EventHubInformation = await EventHub.GetRuntimeInformationAsync();
-                JsonProcessor = new JsonProcessor(new JsonSerializer());
-                TypeResolver = new TypeResolver(new FullNameTypeNameResolvingStrategy(), new TypeResolvingStrategy());
-                Sut = new EventHubMessageBus(EventHub, JsonProcessor, TypeResolver);
             }
             else
             {
@@ -52,7 +40,6 @@
   <TestRunParameters>
     <Parameter name=""EventHubNamespaceConnectionString"" value=""connection string for your event hub namespace"" />
     <Parameter name=""EventHubName"" value=""your event hub name"" />
-    <Parameter name=""MaxMessageSize"" value="" 262144 for Basic pricing tier and 1048576 otherwise"" />
   </TestRunParameters>
 </RunSettings>");
             }
@@ -111,62 +98,31 @@
         }
 
         [TestMethod, AutoData]
-        public async Task Send_sends_single_message(
+        public async Task Send_sends_single_message_correctly(
+            IEventConverter converter,
             string id,
             MessageData1 data,
             TracingProperties tracingProperties,
             string partitionKey)
         {
+            var sut = new EventHubMessageBus(EventHub, converter);
             var message = new Message(id, data, tracingProperties);
 
-            await Sut.Send(new[] { message }, partitionKey);
+            await sut.Send(new[] { message }, partitionKey);
 
             EventData[] events = await ReceiveEvents(maxCountPerPartition: 1);
             events.Should().ContainSingle();
-        }
-
-        [TestMethod, AutoData]
-        public async Task Send_serializes_data_correctly(
-            string id,
-            MessageData1 data,
-            TracingProperties tracingProperties,
-            string partitionKey)
-        {
-            var message = new Message(id, data, tracingProperties);
-
-            await Sut.Send(new[] { message }, partitionKey);
-
-            EventData[] events = await ReceiveEvents(maxCountPerPartition: 1);
-            string content = Encoding.UTF8.GetString(events[0].Body.Array);
-            MessageData1 actual = JsonProcessor.FromJson<MessageData1>(content);
-            actual.Should().BeEquivalentTo(data);
-        }
-
-        [TestMethod, AutoData]
-        public async Task Send_sets_properties_correctly(
-            string id,
-            MessageData1 data,
-            TracingProperties tracingProperties,
-            string partitionKey)
-        {
-            var message = new Message(id, data, tracingProperties);
-
-            await Sut.Send(new[] { message }, partitionKey);
-
-            EventData[] events = await ReceiveEvents(maxCountPerPartition: 1);
-            IDictionary<string, object> properties = events[0].Properties;
-            properties.Should().Contain("Id", id);
-            properties.Should().Contain("Type", TypeResolver.ResolveTypeName<MessageData1>());
-            properties.Should().Contain("OperationId", tracingProperties.OperationId);
-            properties.Should().Contain("Contributor", tracingProperties.Contributor);
-            properties.Should().Contain("ParentId", tracingProperties.ParentId);
+            Message actual = converter.TryConvertToMessage(events[0]);
+            actual.Should().BeEquivalentTo(message);
         }
 
         [TestMethod, AutoData]
         public async Task Send_sets_partition_key_correctly(
-            Message message, string partitionKey)
+            IEventConverter converter, Message message, string partitionKey)
         {
-            await Sut.Send(new[] { message }, partitionKey);
+            var sut = new EventHubMessageBus(EventHub, converter);
+
+            await sut.Send(new[] { message }, partitionKey);
 
             EventData[] events = await ReceiveEvents(maxCountPerPartition: 1);
             string actual = events[0].SystemProperties.PartitionKey;
@@ -175,27 +131,23 @@
 
         [TestMethod, AutoData]
         public async Task Send_sends_massive_messages_correctly(
-            Generator<char> generator, string partitionKey)
+            IEventConverter converter, Generator<char> generator, string partitionKey)
         {
+            var sut = new EventHubMessageBus(EventHub, converter);
             int count = 10000;
             Message[] messages = Enumerable
                 .Range(0, count)
-                .Select(_ => generator.First())
-                .Select(c => new string(c, 1000))
-                .Select(s => new MessageData1(1, s))
-                .Select(d => new Message($"{Guid.NewGuid()}", d, tracingProperties: default))
+                .Select(_ => new string(generator.First(), 1000))
+                .Select(value => new MessageData1(1, value))
+                .Select(data => new Message($"{Guid.NewGuid()}", data, tracingProperties: default))
                 .ToArray();
 
-            await Sut.Send(messages, partitionKey);
+            await sut.Send(messages, partitionKey);
 
             EventData[] events = await ReceiveEvents(maxCountPerPartition: count);
             events.Should().HaveCount(count);
-            events
-                .Select(e => e.Body.Array)
-                .Select(Encoding.UTF8.GetString)
-                .Select(JsonProcessor.FromJson<MessageData1>)
-                .Should()
-                .BeEquivalentTo(messages.Select(x => x.Data), c => c.WithStrictOrdering());
+            IEnumerable<Message> actual = events.Select(converter.TryConvertToMessage).ToArray();
+            actual.Should().BeEquivalentTo(messages, c => c.Excluding(m => m.TracingProperties).WithStrictOrdering());
         }
     }
 }
