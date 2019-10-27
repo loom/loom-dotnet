@@ -43,11 +43,7 @@
 
         private static IFixture CreateGenerator()
         {
-            ICustomization customization = new CompositeCustomization(
-                new AutoMoqCustomization(),
-                new DateTimeCustomization());
-
-            return new Fixture { Behaviors = { new OmitOnRecursionBehavior() } }.Customize(customization);
+            return new Fixture { Behaviors = { new OmitOnRecursionBehavior() } }.Customize(new DomainCustomization());
         }
 
         private static void CustomizeFixture(IFixture generator, ParameterInfo parameter)

@@ -34,8 +34,10 @@
             }
         }
 
-        private static IFixture CreateGenerator() =>
-            new Fixture().Customize(new AutoMoqCustomization());
+        private static IFixture CreateGenerator()
+        {
+            return new Fixture { Behaviors = { new OmitOnRecursionBehavior() } }.Customize(new DomainCustomization());
+        }
 
         public string GetDisplayName(MethodInfo methodInfo, object[] data)
         {
