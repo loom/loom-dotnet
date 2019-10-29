@@ -9,7 +9,5 @@
         Task<T?> TryRehydrateState(Guid streamId);
 
         Task<T?> TryRehydrateStateAt(Guid streamId, long version);
-
-        // TODO: Implement Task<T> RehydrateState(Guid streamId) method.
     }
 }

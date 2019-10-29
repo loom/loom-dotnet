@@ -1,5 +1,6 @@
 ﻿namespace Loom.EventSourcing.EntityFrameworkCore
 {
+    using System;
     using Microsoft.EntityFrameworkCore;
     using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -16,15 +17,17 @@
 
         public DbSet<UniqueProperty> UniqueProperties { get; protected set; }
 
-        // TODO: Use nullable-reference in C# 8.0 and remove the following preprocessor.
-#pragma warning disable CA1062 // Validate arguments of public methods
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            if (modelBuilder is null)
+            {
+                throw new ArgumentNullException(nameof(modelBuilder));
+            }
+
             ConfigureStreamEventEntity(modelBuilder.Entity<StreamEvent>());
             ConfigurePendingEventEntity(modelBuilder.Entity<PendingEvent>());
             ConfigureUniquePropertyEntity(modelBuilder.Entity<UniqueProperty>());
         }
-#pragma warning restore CA1062 // Validate arguments of public methods
 
         private static void ConfigureStreamEventEntity(EntityTypeBuilder<StreamEvent> entity)
         {

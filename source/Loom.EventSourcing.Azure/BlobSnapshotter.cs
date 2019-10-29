@@ -27,14 +27,7 @@
 
         public async Task TakeSnapshot(Guid streamId)
         {
-            // TODO: Replace with IStateRehydrator<T>.RehydrateState() method.
-            T state = await _rehydrator.TryRehydrateState(streamId).ConfigureAwait(continueOnCapturedContext: false);
-            if (state == default)
-            {
-                string message = $"Could not rehydrate state with stream id '{streamId}'.";
-                throw new InvalidOperationException(message);
-            }
-
+            T state = await _rehydrator.RehydrateState(streamId).ConfigureAwait(continueOnCapturedContext: false);
             CloudBlockBlob blob = GetBlobReference(streamId);
             await SetContent(blob, state).ConfigureAwait(continueOnCapturedContext: false);
             await SetProperties(blob).ConfigureAwait(continueOnCapturedContext: false);

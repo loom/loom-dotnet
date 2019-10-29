@@ -12,7 +12,6 @@
 
         public EventHandlerDelegate(object handler)
         {
-            // TODO: Remove the following guard clause after apply C# 8.0.
             _handler = handler ?? throw new ArgumentNullException(nameof(handler));
 
             const BindingFlags bindingFlags

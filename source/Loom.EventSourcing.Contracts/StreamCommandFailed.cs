@@ -6,7 +6,6 @@
     [Obsolete("StreamCommandFailed<T> class is deprecated. Use your own types instead.")]
     public sealed class StreamCommandFailed<T>
     {
-        // TODO: Remove guard clauses after apply C# 8.0.
         public StreamCommandFailed(StreamCommand<T> command,
                                    HandlerError error,
                                    DateTime failedTimeUtc)
