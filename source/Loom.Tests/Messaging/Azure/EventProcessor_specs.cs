@@ -63,7 +63,7 @@
         }
 
         [TestMethod, AutoData]
-        public void sut_throws_aggregate_exception_for_bad_messages(
+        public async Task sut_does_not_throw_aggregate_exception_for_bad_messages(
             IEventConverter converter,
             IMessageHandler handler,
             (Message message, Exception exception)[] tuples)
@@ -86,10 +86,7 @@
             Func<Task> action = () => sut.Process(events);
 
             // Assert
-            action.Should().ThrowAsync<AggregateException>()
-                  .GetAwaiter().GetResult()
-                  .Which.InnerExceptions
-                  .Should().BeEquivalentTo(tuples.Select(t => t.exception));
+            await action.Should().NotThrowAsync();
         }
     }
 }
