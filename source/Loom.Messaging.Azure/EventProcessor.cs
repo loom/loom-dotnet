@@ -4,20 +4,16 @@
     using System.Collections.Generic;
     using System.Threading.Tasks;
     using Microsoft.Azure.EventHubs;
-    using Microsoft.Extensions.Logging;
 
     public sealed class EventProcessor
     {
         private readonly IEventConverter _converter;
         private readonly IMessageHandler _handler;
-        private readonly ILogger _logger;
 
-        internal EventProcessor(
-            IEventConverter converter, IMessageHandler handler, ILogger logger)
+        internal EventProcessor(IEventConverter converter, IMessageHandler handler)
         {
             _converter = converter;
             _handler = handler;
-            _logger = logger;
         }
 
         public async Task Process(IEnumerable<EventData> events)
@@ -27,48 +23,39 @@
                 throw new ArgumentNullException(nameof(events));
             }
 
+            List<Exception>? exceptions = default;
+
             foreach (EventData eventData in events)
             {
-                await ProcessEvent(eventData).ConfigureAwait(continueOnCapturedContext: false);
-            }
-        }
+                try
+                {
+                    if (_converter.TryConvertToMessage(eventData) is Message message)
+                    {
+                        if (_handler.CanHandle(message))
+                        {
+                            await _handler.Handle(message).ConfigureAwait(continueOnCapturedContext: false);
+                        }
+                    }
+                }
+                catch (Exception exception)
+                {
+                    switch (exceptions)
+                    {
+                        case null:
+                            exceptions = new List<Exception> { exception };
+                            break;
 
-        private async Task ProcessEvent(EventData eventData)
-        {
-            try
-            {
-                await TryConvertThenHandle(eventData).ConfigureAwait(continueOnCapturedContext: false);
+                        default:
+                            exceptions.Add(exception);
+                            break;
+                    }
+                }
             }
-            catch (Exception exception)
-            {
-                _logger.LogError(exception, "Event processing failed. See the exception for details.");
-            }
-        }
 
-        private async Task TryConvertThenHandle(EventData eventData)
-        {
-            if (_converter.TryConvertToMessage(eventData) is Message message)
+            if (exceptions != null)
             {
-                await TryHandleMessage(message).ConfigureAwait(continueOnCapturedContext: false);
+                throw new AggregateException(innerExceptions: exceptions);
             }
-        }
-
-        private async Task TryHandleMessage(Message message)
-        {
-            if (_handler.CanHandle(message))
-            {
-                await HandleMessage(message).ConfigureAwait(continueOnCapturedContext: false);
-            }
-            else
-            {
-                _logger.LogTrace($"The message '{message.Id}' with data type '{message.Data.GetType().FullName}' is unhandleable.");
-            }
-        }
-
-        private async Task HandleMessage(Message message)
-        {
-            await _handler.Handle(message).ConfigureAwait(continueOnCapturedContext: false);
-            _logger.LogTrace($"The message '{message.Id}' with data type '{message.Data.GetType().FullName}' was handled successfully.");
         }
     }
 }
