@@ -149,5 +149,14 @@
             IEnumerable<Message> actual = events.Select(converter.TryConvertToMessage).ToArray();
             actual.Should().BeEquivalentTo(messages, c => c.Excluding(m => m.TracingProperties).WithStrictOrdering());
         }
+
+        [TestMethod, AutoData]
+        public async Task given_no_message_then_Send_does_not_fail(
+            IEventConverter converter, string partitionKey)
+        {
+            var sut = new EventHubMessageBus(EventHub, converter);
+            Func<Task> action = () => sut.Send(Array.Empty<Message>(), partitionKey);
+            await action.Should().NotThrowAsync();
+        }
     }
 }

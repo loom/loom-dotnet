@@ -32,7 +32,10 @@
                 }
             }
 
-            await _eventHub.SendAsync(batch).ConfigureAwait(continueOnCapturedContext: false);
+            if (batch.Count > 0)
+            {
+                await _eventHub.SendAsync(batch).ConfigureAwait(continueOnCapturedContext: false);
+            }
         }
     }
 }
