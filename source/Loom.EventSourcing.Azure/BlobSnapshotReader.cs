@@ -8,6 +8,7 @@
     using Microsoft.Azure.Storage.Blob;
 
     public class BlobSnapshotReader<T> : ISnapshotReader<T>
+        where T : class
     {
         private readonly CloudBlobContainer _container;
         private readonly IJsonProcessor _jsonProcessor;

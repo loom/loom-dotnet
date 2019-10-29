@@ -4,6 +4,7 @@
     using System.Threading.Tasks;
 
     internal class DelegatingSnapshotReader<T> : ISnapshotReader<T>
+        where T : class
     {
         private readonly Func<Guid, Task<T>> _function;
 

@@ -6,7 +6,7 @@
     using System.Threading.Tasks;
 
     public class SnapshottedStateRehydrator<T> : IStateRehydrator<T>
-        where T : IVersioned
+        where T : class, IVersioned
     {
         private readonly Func<Guid, T> _seedFactory;
         private readonly ISnapshotReader<T> _snapshotReader;
@@ -24,42 +24,42 @@
             _eventHandler = eventHandler;
         }
 
-        public async Task<T> TryRehydrateState(Guid streamId)
+        public async Task<T?> TryRehydrateState(Guid streamId)
         {
-            switch (await _snapshotReader.TryRestoreSnapshot(streamId).ConfigureAwait(continueOnCapturedContext: false))
+            return (await _snapshotReader.TryRestoreSnapshot(streamId).ConfigureAwait(continueOnCapturedContext: false)) switch
             {
-                case T snapshot: return await Rehydrate(streamId, snapshot).ConfigureAwait(continueOnCapturedContext: false);
-                default: return await TryRehydrate(streamId).ConfigureAwait(continueOnCapturedContext: false);
-            }
+                T snapshot => await Rehydrate(streamId, snapshot).ConfigureAwait(continueOnCapturedContext: false),
+                _ => await TryRehydrate(streamId).ConfigureAwait(continueOnCapturedContext: false),
+            };
         }
 
         private async Task<T> Rehydrate(Guid streamId, T snapshot)
         {
             long fromVersion = snapshot.Version + 1;
-            switch (await _eventReader.QueryEvents(streamId, fromVersion).ConfigureAwait(continueOnCapturedContext: false))
+            return (await _eventReader.QueryEvents(streamId, fromVersion).ConfigureAwait(continueOnCapturedContext: false)) switch
             {
-                case var events when events.Any() == false: return snapshot;
-                case var events: return FoldLeft(snapshot, events);
-            }
+                var events when events.Any() == false => snapshot,
+                var events => FoldLeft(snapshot, events),
+            };
         }
 
-        private async Task<T> TryRehydrate(Guid streamId)
+        private async Task<T?> TryRehydrate(Guid streamId)
         {
-            switch (await _eventReader.QueryEvents(streamId, fromVersion: 1).ConfigureAwait(continueOnCapturedContext: false))
+            return (await _eventReader.QueryEvents(streamId, fromVersion: 1).ConfigureAwait(continueOnCapturedContext: false)) switch
             {
-                case var events when events.Any() == false: return default;
-                case var events: return FoldLeft(_seedFactory.Invoke(streamId), events);
-            }
+                var events when events.Any() == false => default,
+                var events => FoldLeft(_seedFactory.Invoke(streamId), events),
+            };
         }
 
-        public async Task<T> TryRehydrateStateAt(Guid streamId, long version)
+        public async Task<T?> TryRehydrateStateAt(Guid streamId, long version)
         {
-            switch (await _eventReader.QueryEvents(streamId, fromVersion: 1).ConfigureAwait(continueOnCapturedContext: false))
+            return (await _eventReader.QueryEvents(streamId, fromVersion: 1).ConfigureAwait(continueOnCapturedContext: false)) switch
             {
-                case var events when events.Any() == false: return default;
-                case var events when events.Count() < version: throw new InvalidOperationException($"State of the specified version({version}) does not exists.");
-                case var events: return FoldLeft(_seedFactory.Invoke(streamId), events.TakeWhile((_, index) => index < version));
-            }
+                var events when events.Any() == false => default,
+                var events when events.Count() < version => throw new InvalidOperationException($"State of the specified version({version}) does not exists."),
+                var events => FoldLeft(_seedFactory.Invoke(streamId), events.TakeWhile((_, index) => index < version)),
+            };
         }
 
         private T FoldLeft(T seed, IEnumerable<object> events) => _eventHandler.HandleEvents(seed, events);

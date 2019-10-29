@@ -12,7 +12,6 @@
 
         public EventProducerDelegate(object producer)
         {
-            // TODO: Remove the following guard clause after apply C# 8.0.
             _producer = producer ?? throw new ArgumentNullException(nameof(producer));
 
             const BindingFlags bindingFlags
@@ -43,23 +42,17 @@
 
         public IEnumerable<object> ProduceEvents(T state, object command)
         {
-            // TODO: Remove the following guard clause after apply C# 8.0.
-            if (command == null)
+            if (command is null)
             {
                 throw new ArgumentNullException(nameof(command));
             }
 
             Type commandType = command.GetType();
-            switch (_functions.TryGetValue(commandType, out MethodInfo function))
+            return _functions.TryGetValue(commandType, out MethodInfo function) switch
             {
-                case true:
-                    object[] arguments = new[] { state, command };
-                    return (IEnumerable<object>)function.Invoke(_producer, arguments);
-
-                default:
-                    string message = $"Cannot execute the command of type {commandType}.";
-                    throw new InvalidOperationException(message);
-            }
+                true => (IEnumerable<object>)function.Invoke(_producer, new[] { state, command }),
+                _ => throw new InvalidOperationException($"Cannot execute the command of type {commandType}."),
+            };
         }
     }
 }

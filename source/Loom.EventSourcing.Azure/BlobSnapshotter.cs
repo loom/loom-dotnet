@@ -8,6 +8,7 @@
     using Microsoft.Azure.Storage.Blob;
 
     public class BlobSnapshotter<T> : ISnapshotter
+        where T : class
     {
         private static readonly Encoding _encoding = Encoding.UTF8;
 
