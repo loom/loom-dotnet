@@ -32,6 +32,14 @@
         {
             [StringLength(10)]
             public string StringProperty { get; set; } = "foo";
+
+            public LeafObject LeafObjectProperty { get; set; }
+        }
+
+        public class LeafObject
+        {
+            [StringLength(10)]
+            public string StringProperty { get; set; } = "bar";
         }
 
         public class ElementObject
@@ -55,8 +63,9 @@
             void Collect(ValidationResult validationResult);
         }
 
+        [Obsolete("The method under test is deprecated.")]
         [TestMethod]
-        public void collecting_TryValidate_has_guard_clause_against_null_validationResultCollector()
+        public void collecting_deprecated_TryValidate_has_guard_clause_against_null_validationResultCollector()
         {
             object instance = "foo";
             Action action = () => ObjectValidator.TryValidate(instance, validationResultCollector: null);
@@ -64,14 +73,29 @@
         }
 
         [TestMethod]
-        public void given_null_argument_then_Validate_succeeds()
+        public void given_null_argument_then_TryValidate_succeeds()
+        {
+            object instance = null;
+
+            bool successful = ObjectValidator.TryValidate(
+                instance,
+                out IEnumerable<ObjectValidationError> errors);
+
+            successful.Should().BeTrue();
+            errors.Should().NotBeNull().And.BeEmpty();
+        }
+
+        [Obsolete("The method under test is deprecated.")]
+        [TestMethod]
+        public void given_null_argument_then_deprecated_Validate_succeeds()
         {
             Action action = () => ObjectValidator.Validate(instance: null);
             action.Should().NotThrow();
         }
 
+        [Obsolete("The method under test is deprecated.")]
         [TestMethod]
-        public void given_null_argument_then_TryValidate_succeeds()
+        public void given_null_argument_then_deprecated_TryValidate_succeeds()
         {
             object instance = null;
 
@@ -81,8 +105,9 @@
             validationResult.Should().Be(ValidationResult.Success);
         }
 
+        [Obsolete("The method under test is deprecated.")]
         [TestMethod]
-        public void given_null_argument_then_collecting_TryValidate_succeeds()
+        public void given_null_argument_then_collecting_deprecated_TryValidate_succeeds()
         {
             object instance = null;
             ICollector collector = Mock.Of<ICollector>();
@@ -92,14 +117,6 @@
             successful.Should().BeTrue();
             Mock.Get(collector)
                 .Verify(x => x.Collect(It.IsAny<ValidationResult>()), Times.Never());
-        }
-
-        [TestMethod]
-        public void given_valid_object_then_Validate_succeeds()
-        {
-            var instance = new RootObject();
-            Action action = () => ObjectValidator.Validate(instance);
-            action.Should().NotThrow();
         }
 
         [TestMethod]
@@ -107,14 +124,38 @@
         {
             var instance = new RootObject();
 
+            bool successful = ObjectValidator.TryValidate(
+                instance,
+                out IEnumerable<ObjectValidationError> errors);
+
+            successful.Should().BeTrue();
+            errors.Should().NotBeNull().And.BeEmpty();
+        }
+
+        [Obsolete("The method under test is deprecated.")]
+        [TestMethod]
+        public void given_valid_object_then_deprecated_Validate_succeeds()
+        {
+            var instance = new RootObject();
+            Action action = () => ObjectValidator.Validate(instance);
+            action.Should().NotThrow();
+        }
+
+        [Obsolete("The method under test is deprecated.")]
+        [TestMethod]
+        public void given_valid_object_then_deprecated_TryValidate_succeeds()
+        {
+            var instance = new RootObject();
+
             bool successful = ObjectValidator.TryValidate(instance, out ValidationResult validationResult);
 
             successful.Should().BeTrue();
             validationResult.Should().Be(ValidationResult.Success);
         }
 
+        [Obsolete("The method under test is deprecated.")]
         [TestMethod]
-        public void given_valid_object_then_collecting_TryValidate_succeeds()
+        public void given_valid_object_then_collecting_deprecated_TryValidate_succeeds()
         {
             var instance = new RootObject();
             ICollector collector = Mock.Of<ICollector>();
@@ -127,7 +168,29 @@
         }
 
         [TestMethod]
-        public void given_root_has_invalid_property_then_Validate_throws_ValidationException()
+        public void given_root_has_invalid_property_then_TryValidate_fails()
+        {
+            var instance = new RootObject
+            {
+                Int32Property = -1,
+            };
+
+            bool successful = ObjectValidator.TryValidate(
+                instance,
+                out IEnumerable<ObjectValidationError> errors);
+
+            successful.Should().BeFalse();
+            errors.Should().ContainSingle();
+            ObjectValidationError error = errors.Single();
+            error.ObjectPath.Should().BeEmpty();
+            error.ValidationAttribute.Should().BeOfType<RangeAttribute>();
+            error.ValidationResult.MemberNames.Should().BeEquivalentTo("Int32Property");
+            error.Value.Should().Be(instance.Int32Property);
+        }
+
+        [Obsolete("The method under test is deprecated.")]
+        [TestMethod]
+        public void given_root_has_invalid_property_then_deprecated_Validate_throws_ValidationException()
         {
             var instance = new RootObject
             {
@@ -142,8 +205,9 @@
                 .BeEquivalentTo("Int32Property");
         }
 
+        [Obsolete("The method under test is deprecated.")]
         [TestMethod]
-        public void given_root_has_invalid_property_then_TryValidate_fails()
+        public void given_root_has_invalid_property_then_deprecated_TryValidate_fails()
         {
             var instance = new RootObject
             {
@@ -157,8 +221,9 @@
             validationResult.MemberNames.Should().BeEquivalentTo("Int32Property");
         }
 
+        [Obsolete("The method under test is deprecated.")]
         [TestMethod]
-        public void given_root_has_invalid_property_then_collecting_TryValidate_fails()
+        public void given_root_has_invalid_property_then_collecting_deprecated_TryValidate_fails()
         {
             var instance = new RootObject
             {
@@ -173,7 +238,32 @@
         }
 
         [TestMethod]
-        public void given_stem_has_invalid_property_then_Validate_throws_ValidationException()
+        public void given_stem_has_invalid_property_then_TryValidate_fails()
+        {
+            var instance = new RootObject
+            {
+                StemObjectProperty =
+                {
+                    StringProperty = "f to the o to the o",
+                },
+            };
+
+            bool successful = ObjectValidator.TryValidate(
+                instance,
+                out IEnumerable<ObjectValidationError> errors);
+
+            successful.Should().BeFalse();
+            errors.Should().ContainSingle();
+            ObjectValidationError error = errors.Single();
+            error.ObjectPath.Should().Be("StemObjectProperty");
+            error.ValidationAttribute.Should().BeOfType<StringLengthAttribute>();
+            error.ValidationResult.MemberNames.Should().BeEquivalentTo("StringProperty");
+            error.Value.Should().Be(instance.StemObjectProperty.StringProperty);
+        }
+
+        [Obsolete("The method under test is deprecated.")]
+        [TestMethod]
+        public void given_stem_has_invalid_property_then_deprecated_Validate_throws_ValidationException()
         {
             var instance = new RootObject
             {
@@ -192,7 +282,21 @@
         }
 
         [TestMethod]
-        public void given_null_stem_then_Validate_succeeds()
+        public void given_null_stem_then_TryValidate_succeeds()
+        {
+            var instance = new RootObject { StemObjectProperty = null };
+
+            bool successful = ObjectValidator.TryValidate(
+                instance,
+                out IEnumerable<ObjectValidationError> errors);
+
+            successful.Should().BeTrue();
+            errors.Should().NotBeNull().And.BeEmpty();
+        }
+
+        [Obsolete("The method under test is deprecated.")]
+        [TestMethod]
+        public void given_null_stem_then_deprecated_Validate_succeeds()
         {
             var instance = new RootObject { StemObjectProperty = null };
             Action action = () => ObjectValidator.Validate(instance);
@@ -200,7 +304,60 @@
         }
 
         [TestMethod]
-        public void given_invalid_collection_element_then_Validate_throws_ValidationException()
+        public void given_deep_invalid_property_then_TryValidate_fails()
+        {
+            var instance = new RootObject
+            {
+                StemObjectProperty =
+                {
+                    LeafObjectProperty = new LeafObject
+                    {
+                        StringProperty = "b to the a to the r",
+                    },
+                },
+            };
+
+            bool successful = ObjectValidator.TryValidate(
+                instance,
+                out IEnumerable<ObjectValidationError> errors);
+
+            successful.Should().BeFalse();
+            errors.Should().ContainSingle();
+            ObjectValidationError error = errors.Single();
+            error.ObjectPath.Should().Be("StemObjectProperty.LeafObjectProperty");
+            error.ValidationAttribute.Should().BeOfType<StringLengthAttribute>();
+            error.ValidationResult.MemberNames.Should().BeEquivalentTo("StringProperty");
+            error.Value.Should().Be(instance.StemObjectProperty.LeafObjectProperty.StringProperty);
+        }
+
+        [TestMethod]
+        public void given_invalid_collection_element_then_TryValidate_fails()
+        {
+            var instance = new RootObject
+            {
+                CollectionProperty = new[]
+                {
+                    new ElementObject(),
+                    new ElementObject { ObjectProperty = default },
+                },
+            };
+
+            bool successful = ObjectValidator.TryValidate(
+                instance,
+                out IEnumerable<ObjectValidationError> errors);
+
+            successful.Should().BeFalse();
+            errors.Should().ContainSingle();
+            ObjectValidationError error = errors.Single();
+            error.ObjectPath.Should().Be("CollectionProperty[1]");
+            error.ValidationAttribute.Should().BeOfType<RequiredAttribute>();
+            error.ValidationResult.MemberNames.Should().BeEquivalentTo("ObjectProperty");
+            error.Value.Should().BeNull();
+        }
+
+        [Obsolete("The method under test is deprecated.")]
+        [TestMethod]
+        public void given_invalid_collection_element_then_deprecated_Validate_throws_ValidationException()
         {
             var instance = new RootObject
             {
@@ -220,7 +377,28 @@
         }
 
         [TestMethod]
-        public void given_null_element_then_Validate_succeeds()
+        public void given_null_element_then_TryValidate_succeeds()
+        {
+            var instance = new RootObject
+            {
+                CollectionProperty = new[]
+                {
+                    new ElementObject(),
+                    null,
+                },
+            };
+
+            bool successful = ObjectValidator.TryValidate(
+                instance,
+                out IEnumerable<ObjectValidationError> errors);
+
+            successful.Should().BeTrue();
+            errors.Should().NotBeNull().And.BeEmpty();
+        }
+
+        [Obsolete("The method under test is deprecated.")]
+        [TestMethod]
+        public void given_null_element_then_deprecated_Validate_succeeds()
         {
             var instance = new RootObject
             {
@@ -238,7 +416,23 @@
 
         [TestMethod]
         [Timeout(100)]
-        public void given_circular_reference_then_Validate_succeeds()
+        public void given_circular_reference_then_TryValidate_succeeds()
+        {
+            var instance = new RootObject();
+            instance.CollectionProperty = new[] { instance };
+
+            bool successful = ObjectValidator.TryValidate(
+                instance,
+                out IEnumerable<ObjectValidationError> errors);
+
+            successful.Should().BeTrue();
+            errors.Should().NotBeNull().And.BeEmpty();
+        }
+
+        [Obsolete("The method under test is deprecated.")]
+        [TestMethod]
+        [Timeout(100)]
+        public void given_circular_reference_then_deprecated_Validate_succeeds()
         {
             var instance = new RootObject();
             instance.CollectionProperty = new[] { instance };
@@ -249,7 +443,32 @@
         }
 
         [TestMethod]
-        public void given_stem_has_invalid_inherited_property_then_Validate_throws_ValidationException()
+        public void given_stem_has_invalid_inherited_property_then_TryValidate_fails()
+        {
+            var instance = new RootObject
+            {
+                StemObjectProperty =
+                {
+                    BaseInt32Property = -1,
+                },
+            };
+
+            bool successful = ObjectValidator.TryValidate(
+                instance,
+                out IEnumerable<ObjectValidationError> errors);
+
+            successful.Should().BeFalse();
+            errors.Should().ContainSingle();
+            ObjectValidationError error = errors.Single();
+            error.ObjectPath.Should().Be("StemObjectProperty");
+            error.ValidationAttribute.Should().BeOfType<RangeAttribute>();
+            error.ValidationResult.MemberNames.Should().BeEquivalentTo("BaseInt32Property");
+            error.Value.Should().Be(-1);
+        }
+
+        [Obsolete("The method under test is deprecated.")]
+        [TestMethod]
+        public void given_stem_has_invalid_inherited_property_then_deprecated_Validate_throws_ValidationException()
         {
             var instance = new RootObject
             {
@@ -265,6 +484,55 @@
                 .Where(x => x.ValidationAttribute is RangeAttribute)
                 .Which.ValidationResult.MemberNames.Should()
                 .BeEquivalentTo("StemObjectProperty.BaseInt32Property");
+        }
+
+        public static IEnumerable<object[]> FIXTURE_given_multiple_errors_then_TryValidate_fails_correctly
+        {
+            get
+            {
+                yield return new object[]
+                {
+                    new RootObject
+                    {
+                        Int32Property = -1,
+                        StemObjectProperty = { BaseInt32Property = -1 },
+                    },
+                    new[] { string.Empty, "StemObjectProperty" },
+                    new[] { "Int32Property", "BaseInt32Property" },
+                };
+
+                yield return new object[]
+                {
+                    new RootObject
+                    {
+                        Int32Property = 1,
+                        CollectionProperty = new[]
+                        {
+                            new ElementObject { ObjectProperty = null },
+                            new ElementObject { ObjectProperty = null },
+                        },
+                    },
+                    new[] { "CollectionProperty[0]", "CollectionProperty[1]" },
+                    new[] { "ObjectProperty", "ObjectProperty" },
+                };
+            }
+        }
+
+        [TestMethod]
+        [DynamicData(nameof(FIXTURE_given_multiple_errors_then_TryValidate_fails_correctly))]
+        public void given_multiple_errors_then_TryValidate_fails_correctly(
+            object instance, string[] objectPaths, string[] memberNames)
+        {
+            // Act
+            bool successful = ObjectValidator.TryValidate(
+                instance,
+                out IEnumerable<ObjectValidationError> errors);
+
+            // Assert
+            successful.Should().BeFalse();
+            errors.Select(e => (e.ObjectPath, e.ValidationResult.MemberNames.Single()))
+                  .Should()
+                  .BeEquivalentTo(objectPaths.Zip(memberNames, (path, member) => (path, member)));
         }
 
         public static IEnumerable<object[]> FIXTURE_given_multiple_errors_then_TryValidate_returns_the_first_error
@@ -297,9 +565,10 @@
             }
         }
 
+        [Obsolete("The method under test is deprecated.")]
         [TestMethod]
         [DynamicData(nameof(FIXTURE_given_multiple_errors_then_TryValidate_returns_the_first_error))]
-        public void given_multiple_errors_then_TryValidate_returns_the_first_error(
+        public void given_multiple_errors_then_deprecated_TryValidate_returns_the_first_error(
             object instance, string expectedMemberName)
         {
             // Act
@@ -349,9 +618,10 @@
             }
         }
 
+        [Obsolete("The method under test is deprecated.")]
         [TestMethod]
         [DynamicData(nameof(FIXTURE_given_multiple_errors_then_collecting_TryValidate_invokes_collector_function_for_all_errors))]
-        public void given_multiple_errors_then_collecting_TryValidate_invokes_collector_function_for_all_errors(
+        public void given_multiple_errors_then_collecting_deprecated_TryValidate_invokes_collector_function_for_all_errors(
             object instance, string[] expectedMemberNames)
         {
             var validationResults = new List<ValidationResult>();
@@ -364,7 +634,27 @@
         }
 
         [TestMethod]
-        public void given_write_only_property_then_Validate_succeeds()
+        public void given_write_only_property_then_TryValidate_succeeds()
+        {
+            var instance = new RootObject
+            {
+                CollectionProperty = new[]
+                {
+                    new WriteOnlyObject(),
+                },
+            };
+
+            bool successful = ObjectValidator.TryValidate(
+                instance,
+                out IEnumerable<ObjectValidationError> errors);
+
+            successful.Should().BeTrue();
+            errors.Should().NotBeNull().And.BeEmpty();
+        }
+
+        [Obsolete("The method under test is deprecated.")]
+        [TestMethod]
+        public void given_write_only_property_then_deprecated_Validate_succeeds()
         {
             var instance = new RootObject
             {
@@ -380,8 +670,24 @@
         }
 
         [TestMethod]
-        [Timeout(10)]
-        public void given_DateTime_element_then_Validate_does_not_enter_infinite_recursion()
+        [Timeout(100)]
+        public void given_DateTime_element_then_TryValidate_does_not_enter_infinite_recursion()
+        {
+            var instance = new RootObject
+            {
+                CollectionProperty = new[]
+                {
+                    DateTime.Now,
+                },
+            };
+
+            ObjectValidator.TryValidate(instance, out IEnumerable<ObjectValidationError> _);
+        }
+
+        [Obsolete("The method under test is deprecated.")]
+        [TestMethod]
+        [Timeout(100)]
+        public void given_DateTime_element_then_deprecated_Validate_does_not_enter_infinite_recursion()
         {
             var instance = new RootObject
             {
@@ -398,7 +704,23 @@
 
         [TestMethod]
         [Timeout(100)]
-        public void given_DateTimeOffset_element_then_Validate_does_not_enter_infinite_recursion()
+        public void given_DateTimeOffset_element_then_TryValidate_does_not_enter_infinite_recursion()
+        {
+            var instance = new RootObject
+            {
+                CollectionProperty = new[]
+                {
+                    DateTimeOffset.Now,
+                },
+            };
+
+            ObjectValidator.TryValidate(instance, out IEnumerable<ObjectValidationError> _);
+        }
+
+        [Obsolete("The method under test is deprecated.")]
+        [TestMethod]
+        [Timeout(100)]
+        public void given_DateTimeOffset_element_then_deprecated_Validate_does_not_enter_infinite_recursion()
         {
             var instance = new RootObject
             {
@@ -424,7 +746,27 @@
         }
 
         [TestMethod]
-        public void Validate_ignores_explicit_properties()
+        public void TryValidate_ignores_explicit_properties()
+        {
+            var instance = new RootObject
+            {
+                CollectionProperty = new[]
+                {
+                    new HasNotSupportedExplicitProperty(),
+                },
+            };
+
+            bool successful = ObjectValidator.TryValidate(
+                instance,
+                out IEnumerable<ObjectValidationError> errors);
+
+            successful.Should().BeTrue();
+            errors.Should().NotBeNull().And.BeEmpty();
+        }
+
+        [Obsolete("The method under test is deprecated.")]
+        [TestMethod]
+        public void deprecated_Validate_ignores_explicit_properties()
         {
             var instance = new RootObject
             {

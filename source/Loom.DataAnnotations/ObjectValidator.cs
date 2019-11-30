@@ -8,7 +8,7 @@
     using System.Reflection;
 
     /// <summary>
-    /// Provides a helper class that can be used to validate objects. Unlike <see cref="Validator"/>, <see cref="ObjectValidator"/> traverses an object graph and uses full paths of properties as member names for <see cref="ValidationResult"/>.
+    /// Provides a helper class that can be used to validate objects. Unlike <see cref="Validator"/>, <see cref="ObjectValidator"/> traverses an object graph and provides full paths of properties as member names for validation failures.
     /// </summary>
     public static class ObjectValidator
     {
@@ -24,12 +24,13 @@
         /// <exception cref="ValidationException">
         /// The object is not valid.
         /// </exception>
+        [Obsolete("Use TryValidate(object, out IEnumerable<ObjectValidationError>) method instead.")]
         public static void Validate(object instance)
         {
             Visitor.Visit(
                 instance,
                 breakOnFirstError: true,
-                onError: error => throw error.ToException());
+                onError: error => throw new ValidationError(error).ToException());
         }
 
         /// <summary>
@@ -38,6 +39,7 @@
         /// <param name="instance">The object to validate.</param>
         /// <param name="validationResult">A <see cref="ValidationResult"/> object.</param>
         /// <returns><c>true</c> if the object is valid; otherwise, <c>false</c>.</returns>
+        [Obsolete("Use TryValidate(object, out IEnumerable<ObjectValidationError>) method instead.")]
         public static bool TryValidate(
             object instance,
             out ValidationResult validationResult)
@@ -47,7 +49,7 @@
             Visitor.Visit(
                 instance,
                 breakOnFirstError: true,
-                onError: error => captured = error.ValidationResult);
+                onError: error => captured = new ValidationError(error).ValidationResult);
 
             validationResult = captured;
             return validationResult == ValidationResult.Success;
@@ -59,6 +61,7 @@
         /// <param name="instance">The object to validate.</param>
         /// <param name="validationResultCollector">A callback function called for each <see cref="ValidationResult"/> object indicating validation error.</param>
         /// <returns><c>true</c> if the object is valid; otherwise, <c>false</c>.</returns>
+        [Obsolete("Use TryValidate(object, out IEnumerable<ObjectValidationError>) method instead.")]
         public static bool TryValidate(
             object instance,
             Action<ValidationResult> validationResultCollector)
@@ -73,22 +76,46 @@
             Visitor.Visit(instance, breakOnFirstError: false, onError: error =>
             {
                 hasError = true;
-                validationResultCollector.Invoke(error.ValidationResult);
+                validationResultCollector.Invoke(new ValidationError(error).ValidationResult);
             });
 
             return hasError == false;
         }
 
+        /// <summary>
+        /// Determine whether the specified object is valid.
+        /// </summary>
+        /// <param name="instance">The object to validate.</param>
+        /// <param name="errors">An empty collection if <paramref name="instance"/> is valid <paramref name="errors"/>; otherwise, a list of <see cref="ObjectValidationError"/> that contains validation error data.</param>
+        /// <returns><c>true</c> if <paramref name="instance"/> is valid; otherwise, <c>false</c>.</returns>
+        public static bool TryValidate(
+            object? instance,
+            out IEnumerable<ObjectValidationError> errors)
+        {
+            bool hasError = false;
+            List<ObjectValidationError>? validationErrors = default;
+
+            Visitor.Visit(instance, breakOnFirstError: false, onError: error =>
+            {
+                hasError = true;
+                validationErrors ??= new List<ObjectValidationError>();
+                validationErrors.Add(error);
+            });
+
+            errors = validationErrors?.AsReadOnly() ?? Enumerable.Empty<ObjectValidationError>();
+            return hasError == false;
+        }
+
+        [Obsolete]
         private struct ValidationError
         {
-            public ValidationError(
-                ValidationAttribute validationAttribute,
-                ValidationResult validationResult,
-                object value)
+            public ValidationError(ObjectValidationError source)
             {
-                ValidationAttribute = validationAttribute;
-                ValidationResult = validationResult;
-                Value = value;
+                ValidationAttribute = source.ValidationAttribute;
+                ValidationResult = new ValidationResult(
+                    source.ValidationResult.ErrorMessage,
+                    memberNames: source.MemberPaths.ToList().AsReadOnly());
+                Value = source.Value;
             }
 
             public ValidationAttribute ValidationAttribute { get; }
@@ -178,10 +205,10 @@
             private readonly Stack<object> _history = new Stack<object>();
 
             private readonly bool _breakOnFirstError;
-            private readonly Action<ValidationError> _onError;
+            private readonly Action<ObjectValidationError> _onError;
             private bool _hasError;
 
-            private Visitor(bool breakOnFirstError, Action<ValidationError> onError)
+            private Visitor(bool breakOnFirstError, Action<ObjectValidationError> onError)
             {
                 _breakOnFirstError = breakOnFirstError;
                 _onError = onError;
@@ -191,14 +218,14 @@
             private bool ShouldBreak => _hasError && _breakOnFirstError;
 
             public static void Visit(
-                object instance,
+                object? instance,
                 bool breakOnFirstError,
-                Action<ValidationError> onError)
+                Action<ObjectValidationError> onError)
             {
-                new Visitor(breakOnFirstError, onError).Visit(instance, prefix: string.Empty);
+                new Visitor(breakOnFirstError, onError).Visit(instance, objectPath: string.Empty);
             }
 
-            private void Visit(object instance, string prefix)
+            private void Visit(object? instance, string objectPath)
             {
                 if (instance == null)
                 {
@@ -208,10 +235,10 @@
                 if (Visited(instance) == false)
                 {
                     LeaveVisitRecord(instance);
-                    VisitProperties(instance, prefix);
-                    if (HasElements(instance, out IEnumerable enumerable))
+                    VisitProperties(instance, objectPath);
+                    if (HasElements(instance, out IEnumerable? enumerable))
                     {
-                        VisitElements(enumerable, prefix);
+                        VisitElements(enumerable!, objectPath);
                     }
                 }
             }
@@ -222,15 +249,11 @@
             private void LeaveVisitRecord(object instance)
                 => _history.Push(instance);
 
-            private void VisitProperties(object instance, string prefix)
+            private void VisitProperties(object instance, string objectPath)
             {
                 foreach (PropertyInfo property in GetVisiteeProperties(instance))
                 {
-                    string memberName = string.IsNullOrWhiteSpace(prefix)
-                        ? property.Name
-                        : $"{prefix}.{property.Name}";
-
-                    VisitProperty(instance, property, memberName);
+                    VisitProperty(objectPath, instance, property, property.Name);
                 }
             }
 
@@ -259,7 +282,7 @@
                 => _strategy.ShouldVisitProperty(instance, property);
 
             private void VisitProperty(
-                object instance, PropertyInfo property, string memberName)
+                string objectPath, object instance, PropertyInfo property, string memberName)
             {
                 object value = property.GetValue(instance);
                 foreach (ValidationAttribute validator in GetValidators(property))
@@ -269,39 +292,39 @@
                         return;
                     }
 
-                    ValidateProperty(instance, value, memberName, validator);
+                    ValidateProperty(objectPath, instance, value, memberName, validator);
                 }
 
-                Visit(value, prefix: memberName);
+                Visit(value, objectPath: PathComposer.Compose(objectPath, memberName));
             }
 
             private static IEnumerable<ValidationAttribute> GetValidators(PropertyInfo property)
                 => property.GetCustomAttributes<ValidationAttribute>();
 
             private void ValidateProperty(
-                object instance, object value, string memberName, ValidationAttribute validator)
+                string objectPath, object instance, object value, string memberName, ValidationAttribute validator)
             {
                 var validationContext = new ValidationContext(instance) { MemberName = memberName };
                 ValidationResult result = validator.GetValidationResult(value, validationContext);
                 if (result != ValidationResult.Success)
                 {
                     _hasError = true;
-                    _onError.Invoke(new ValidationError(validator, result, value));
+                    _onError.Invoke(new ObjectValidationError(objectPath, validator, result, value));
                 }
             }
 
-            private static bool HasElements(object instance, out IEnumerable enumerable)
+            private static bool HasElements(object instance, out IEnumerable? enumerable)
             {
                 enumerable = instance as IEnumerable;
                 return enumerable != null && (enumerable is string) == false;
             }
 
-            private void VisitElements(IEnumerable enumerable, string prefix)
+            private void VisitElements(IEnumerable enumerable, string objectPath)
             {
                 int index = 0;
                 foreach (object element in enumerable)
                 {
-                    string elementPrefix = $"{prefix}[{index}]";
+                    string elementPrefix = $"{objectPath}[{index}]";
                     Visit(element, elementPrefix);
                     index++;
                 }
