@@ -29,10 +29,8 @@
 
         public async Task PublishEvents(string stateType, Guid streamId)
         {
-            using (EventStoreContext context = _contextFactory.Invoke())
-            {
-                await FlushEvents(context, stateType, streamId).ConfigureAwait(continueOnCapturedContext: false);
-            }
+            using EventStoreContext context = _contextFactory.Invoke();
+            await FlushEvents(context, stateType, streamId).ConfigureAwait(continueOnCapturedContext: false);
         }
 
         private async Task FlushEvents(EventStoreContext context,

@@ -2,23 +2,23 @@
 {
     using System;
 
-    public class StreamEvent
+    public class StreamEvent : IEvent
     {
         private StreamEvent()
         {
         }
 
-        public StreamEvent(string stateType,
-                           Guid streamId,
-                           long version,
-                           DateTime raisedTimeUtc,
-                           string eventType,
-                           string payload,
-                           string messageId,
-                           string operationId,
-                           string contributor,
-                           string parentId,
-                           Guid transaction)
+        internal StreamEvent(string stateType,
+                             Guid streamId,
+                             long version,
+                             DateTime raisedTimeUtc,
+                             string eventType,
+                             string payload,
+                             string messageId,
+                             string operationId,
+                             string contributor,
+                             string parentId,
+                             Guid transaction)
         {
             StateType = stateType;
             StreamId = streamId;

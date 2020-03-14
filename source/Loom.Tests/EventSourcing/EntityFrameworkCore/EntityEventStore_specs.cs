@@ -194,5 +194,71 @@
 
             await action.Should().NotThrowAsync();
         }
+
+        [TestMethod, AutoData]
+        public async Task QueryEventMessages_correctly_restores_event_messages(
+            Guid streamId,
+            Event1 evt1,
+            Event2 evt2,
+            Event3 evt3,
+            IMessageBus eventBus,
+            TracingProperties tracingProperties)
+        {
+            // Arrange
+            EntityEventStore<State1> sut = GenerateEventStore(eventBus);
+            object[] events = new object[] { evt1, evt2, evt3 };
+            DateTime nowUtc = DateTime.UtcNow;
+            await sut.CollectEvents(streamId, startVersion: 1, events, tracingProperties);
+
+            // Act
+            IEnumerable<Message> actual = await sut.QueryEventMessages(streamId);
+
+            // Assert
+            actual.Should().HaveSameCount(events);
+
+            actual.Cast<dynamic>()
+                  .Select(x => (Guid)x.Data.StreamId)
+                  .Should().OnlyContain(x => x == streamId);
+
+            actual.Cast<dynamic>()
+                  .Select(x => (long)x.Data.Version)
+                  .Should().BeEquivalentTo(new[] { 1, 2, 3 });
+
+            actual.Cast<dynamic>()
+                  .Select(x => (object)x.Data.Payload)
+                  .Should().BeEquivalentTo(events);
+
+            foreach (DateTime raisedTime in actual.Cast<dynamic>()
+                                                  .Select(x => x.Data.RaisedTimeUtc))
+            {
+                raisedTime.Kind.Should().Be(DateTimeKind.Utc);
+                raisedTime.Should().BeCloseTo(nowUtc, precision: 1000);
+            }
+
+            actual.ElementAt(0).Data.Should().BeOfType<StreamEvent<Event1>>();
+            actual.ElementAt(1).Data.Should().BeOfType<StreamEvent<Event2>>();
+            actual.ElementAt(2).Data.Should().BeOfType<StreamEvent<Event3>>();
+
+            actual.Select(x => x.Id).Should().OnlyHaveUniqueItems();
+            actual.Should().OnlyContain(x => x.TracingProperties == tracingProperties);
+        }
+
+        [TestMethod, AutoData]
+        public async Task QueryEventMessages_returns_same_value_for_same_source(
+            Guid streamId,
+            Event1 evt1,
+            Event2 evt2,
+            Event3 evt3,
+            IMessageBus eventBus,
+            TracingProperties tracingProperties)
+        {
+            EntityEventStore<State1> sut = GenerateEventStore(eventBus);
+            object[] events = new object[] { evt1, evt2, evt3 };
+            await sut.CollectEvents(streamId, startVersion: 1, events, tracingProperties);
+
+            IEnumerable<Message> actual = await sut.QueryEventMessages(streamId);
+
+            actual.Should().BeEquivalentTo(await sut.QueryEventMessages(streamId));
+        }
     }
 }

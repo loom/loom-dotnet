@@ -40,7 +40,6 @@
         private static void ConfigurePendingEventEntity(EntityTypeBuilder<PendingEvent> entity)
         {
             entity.HasKey(e => new { e.StateType, e.StreamId, e.Version });
-            entity.Ignore(e => e.TracingProperties);
         }
 
         private static void ConfigureUniquePropertyEntity(EntityTypeBuilder<UniqueProperty> entity)

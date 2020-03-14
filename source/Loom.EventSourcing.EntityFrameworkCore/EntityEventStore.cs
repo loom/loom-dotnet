@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.Collections.Immutable;
     using System.Linq;
+    using System.Threading;
     using System.Threading.Tasks;
     using Loom.Json;
     using Loom.Messaging;
@@ -84,7 +85,7 @@
                         transaction);
 
                     context.Add(streamEvent);
-                    context.Add(new PendingEvent(streamEvent));
+                    context.Add(PendingEvent.Create(streamEvent));
                 }
 
                 List<UniqueProperty> uniqueProperties = await context
@@ -151,29 +152,48 @@
         public async Task<IEnumerable<object>> QueryEvents(
             Guid streamId, long fromVersion)
         {
-            using EventStoreContext context = _contextFactory.Invoke();
+            CancellationToken cancellationToken = CancellationToken.None;
+            List<StreamEvent> source = await GetEntities(streamId, fromVersion, cancellationToken)
+                                            .ConfigureAwait(continueOnCapturedContext: false);
+            return source.Select(RestorePayload).ToImmutableArray();
+        }
 
+        public async Task<IEnumerable<Message>> QueryEventMessages(
+            Guid streamId,
+            CancellationToken cancellationToken = default)
+        {
+            int fromVersion = 1;
+            List<StreamEvent> source = await GetEntities(streamId, fromVersion, cancellationToken)
+                                            .ConfigureAwait(continueOnCapturedContext: false);
+            return source.Select(GenerateMessage).ToImmutableArray();
+        }
+
+        private Task<List<StreamEvent>> GetEntities(
+            Guid streamId,
+            long fromVersion,
+            CancellationToken cancellationToken)
+        {
             string stateType = _typeResolver.ResolveTypeName<T>();
+            using EventStoreContext context = _contextFactory.Invoke();
+            IQueryable<StreamEvent> query = from e in context.StreamEvents
+                                            where
+                                                e.StateType == stateType &&
+                                                e.StreamId == streamId &&
+                                                e.Version >= fromVersion
+                                            orderby e.Version ascending
+                                            select e;
+            return query.AsNoTracking().ToListAsync(cancellationToken);
+        }
 
-            IQueryable<StreamEvent> query =
-                from e in context.StreamEvents
-                where
-                    e.StateType == stateType &&
-                    e.StreamId == streamId &&
-                    e.Version >= fromVersion
-                orderby e.Version ascending
-                select e;
+        private object RestorePayload(StreamEvent entity)
+        {
+            Type type = _typeResolver.TryResolveType(entity.EventType);
+            return _jsonProcessor.FromJson(entity.Payload, type);
+        }
 
-            IEnumerable<object> sequence =
-                from e in await query
-                    .AsNoTracking()
-                    .ToListAsync()
-                    .ConfigureAwait(continueOnCapturedContext: false)
-                let value = e.Payload
-                let type = _typeResolver.TryResolveType(e.EventType)
-                select _jsonProcessor.FromJson(value, type);
-
-            return sequence.ToImmutableArray();
+        private Message GenerateMessage(StreamEvent entity)
+        {
+            return entity.GenerateMessage(_typeResolver, _jsonProcessor);
         }
     }
 }

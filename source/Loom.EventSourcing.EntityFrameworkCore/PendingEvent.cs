@@ -1,27 +1,11 @@
 ﻿namespace Loom.EventSourcing.EntityFrameworkCore
 {
     using System;
-    using Loom.Messaging;
 
-    public class PendingEvent
+    public class PendingEvent : IEvent
     {
         private PendingEvent()
         {
-        }
-
-        internal PendingEvent(StreamEvent source)
-        {
-            StateType = source.StateType;
-            StreamId = source.StreamId;
-            Version = source.Version;
-            RaisedTimeUtc = source.RaisedTimeUtc;
-            EventType = source.EventType;
-            Payload = source.Payload;
-            MessageId = source.MessageId;
-            OperationId = source.OperationId;
-            Contributor = source.Contributor;
-            ParentId = source.ParentId;
-            Transaction = source.Transaction;
         }
 
         public string StateType { get; private set; }
@@ -46,6 +30,19 @@
 
         public Guid Transaction { get; private set; }
 
-        internal TracingProperties TracingProperties => new TracingProperties(OperationId, Contributor, ParentId);
+        internal static PendingEvent Create(StreamEvent source) => new PendingEvent
+        {
+            StateType = source.StateType,
+            StreamId = source.StreamId,
+            Version = source.Version,
+            RaisedTimeUtc = source.RaisedTimeUtc,
+            EventType = source.EventType,
+            Payload = source.Payload,
+            MessageId = source.MessageId,
+            OperationId = source.OperationId,
+            Contributor = source.Contributor,
+            ParentId = source.ParentId,
+            Transaction = source.Transaction,
+        };
     }
 }

@@ -20,16 +20,23 @@
                    select e;
         }
 
-        public static Message GenerateMessage(this PendingEvent entity,
-                                              TypeResolver typeResolver,
-                                              IJsonProcessor jsonProcessor)
+        public static Message GenerateMessage(
+            this IEvent entity,
+            TypeResolver typeResolver,
+            IJsonProcessor jsonProcessor)
         {
             Type type = typeResolver.TryResolveType(entity.EventType);
 
             ConstructorInfo constructor = typeof(StreamEvent<>)
                 .MakeGenericType(type)
                 .GetTypeInfo()
-                .GetConstructor(new[] { typeof(Guid), typeof(long), typeof(DateTime), type });
+                .GetConstructor(new[]
+                {
+                    typeof(Guid),
+                    typeof(long),
+                    typeof(DateTime),
+                    type,
+                });
 
             object data = constructor.Invoke(parameters: new object[]
             {
@@ -39,7 +46,12 @@
                 jsonProcessor.FromJson(entity.Payload, type),
             });
 
-            return new Message(id: entity.MessageId, data, entity.TracingProperties);
+            var tracingProperties = new TracingProperties(
+                entity.OperationId,
+                entity.Contributor,
+                entity.ParentId);
+
+            return new Message(id: entity.MessageId, data, tracingProperties);
         }
 
         public static void Deconstruct<TKey, TValue>(
