@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Threading;
     using System.Threading.Tasks;
     using Loom.Json;
     using Loom.Messaging;
@@ -29,7 +30,9 @@
         public async Task PublishEvents(string stateType, Guid streamId)
         {
             IQueryable<QueueTicket> query = _table.BuildQueueTicketsQuery(stateType, streamId);
-            foreach (QueueTicket queueTicket in from t in await query.ExecuteAsync().ConfigureAwait(continueOnCapturedContext: false)
+            CancellationToken cancellationToken = CancellationToken.None;
+            foreach (QueueTicket queueTicket in from t in await query.ExecuteAsync(cancellationToken)
+                                                                     .ConfigureAwait(continueOnCapturedContext: false)
                                                 orderby t.RowKey
                                                 select t)
             {
@@ -46,13 +49,15 @@
 
         private IQueryable<StreamEvent> BuildStreamEventsQuery(QueueTicket queueTicket)
         {
-            return _table.BuildStreamEventsQuery(queueTicket);
+            return _table.BuildStreamEventQuery(queueTicket);
         }
 
         private async Task PublishStreamEvents(IQueryable<StreamEvent> query, string partitionKey)
         {
-            IEnumerable<StreamEvent> streamEvents = await query.ExecuteAsync().ConfigureAwait(continueOnCapturedContext: false);
-            await _eventBus.Send(streamEvents.Select(GenerateMessage), partitionKey).ConfigureAwait(continueOnCapturedContext: false);
+            CancellationToken cancellationToken = CancellationToken.None;
+            IEnumerable<StreamEvent> source = await query.ExecuteAsync(cancellationToken)
+                                                         .ConfigureAwait(continueOnCapturedContext: false);
+            await _eventBus.Send(source.Select(GenerateMessage), partitionKey).ConfigureAwait(continueOnCapturedContext: false);
         }
 
         private Message GenerateMessage(StreamEvent entity)

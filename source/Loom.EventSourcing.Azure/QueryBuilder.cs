@@ -21,7 +21,7 @@
                    select t;
         }
 
-        public static IQueryable<StreamEvent> BuildStreamEventsQuery(
+        public static IQueryable<StreamEvent> BuildStreamEventQuery(
             this CloudTable table, QueueTicket queueTicket)
         {
             return from e in table.CreateQuery<StreamEvent>()
@@ -32,7 +32,7 @@
                    select e;
         }
 
-        public static IQueryable<StreamEvent> BuildStreamEventsQuery(
+        public static IQueryable<StreamEvent> BuildStreamEventQuery(
             this CloudTable table, string stateType, Guid streamId, long fromVersion)
         {
             return from e in table.CreateQuery<StreamEvent>()

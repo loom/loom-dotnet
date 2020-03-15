@@ -69,7 +69,7 @@
         private object DeserializePayload(IJsonProcessor jsonProcessor, Type type)
             => jsonProcessor.FromJson(json: Payload, dataType: type);
 
-        public object DeserializePayload(
+        public object RestorePayload(
             TypeResolver typeResolver, IJsonProcessor jsonProcessor)
         {
             Type type = typeResolver.TryResolveType(EventType);

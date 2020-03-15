@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Azure.Cosmos.Table;
     using Microsoft.Azure.Cosmos.Table.Queryable;
@@ -10,7 +11,8 @@
     internal static class QueryExtensions
     {
         public static async Task<IEnumerable<TElement>> ExecuteAsync<TElement>(
-            this IQueryable<TElement> query)
+            this IQueryable<TElement> query,
+            CancellationToken cancellationToken)
             where TElement : ITableEntity, new()
         {
             var results = new List<TElement>();
@@ -20,7 +22,7 @@
             {
                 TableQuerySegment<TElement> segment = await query
                     .AsTableQuery()
-                    .ExecuteSegmentedAsync(continuation)
+                    .ExecuteSegmentedAsync(continuation, cancellationToken)
                     .ConfigureAwait(continueOnCapturedContext: false);
                 results.AddRange(segment);
                 continuation = segment.ContinuationToken;

@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Threading;
     using System.Threading.Tasks;
     using Loom.Json;
     using Loom.Messaging;
@@ -93,15 +94,39 @@
 
         public async Task<IEnumerable<object>> QueryEvents(Guid streamId, long fromVersion)
         {
-            string stateType = _typeResolver.ResolveTypeName<T>();
-            IQueryable<StreamEvent> query = _table.BuildStreamEventsQuery(stateType, streamId, fromVersion);
-            IEnumerable<StreamEvent> streamEvents = await query.ExecuteAsync().ConfigureAwait(continueOnCapturedContext: false);
-            return streamEvents.Select(DeserializeEvent).ToList().AsReadOnly();
+            CancellationToken cancellationToken = CancellationToken.None;
+            IEnumerable<StreamEvent> source = await GetEntities(streamId, fromVersion, cancellationToken)
+                                                   .ConfigureAwait(continueOnCapturedContext: false);
+            return source.Select(RestorePayload).ToList().AsReadOnly();
         }
 
-        private object DeserializeEvent(StreamEvent streamEvent)
+        public async Task<IEnumerable<Message>> QueryEventMessages(
+            Guid streamId,
+            CancellationToken cancellationToken = default)
         {
-            return streamEvent.DeserializePayload(_typeResolver, _jsonProcessor);
+            long fromVersion = 1;
+            IEnumerable<StreamEvent> source = await GetEntities(streamId, fromVersion, cancellationToken)
+                                                   .ConfigureAwait(continueOnCapturedContext: false);
+            return source.Select(GenerateMessage).ToList().AsReadOnly();
+        }
+
+        private Task<IEnumerable<StreamEvent>> GetEntities(
+            Guid streamId,
+            long fromVersion,
+            CancellationToken cancellationToken)
+        {
+            string stateType = _typeResolver.ResolveTypeName<T>();
+            return _table.BuildStreamEventQuery(stateType, streamId, fromVersion).ExecuteAsync(cancellationToken);
+        }
+
+        private object RestorePayload(StreamEvent entity)
+        {
+            return entity.RestorePayload(_typeResolver, _jsonProcessor);
+        }
+
+        private Message GenerateMessage(StreamEvent entity)
+        {
+            return entity.GenerateMessage(_typeResolver, _jsonProcessor);
         }
     }
 }
