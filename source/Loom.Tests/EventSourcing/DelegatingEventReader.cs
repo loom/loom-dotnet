@@ -2,7 +2,9 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Threading;
     using System.Threading.Tasks;
+    using Loom.Messaging;
 
     internal class DelegatingEventReader : IEventReader
     {
@@ -18,6 +20,12 @@
             Guid streamId, long fromVersion)
         {
             return _function.Invoke(streamId, fromVersion);
+        }
+
+        public Task<IEnumerable<Message>> QueryEventMessages(
+            Guid streamId, CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
         }
     }
 }
