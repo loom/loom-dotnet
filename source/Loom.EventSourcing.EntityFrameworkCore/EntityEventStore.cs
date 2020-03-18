@@ -168,7 +168,7 @@
             return source.Select(GenerateMessage).ToImmutableArray();
         }
 
-        private Task<List<StreamEvent>> GetEntities(
+        private async Task<List<StreamEvent>> GetEntities(
             Guid streamId,
             long fromVersion,
             CancellationToken cancellationToken)
@@ -182,7 +182,9 @@
                                                 e.Version >= fromVersion
                                             orderby e.Version ascending
                                             select e;
-            return query.AsNoTracking().ToListAsync(cancellationToken);
+            return await query.AsNoTracking()
+                              .ToListAsync(cancellationToken)
+                              .ConfigureAwait(continueOnCapturedContext: false);
         }
 
         private object RestorePayload(StreamEvent entity)
