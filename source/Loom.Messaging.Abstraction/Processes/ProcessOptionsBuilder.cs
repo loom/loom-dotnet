@@ -22,6 +22,8 @@
 
         public ProcessOptionsBuilder WithTimeout(TimeSpan timeout)
         {
+            ProcessOptions.TimeoutGuard(timeout);
+
             _timeout = timeout;
             return this;
         }

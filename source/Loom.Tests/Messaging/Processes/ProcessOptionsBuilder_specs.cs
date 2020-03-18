@@ -1,6 +1,7 @@
 ﻿namespace Loom.Messaging.Processes
 {
     using System;
+    using System.ComponentModel.DataAnnotations;
     using FluentAssertions;
     using Loom.Testing;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -37,6 +38,20 @@
             var sut = new ProcessOptionsBuilder();
             ProcessOptions actual = sut.WithTimeout(timeout).Build();
             actual.Timeout.Should().Be(timeout);
+        }
+
+        [TestMethod]
+        [DataRow(301)]
+        [AutoDataRepeat]
+        public void WithTimeout_has_guard_for_timeout_range(
+            [Range(301, int.MaxValue)] int seconds)
+        {
+            var timeout = TimeSpan.FromSeconds(seconds);
+            var sut = new ProcessOptionsBuilder();
+
+            Action action = () => sut.WithTimeout(timeout);
+
+            action.Should().Throw<ArgumentOutOfRangeException>();
         }
 
         [TestMethod]
