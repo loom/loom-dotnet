@@ -3,19 +3,14 @@
     using System;
     using Loom.Messaging;
 
-    public sealed class InvariantViolated<T>
+    public static class InvariantViolated
     {
-        public InvariantViolated(Guid streamId, T command, ActivityError error)
+        public static InvariantViolated<T> Create<T>(
+            Guid streamId,
+            T command,
+            ActivityError error)
         {
-            StreamId = streamId;
-            Command = command;
-            Error = error;
+            return new InvariantViolated<T>(streamId, command, error);
         }
-
-        public Guid StreamId { get; }
-
-        public T Command { get; }
-
-        public ActivityError Error { get; }
     }
 }
