@@ -1,4 +1,4 @@
-﻿namespace Loom.Messaging.Azure
+﻿namespace Loom.Messaging.Processes.Azure
 {
     using System.Collections.Generic;
     using System.Linq;
@@ -6,14 +6,13 @@
     using System.Threading.Tasks;
     using FluentAssertions;
     using Loom.Json;
-    using Loom.Messaging.Processes;
     using Loom.Testing;
     using Microsoft.Azure.Cosmos;
     using Microsoft.Azure.Cosmos.Fluent;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
-    public class CosmosProcessEventCache_specs
+    public class CosmosProcessMessageCache_specs
     {
         private const string ConnectionString = "AccountEndpoint=https://localhost:8081/;AccountKey=C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==";
         private const string DatabaseId = "UnitTestingDatabase";
@@ -62,13 +61,13 @@
         [TestMethod]
         public void sut_implements_IProcessEventReader()
         {
-            typeof(CosmosProcessEventCache).Should().Implement<IProcessEventReader>();
+            typeof(CosmosProcessMessageCache).Should().Implement<IProcessEventReader>();
         }
 
         [TestMethod]
         public void sut_implements_IProcessEventCollector()
         {
-            typeof(CosmosProcessEventCache).Should().Implement<IProcessEventCollector>();
+            typeof(CosmosProcessMessageCache).Should().Implement<IProcessEventCollector>();
         }
 
         [TestMethod, AutoData]
@@ -78,7 +77,7 @@
             TypeResolver typeResolver)
         {
             // Arrange
-            var sut = new CosmosProcessEventCache(
+            var sut = new CosmosProcessMessageCache(
                 ConnectionString, DatabaseId, ContainerId, jsonProcessor, typeResolver);
 
             // Actt
@@ -118,7 +117,7 @@
             TypeResolver typeResolver)
         {
             // Arrange
-            var sut = new CosmosProcessEventCache(
+            var sut = new CosmosProcessMessageCache(
                 ConnectionString, DatabaseId, ContainerId, jsonProcessor, typeResolver);
             await sut.Collect(message, cancellationToken: CancellationToken.None);
 
@@ -139,7 +138,7 @@
             TypeResolver typeResolver)
         {
             // Arrange
-            var sut = new CosmosProcessEventCache(
+            var sut = new CosmosProcessMessageCache(
                 ConnectionString, DatabaseId, ContainerId, jsonProcessor, typeResolver);
 
             // Act
