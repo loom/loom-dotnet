@@ -1,4 +1,4 @@
-﻿namespace Loom.Messaging.Azure
+﻿namespace Loom.Messaging.Processes.Azure
 {
     using System;
     using System.Collections.Generic;
@@ -7,19 +7,20 @@
     using System.Threading.Tasks;
     using Loom.Json;
     using Loom.Messaging;
+    using Loom.Messaging.Azure;
     using Loom.Messaging.Processes;
     using Microsoft.Azure.Cosmos;
     using Microsoft.Azure.Cosmos.Fluent;
     using Microsoft.Azure.Cosmos.Linq;
 
-    public class CosmosProcessEventCache
+    public class CosmosProcessMessageCache
         : IProcessEventReader, IProcessEventCollector
     {
         private readonly Container _container;
         private readonly IJsonProcessor _jsonProcessor;
         private readonly TypeResolver _typeResolver;
 
-        public CosmosProcessEventCache(
+        public CosmosProcessMessageCache(
             string connectionString,
             string databaseId,
             string containerId,
