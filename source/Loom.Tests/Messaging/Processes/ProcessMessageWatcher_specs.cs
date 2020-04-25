@@ -9,12 +9,12 @@
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
-    public class ProcessEventWatcher_specs
+    public class ProcessMessageWatcher_specs
     {
         [TestMethod]
         public void sut_implements_IMessageHandler()
         {
-            typeof(ProcessEventWatcher).Should().Implement<IMessageHandler>();
+            typeof(ProcessMessageWatcher).Should().Implement<IMessageHandler>();
         }
 
         [TestMethod, AutoData]
@@ -23,7 +23,7 @@
             Message message)
         {
             // Arrange
-            var sut = new ProcessEventWatcher(dummy);
+            var sut = new ProcessMessageWatcher(dummy);
 
             // Act
             bool actual = sut.CanHandle(message);
@@ -38,7 +38,7 @@
             Message message)
         {
             // Arrange
-            var sut = new ProcessEventWatcher(collector);
+            var sut = new ProcessMessageWatcher(collector);
 
             // Act
             await sut.Handle(message);
