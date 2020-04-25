@@ -4,7 +4,7 @@
     using System.Threading;
     using System.Threading.Tasks;
 
-    public interface IProcessEventReader
+    public interface IProcessMessageReader
     {
         Task<IEnumerable<Message>> Query(string operationId, CancellationToken cancellationToken);
     }
