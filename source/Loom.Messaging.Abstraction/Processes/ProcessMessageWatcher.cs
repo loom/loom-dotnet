@@ -3,11 +3,11 @@
     using System.Threading;
     using System.Threading.Tasks;
 
-    public class ProcessEventWatcher : IMessageHandler
+    public class ProcessMessageWatcher : IMessageHandler
     {
         private readonly IProcessMessageCollector _collecotr;
 
-        public ProcessEventWatcher(IProcessMessageCollector collector)
+        public ProcessMessageWatcher(IProcessMessageCollector collector)
         {
             _collecotr = collector;
         }
