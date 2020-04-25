@@ -5,9 +5,9 @@
 
     public class ProcessEventWatcher : IMessageHandler
     {
-        private readonly IProcessEventCollector _collecotr;
+        private readonly IProcessMessageCollector _collecotr;
 
-        public ProcessEventWatcher(IProcessEventCollector collector)
+        public ProcessEventWatcher(IProcessMessageCollector collector)
         {
             _collecotr = collector;
         }

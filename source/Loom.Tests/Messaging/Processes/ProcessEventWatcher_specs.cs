@@ -19,7 +19,7 @@
 
         [TestMethod, AutoData]
         public void CanHandle_true_for_Message(
-            IProcessEventCollector dummy,
+            IProcessMessageCollector dummy,
             Message message)
         {
             // Arrange
@@ -49,7 +49,7 @@
             actual[0].Should().BeEquivalentTo(message);
         }
 
-        public class Spy : IProcessEventCollector
+        public class Spy : IProcessMessageCollector
         {
             public List<Message> Messages { get; } = new List<Message>();
 

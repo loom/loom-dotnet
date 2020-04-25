@@ -65,9 +65,9 @@
         }
 
         [TestMethod]
-        public void sut_implements_IProcessEventCollector()
+        public void sut_implements_IProcessMessageCollector()
         {
-            typeof(CosmosProcessMessageCache).Should().Implement<IProcessEventCollector>();
+            typeof(CosmosProcessMessageCache).Should().Implement<IProcessMessageCollector>();
         }
 
         [TestMethod, AutoData]
