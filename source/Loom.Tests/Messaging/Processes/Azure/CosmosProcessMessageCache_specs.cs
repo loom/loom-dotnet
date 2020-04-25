@@ -59,9 +59,9 @@
         }
 
         [TestMethod]
-        public void sut_implements_IProcessEventReader()
+        public void sut_implements_IProcessMessageReader()
         {
-            typeof(CosmosProcessMessageCache).Should().Implement<IProcessEventReader>();
+            typeof(CosmosProcessMessageCache).Should().Implement<IProcessMessageReader>();
         }
 
         [TestMethod]

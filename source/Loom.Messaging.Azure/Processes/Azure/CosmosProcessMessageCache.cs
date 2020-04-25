@@ -14,7 +14,7 @@
     using Microsoft.Azure.Cosmos.Linq;
 
     public class CosmosProcessMessageCache
-        : IProcessEventReader, IProcessEventCollector
+        : IProcessMessageReader, IProcessEventCollector
     {
         private readonly Container _container;
         private readonly IJsonProcessor _jsonProcessor;
