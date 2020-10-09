@@ -8,9 +8,20 @@
 
     public class InMemoryEventStore<T> : IEventStore<T>
     {
+        private readonly InMemoryEventSourcingEngine<T> _engine;
         private readonly IMessageBus _eventBus;
 
-        public InMemoryEventStore(IMessageBus eventBus) => _eventBus = eventBus;
+        public InMemoryEventStore(
+            InMemoryEventSourcingEngine<T> engine, IMessageBus eventBus)
+        {
+            _engine = engine;
+            _eventBus = eventBus;
+        }
+
+        public InMemoryEventStore(IMessageBus eventBus)
+            : this(InMemoryEventSourcingEngine<T>.Default, eventBus)
+        {
+        }
 
         public Task CollectEvents(
             Guid streamId,
@@ -23,7 +34,7 @@
                 throw new ArgumentNullException(nameof(events));
             }
 
-            IEnumerable<Message> messages = InMemoryEventSourcingEngine<T>.CollectEvents(
+            IEnumerable<Message> messages = _engine.CollectEvents(
                 streamId,
                 startVersion,
                 events,
@@ -36,14 +47,14 @@
             Guid streamId,
             long fromVersion)
         {
-            return Task.FromResult(InMemoryEventSourcingEngine<T>.QueryEvents(streamId, fromVersion));
+            return Task.FromResult(_engine.QueryEvents(streamId, fromVersion));
         }
 
         public Task<IEnumerable<Message>> QueryEventMessages(
             Guid streamId,
             CancellationToken cancellationToken = default)
         {
-            return Task.FromResult(InMemoryEventSourcingEngine<T>.QueryEventMessages(streamId));
+            return Task.FromResult(_engine.QueryEventMessages(streamId));
         }
     }
 }

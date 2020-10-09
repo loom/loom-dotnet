@@ -7,17 +7,24 @@
     using System.Reflection;
     using Loom.Messaging;
 
-    internal static class InMemoryEventSourcingEngine<T>
+    public class InMemoryEventSourcingEngine<T>
     {
-        private static readonly ConcurrentDictionary<Guid, Dictionary<long, Message>> _store =
+        private readonly ConcurrentDictionary<Guid, Dictionary<long, Message>> _store =
             new ConcurrentDictionary<Guid, Dictionary<long, Message>>();
 
-        public static IEnumerable<Message> CollectEvents(
+        public static InMemoryEventSourcingEngine<T> Default { get; } = new InMemoryEventSourcingEngine<T>();
+
+        internal IEnumerable<Message> CollectEvents(
             Guid streamId,
             long startVersion,
             IEnumerable<object> events,
             TracingProperties tracingProperties)
         {
+            if (events is null)
+            {
+                throw new ArgumentNullException(nameof(events));
+            }
+
             Dictionary<long, Message> stream = _store.GetOrAdd(streamId, new Dictionary<long, Message>());
 
             long version = startVersion;
@@ -48,7 +55,7 @@
                 .Invoke(obj: default, arguments);
         }
 
-        public static IEnumerable<object> QueryEvents(Guid streamId, long fromVersion)
+        internal IEnumerable<object> QueryEvents(Guid streamId, long fromVersion)
         {
             if (_store.TryGetValue(streamId, out Dictionary<long, Message> stream))
             {
@@ -65,7 +72,7 @@
             return Enumerable.Empty<object>();
         }
 
-        public static IEnumerable<Message> QueryEventMessages(Guid streamId)
+        internal IEnumerable<Message> QueryEventMessages(Guid streamId)
         {
             if (_store.TryGetValue(streamId, out Dictionary<long, Message> stream))
             {
@@ -77,6 +84,16 @@
             }
 
             return Enumerable.Empty<Message>();
+        }
+
+        public IReadOnlyDictionary<Guid, IEnumerable<Message>> Snapshot()
+        {
+            return _store.ToDictionary(t => t.Key, t => Serialize(t.Value));
+        }
+
+        private static IEnumerable<Message> Serialize(Dictionary<long, Message> eventMessages)
+        {
+            return eventMessages.OrderBy(t => t.Key).Select(t => t.Value).ToList();
         }
     }
 }

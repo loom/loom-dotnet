@@ -10,7 +10,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>Loom.EventSourcing.InMemory</PackageId>
     <Description>In-memory event sourcing implementation for testing.</Description>
-    <Version>0.19.1</Version>
+    <Version>0.19.2</Version>
     <Authors>Gyuwon</Authors>
     <Copyright>Copyright (c) 2019 Yi Gyuwon</Copyright>
     <PackageProjectUrl>https://github.com/loom/loom-dotnet</PackageProjectUrl>
