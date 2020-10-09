@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <CodeAnalysisRuleSet>..\RuleSets\Loom.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageId>Loom.EventSourcing.InMemory</PackageId>
+    <Description>In-memory event sourcing implementation for testing.</Description>
+    <Version>0.19.1</Version>
+    <Authors>Gyuwon</Authors>
+    <Copyright>Copyright (c) 2019 Yi Gyuwon</Copyright>
+    <PackageProjectUrl>https://github.com/loom/loom-dotnet</PackageProjectUrl>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Loom.EventSourcing.Abstraction\Loom.EventSourcing.Abstraction.csproj" />
+    <ProjectReference Include="..\Loom.Messaging.Abstraction\Loom.Messaging.Abstraction.csproj" />
+  </ItemGroup>
+
+</Project>

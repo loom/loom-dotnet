@@ -25,7 +25,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Loom.Json.Interfaces", "Loo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Loom.Json", "Loom.Json\Loom.Json.csproj", "{C27575CB-D596-4C55-B386-FAEAD837FAE3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loom.Messaging.Azure", "Loom.Messaging.Azure\Loom.Messaging.Azure.csproj", "{3A8C4BC6-3694-4CE5-B1E6-D7BFC17113C5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Loom.Messaging.Azure", "Loom.Messaging.Azure\Loom.Messaging.Azure.csproj", "{3A8C4BC6-3694-4CE5-B1E6-D7BFC17113C5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loom.EventSourcing.InMemory", "Loom.EventSourcing.InMemory\Loom.EventSourcing.InMemory.csproj", "{592BE1DF-0376-4608-88F9-459076A8DF42}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -81,6 +83,10 @@ Global
 		{3A8C4BC6-3694-4CE5-B1E6-D7BFC17113C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3A8C4BC6-3694-4CE5-B1E6-D7BFC17113C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3A8C4BC6-3694-4CE5-B1E6-D7BFC17113C5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{592BE1DF-0376-4608-88F9-459076A8DF42}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{592BE1DF-0376-4608-88F9-459076A8DF42}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{592BE1DF-0376-4608-88F9-459076A8DF42}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{592BE1DF-0376-4608-88F9-459076A8DF42}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
