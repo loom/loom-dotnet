@@ -35,8 +35,10 @@
 
         private Task ScanPendingEvents(EventStoreContext context)
         {
+            DateTime filter = DateTime.UtcNow - _minimumPendingTime;
+
             var query = from e in context.PendingEvents
-                        where DateTime.UtcNow - e.RaisedTimeUtc >= _minimumPendingTime
+                        where e.RaisedTimeUtc <= filter
                         group e by new { e.StateType, e.StreamId } into s
                         select s.Key;
 

@@ -5,7 +5,7 @@
     using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
-    using Microsoft.EntityFrameworkCore.Extensions.Internal;
+    using Microsoft.EntityFrameworkCore;
 
     internal static class QueryExtensions
     {
@@ -14,8 +14,8 @@
                                                    CancellationToken cancellationToken = default)
         {
             IAsyncEnumerable<TElement> enumerable = query.AsAsyncEnumerable();
-            IAsyncEnumerator<TElement> enumerator = enumerable.GetEnumerator();
-            while (await enumerator.MoveNext(cancellationToken).ConfigureAwait(continueOnCapturedContext: false))
+            IAsyncEnumerator<TElement> enumerator = enumerable.GetAsyncEnumerator(cancellationToken);
+            while (await enumerator.MoveNextAsync().ConfigureAwait(continueOnCapturedContext: false))
             {
                 await action.Invoke(enumerator.Current).ConfigureAwait(continueOnCapturedContext: false);
             }
