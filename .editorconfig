@@ -4,11 +4,10 @@ root = true
 indent_style = space
 indent_size = 2
 insert_final_newline = true
-guidelines = 80
+guidelines = 80, 100
 
 [*.cs]
 indent_size = 4
-guidelines = 80, 120
 
 # .NET coding convention settings for EditorConfig
 # https://docs.microsoft.com/en-us/visualstudio/ide/editorconfig-code-style-settings-reference
