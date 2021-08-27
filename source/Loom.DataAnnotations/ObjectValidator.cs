@@ -42,9 +42,9 @@
         [Obsolete("Use TryValidate(object, out IEnumerable<ObjectValidationError>) method instead.")]
         public static bool TryValidate(
             object instance,
-            out ValidationResult validationResult)
+            out ValidationResult? validationResult)
         {
-            ValidationResult captured = ValidationResult.Success;
+            ValidationResult? captured = ValidationResult.Success;
 
             Visitor.Visit(
                 instance,
@@ -122,7 +122,7 @@
 
             public ValidationResult ValidationResult { get; }
 
-            public object Value { get; }
+            public object? Value { get; }
 
             public ValidationException ToException()
                 => new ValidationException(ValidationResult, ValidationAttribute, Value);
@@ -267,7 +267,7 @@
 
             private IEnumerable<Type> AscendTypeHierarchy(object instance)
             {
-                Type type = instance.GetType();
+                Type? type = instance.GetType();
                 while (type != null)
                 {
                     yield return type;
@@ -284,7 +284,7 @@
             private void VisitProperty(
                 string objectPath, object instance, PropertyInfo property, string memberName)
             {
-                object value = property.GetValue(instance);
+                object? value = property.GetValue(instance);
                 foreach (ValidationAttribute validator in GetValidators(property))
                 {
                     if (ShouldBreak)
@@ -302,11 +302,15 @@
                 => property.GetCustomAttributes<ValidationAttribute>();
 
             private void ValidateProperty(
-                string objectPath, object instance, object value, string memberName, ValidationAttribute validator)
+                string objectPath,
+                object instance,
+                object? value,
+                string memberName,
+                ValidationAttribute validator)
             {
                 var validationContext = new ValidationContext(instance) { MemberName = memberName };
-                ValidationResult result = validator.GetValidationResult(value, validationContext);
-                if (result != ValidationResult.Success)
+                ValidationResult? result = validator.GetValidationResult(value, validationContext);
+                if (result != null)
                 {
                     _hasError = true;
                     _onError.Invoke(new ObjectValidationError(objectPath, validator, result, value));

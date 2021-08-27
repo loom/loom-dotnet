@@ -10,7 +10,7 @@
             string objectPath,
             ValidationAttribute validationAttribute,
             ValidationResult validationResult,
-            object value)
+            object? value)
         {
             ObjectPath = objectPath;
             ValidationAttribute = validationAttribute;
@@ -24,7 +24,7 @@
 
         public ValidationResult ValidationResult { get; }
 
-        public object Value { get; }
+        public object? Value { get; }
 
         public IEnumerable<string> MemberPaths
             => from memberName in ValidationResult.MemberNames
