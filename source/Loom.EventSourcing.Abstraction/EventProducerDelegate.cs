@@ -48,9 +48,9 @@
             }
 
             Type commandType = command.GetType();
-            return _functions.TryGetValue(commandType, out MethodInfo function) switch
+            return _functions.TryGetValue(commandType, out MethodInfo? function) switch
             {
-                true => (IEnumerable<object>)function.Invoke(_producer, new[] { state, command }),
+                true => (IEnumerable<object>)function.Invoke(_producer, new[] { state, command }) !,
                 _ => throw new InvalidOperationException($"Cannot execute the command of type {commandType}."),
             };
         }

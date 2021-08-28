@@ -4,14 +4,10 @@
 
     public class FullNameTypeNameResolvingStrategy : ITypeNameResolvingStrategy
     {
-        public string ResolveTypeName(Type type)
+        public string? ResolveTypeName(Type type) => type switch
         {
-            if (type is null)
-            {
-                throw new ArgumentNullException(nameof(type));
-            }
-
-            return type.FullName;
-        }
+            null => throw new ArgumentNullException(nameof(type)),
+            _ => type.FullName
+        };
     }
 }

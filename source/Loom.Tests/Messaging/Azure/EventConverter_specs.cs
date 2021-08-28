@@ -209,5 +209,19 @@
 
             actual.TracingProperties.ParentId.Should().BeNull();
         }
+
+        [TestMethod, AutoData]
+        public void TryConvertToMessage_returns_null_if_body_array_is_null(
+            [Frozen] TypeResolver typeResolver,
+            Message message,
+            EventConverter sut)
+        {
+            var eventData = new EventData(default(ArraySegment<byte>));
+            eventData.Properties["Type"] = typeResolver.ResolveTypeName(message.Data.GetType());
+
+            Message actual = sut.TryConvertToMessage(eventData);
+
+            actual.Should().BeNull();
+        }
     }
 }

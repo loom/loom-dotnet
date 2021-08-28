@@ -46,9 +46,9 @@
         private T Handle(T state, object raisedEvent)
         {
             Type eventType = raisedEvent.GetType();
-            return _functions.TryGetValue(eventType, out MethodInfo function) switch
+            return _functions.TryGetValue(eventType, out MethodInfo? function) switch
             {
-                true => (T)function.Invoke(_handler, new[] { state, raisedEvent }),
+                true => (T)function.Invoke(_handler, new[] { state, raisedEvent }) !,
                 _ => throw new InvalidOperationException($"Cannot handle the event of type {eventType}."),
             };
         }

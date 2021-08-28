@@ -15,10 +15,10 @@
             _typeResolvingStrategy = typeResolvingStrategy;
         }
 
-        public string ResolveTypeName(Type type)
+        public string? ResolveTypeName(Type type)
             => _typeNameResolvingStrategy.ResolveTypeName(type);
 
-        public string ResolveTypeName<T>() => ResolveTypeName(typeof(T));
+        public string? ResolveTypeName<T>() => ResolveTypeName(typeof(T));
 
         public Type? TryResolveType(string typeName)
             => _typeResolvingStrategy.TryResolveType(typeName);

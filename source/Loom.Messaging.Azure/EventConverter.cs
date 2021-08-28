@@ -49,27 +49,36 @@
 
             return TryResolveDataType(eventData) switch
             {
-                Type dataType => new Message(GetId(eventData),
-                                             GetData(eventData, dataType),
-                                             GetTracingProperties(eventData)),
+                Type dataType => GetData(eventData, dataType) switch
+                {
+                    object data => new Message(GetId(eventData),
+                                               data,
+                                               GetTracingProperties(eventData)),
+                    _ => null,
+                },
                 _ => null,
             };
         }
 
         private Type? TryResolveDataType(EventData eventData)
         {
-            eventData.Properties.TryGetValue("Type", out object value);
+            eventData.Properties.TryGetValue("Type", out object? value);
             return value is string typeName ? _typeResolver.TryResolveType(typeName) : null;
         }
 
         private static string GetId(EventData eventData)
         {
-            eventData.Properties.TryGetValue("Id", out object value);
+            eventData.Properties.TryGetValue("Id", out object? value);
             return value is string id ? id : $"{Guid.NewGuid()}";
         }
 
-        private object GetData(EventData eventData, Type dataType)
+        private object? GetData(EventData eventData, Type dataType)
         {
+            if (eventData.Body.Array == null)
+            {
+                return null;
+            }
+
             string json = Encoding.UTF8.GetString(eventData.Body.Array);
             return _jsonProcessor.FromJson(json, dataType);
         }
@@ -83,19 +92,19 @@
 
         private static string GetOperationId(EventData eventData)
         {
-            eventData.Properties.TryGetValue("OperationId", out object value);
+            eventData.Properties.TryGetValue("OperationId", out object? value);
             return value is string operationId ? operationId : $"{Guid.NewGuid()}";
         }
 
         private static string? GetContributor(EventData eventData)
         {
-            eventData.Properties.TryGetValue("Contributor", out object value);
+            eventData.Properties.TryGetValue("Contributor", out object? value);
             return value is string contributor ? contributor : null;
         }
 
         private static string? GetParentId(EventData eventData)
         {
-            eventData.Properties.TryGetValue("ParentId", out object value);
+            eventData.Properties.TryGetValue("ParentId", out object? value);
             return value is string parentId ? parentId : null;
         }
     }

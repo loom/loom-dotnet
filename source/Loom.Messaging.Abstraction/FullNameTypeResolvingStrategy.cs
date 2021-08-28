@@ -8,7 +8,7 @@
     [Obsolete("This class is unstable. Use your own implementation of ITypeResolvingStrategy please.")]
     public class FullNameTypeResolvingStrategy : ITypeResolvingStrategy
     {
-        private static readonly Lazy<IReadOnlyList<Type>> _types = new Lazy<IReadOnlyList<Type>>(GetAllTypes);
+        private static readonly Lazy<IReadOnlyList<Type>> _types = new (GetAllTypes);
 
         private static IReadOnlyList<Type> GetAllTypes()
         {
@@ -17,7 +17,7 @@
             string filter = "Microsoft.VisualStudio.TraceDataCollector";
             IEnumerable<Assembly> assemblies =
                 from assembly in appDomain.GetAssemblies()
-                where assembly.FullName.StartsWith(filter, StringComparison.Ordinal) == false
+                where assembly.FullName?.StartsWith(filter, StringComparison.Ordinal) == false
                 select assembly;
 
             IEnumerable<Type> query =
@@ -28,7 +28,7 @@
             return query.ToList().AsReadOnly();
         }
 
-        public Type TryResolveType(string typeName)
+        public Type? TryResolveType(string typeName)
             => _types.Value.SingleOrDefault(t => t.FullName == typeName);
     }
 }

@@ -1,7 +1,6 @@
 ﻿namespace Loom.Messaging
 {
     using System;
-    using System.Collections.Generic;
 
     public readonly struct TracingProperties : IEquatable<TracingProperties>
     {
@@ -42,11 +41,7 @@
 
         public override int GetHashCode()
         {
-            int hashCode = 147070445;
-            hashCode = (hashCode * -1521134295) + EqualityComparer<string>.Default.GetHashCode(OperationId);
-            hashCode = (hashCode * -1521134295) + EqualityComparer<string?>.Default.GetHashCode(Contributor);
-            hashCode = (hashCode * -1521134295) + EqualityComparer<string?>.Default.GetHashCode(ParentId);
-            return hashCode;
+            return HashCode.Combine(OperationId, Contributor, ParentId);
         }
     }
 }
