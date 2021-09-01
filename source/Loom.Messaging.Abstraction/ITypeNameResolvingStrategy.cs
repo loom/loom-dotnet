@@ -4,6 +4,6 @@
 
     public interface ITypeNameResolvingStrategy
     {
-        string? ResolveTypeName(Type type);
+        string? TryResolveTypeName(Type type);
     }
 }

@@ -138,8 +138,8 @@
             var typeResolver = new TypeResolver(
                 Mock.Of<ITypeNameResolvingStrategy>(
                     x =>
-                    x.ResolveTypeName(typeof(Event1)) == null &&
-                    x.ResolveTypeName(typeof(State1)) == typeNameStrategy.ResolveTypeName(typeof(State1))),
+                    x.TryResolveTypeName(typeof(Event1)) == null &&
+                    x.TryResolveTypeName(typeof(State1)) == typeNameStrategy.TryResolveTypeName(typeof(State1))),
                 typeStrategy);
 
             T sut = GenerateEventStore(typeResolver, eventBus);
@@ -506,7 +506,7 @@
             TracingProperties tracingProperties)
         {
             // Arrange
-            string typeName = typeNameStrategy.ResolveTypeName(typeof(Event1));
+            string typeName = typeNameStrategy.TryResolveTypeName(typeof(Event1));
             var typeResolver = new TypeResolver(
                 typeNameStrategy,
                 Mock.Of<ITypeResolvingStrategy>(x => x.TryResolveType(typeName) == null));
@@ -531,7 +531,7 @@
             TracingProperties tracingProperties)
         {
             // Arrange
-            string typeName = typeNameStrategy.ResolveTypeName(typeof(Event1));
+            string typeName = typeNameStrategy.TryResolveTypeName(typeof(Event1));
             var typeResolver = new TypeResolver(
                 typeNameStrategy,
                 Mock.Of<ITypeResolvingStrategy>(x => x.TryResolveType(typeName) == null));

@@ -73,7 +73,7 @@
             message.Data.Should().BeOfType<FlushEvents>();
             message.Data.Should().BeEquivalentTo(new
             {
-                StateType = TypeResolver.ResolveTypeName<State1>(),
+                StateType = TypeResolver.TryResolveTypeName<State1>(),
                 StreamId = streamId,
             });
 

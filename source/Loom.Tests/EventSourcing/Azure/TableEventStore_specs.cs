@@ -81,7 +81,7 @@
         {
             // Arrange
             var typeResolver = new TypeResolver(
-                Mock.Of<ITypeNameResolvingStrategy>(x => x.ResolveTypeName(typeof(State1)) == null),
+                Mock.Of<ITypeNameResolvingStrategy>(x => x.TryResolveTypeName(typeof(State1)) == null),
                 typeStrategy);
 
             TableEventStore<State1> sut = GenerateEventStore(typeResolver, eventBus);
@@ -104,7 +104,7 @@
             await GenerateEventStore(eventBus).CollectEvents(streamId, startVersion: 1, new[] { evt });
 
             var typeResolver = new TypeResolver(
-                Mock.Of<ITypeNameResolvingStrategy>(x => x.ResolveTypeName(typeof(State1)) == null),
+                Mock.Of<ITypeNameResolvingStrategy>(x => x.TryResolveTypeName(typeof(State1)) == null),
                 typeStrategy);
 
             TableEventStore<State1> sut = GenerateEventStore(typeResolver, eventBus);

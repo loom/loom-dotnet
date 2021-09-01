@@ -120,7 +120,7 @@
         }
 
         private string ResolveName(Type type)
-            => _typeResolver.ResolveTypeName(type)
+            => _typeResolver.TryResolveTypeName(type)
             ?? throw new InvalidOperationException($"Could not resolve the name of type {type}.");
 
         private object RestorePayload(StreamEvent entity)

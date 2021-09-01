@@ -45,7 +45,7 @@
                                   IEnumerable<object> events,
                                   TracingProperties tracingProperties = default)
         {
-            return SaveAndPublish(stateType: _typeResolver.ResolveTypeName<T>(),
+            return SaveAndPublish(stateType: _typeResolver.TryResolveTypeName<T>(),
                                   transaction: Guid.NewGuid(),
                                   streamId,
                                   startVersion,
@@ -127,7 +127,7 @@
         }
 
         private string ResolveName(object source)
-            => _typeResolver.ResolveTypeName(source.GetType())
+            => _typeResolver.TryResolveTypeName(source.GetType())
             ?? throw new InvalidOperationException($"Could not resolve the name of type {source.GetType()}.");
 
         private IReadOnlyDictionary<string, string> GetUniqueProperties(IEnumerable<object> events)
@@ -177,7 +177,7 @@
             long fromVersion,
             CancellationToken cancellationToken)
         {
-            string stateType = _typeResolver.ResolveTypeName<T>();
+            string stateType = _typeResolver.TryResolveTypeName<T>();
             using EventStoreContext context = _contextFactory.Invoke();
             IQueryable<StreamEvent> query = from e in context.StreamEvents
                                             where

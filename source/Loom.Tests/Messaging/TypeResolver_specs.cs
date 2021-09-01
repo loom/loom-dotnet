@@ -17,7 +17,7 @@
         private Type GetTypeFromReferencedAssembly() => typeof(ReferencedType);
 
         [TestMethod]
-        public void ResolveTypeName_delegates_correctly()
+        public void TryResolveTypeName_delegates_correctly()
         {
             // Arrange
             Type type = GetTypeFromReferencedAssembly();
@@ -27,7 +27,7 @@
                 Mock.Of<ITypeResolvingStrategy>());
 
             // Act
-            string actual = sut.ResolveTypeName(type);
+            string actual = sut.TryResolveTypeName(type);
 
             // Assert
             actual.Should().Be(type.FullName);

@@ -32,7 +32,7 @@
                 Properties =
                 {
                     ["Id"] = message.Id,
-                    ["Type"] = _typeResolver.ResolveTypeName(data.GetType()),
+                    ["Type"] = _typeResolver.TryResolveTypeName(data.GetType()),
                     ["OperationId"] = tracingProperties.OperationId,
                     ["Contributor"] = tracingProperties.Contributor,
                     ["ParentId"] = tracingProperties.ParentId,

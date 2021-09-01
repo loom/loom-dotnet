@@ -78,7 +78,7 @@
             await TryCatchIgnore(() => eventStore.CollectEvents(streamId, startVersion, events));
 
             TableFlushEventsCommandExecutor sut = GenerateSut(eventBus);
-            var command = new FlushEvents(TypeResolver.ResolveTypeName<State1>(), streamId);
+            var command = new FlushEvents(TypeResolver.TryResolveTypeName<State1>(), streamId);
             var message = new Message(id: commandId, data: command, tracingProperties);
 
             // Act
@@ -103,7 +103,7 @@
             await TryCatchIgnore(() => eventStore.CollectEvents(streamId, startVersion, events));
 
             TableFlushEventsCommandExecutor sut = GenerateSut(eventBus);
-            var command = new FlushEvents(TypeResolver.ResolveTypeName<State1>(), streamId);
+            var command = new FlushEvents(TypeResolver.TryResolveTypeName<State1>(), streamId);
             var message = new Message(id: commandId, data: command, tracingProperties);
 
             // Act

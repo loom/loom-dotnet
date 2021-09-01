@@ -49,7 +49,7 @@
 
             IDictionary<string, object> properties = actual.Properties;
             properties.Should().Contain("Id", id);
-            properties.Should().Contain("Type", typeResolver.ResolveTypeName<MessageData1>());
+            properties.Should().Contain("Type", typeResolver.TryResolveTypeName<MessageData1>());
             properties.Should().Contain("OperationId", tracingProperties.OperationId);
             properties.Should().Contain("Contributor", tracingProperties.Contributor);
             properties.Should().Contain("ParentId", tracingProperties.ParentId);
@@ -217,7 +217,7 @@
             EventConverter sut)
         {
             var eventData = new EventData(default(ArraySegment<byte>));
-            eventData.Properties["Type"] = typeResolver.ResolveTypeName(message.Data.GetType());
+            eventData.Properties["Type"] = typeResolver.TryResolveTypeName(message.Data.GetType());
 
             Message actual = sut.TryConvertToMessage(eventData);
 

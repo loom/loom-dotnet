@@ -12,7 +12,7 @@
             _function = function;
         }
 
-        public string ResolveTypeName(Type type)
+        public string TryResolveTypeName(Type type)
         {
             return _function.Invoke(type);
         }
