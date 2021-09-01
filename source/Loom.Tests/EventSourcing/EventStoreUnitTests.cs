@@ -24,7 +24,12 @@
 
         protected static IJsonProcessor JsonProcessor { get; } = new JsonProcessor(new JsonSerializer());
 
-        protected abstract T GenerateEventStore(IMessageBus eventBus);
+        protected abstract T GenerateEventStore(
+            TypeResolver typeResolver,
+            IMessageBus eventBus);
+
+        protected T GenerateEventStore(IMessageBus eventBus)
+            => GenerateEventStore(TypeResolver, eventBus);
 
         [TestMethod, AutoData]
         public async Task QueryEvents_restores_events_correctly(
@@ -119,6 +124,31 @@
 
             // Assert
             await action.Should().ThrowAsync<Exception>();
+        }
+
+        [TestMethod, AutoData]
+        public async Task CollectEvents_throws_if_cannot_resolve_event_type_name(
+            TypeResolvingStrategy typeStrategy,
+            FullNameTypeNameResolvingStrategy typeNameStrategy,
+            IMessageBus eventBus,
+            Guid streamId,
+            Event1 evt)
+        {
+            // Arrange
+            var typeResolver = new TypeResolver(
+                Mock.Of<ITypeNameResolvingStrategy>(
+                    x =>
+                    x.ResolveTypeName(typeof(Event1)) == null &&
+                    x.ResolveTypeName(typeof(State1)) == typeNameStrategy.ResolveTypeName(typeof(State1))),
+                typeStrategy);
+
+            T sut = GenerateEventStore(typeResolver, eventBus);
+
+            // Act
+            Func<Task> action = () => sut.CollectEvents(streamId, startVersion: 1, new[] { evt });
+
+            // Assert
+            await action.Should().ThrowAsync<InvalidOperationException>();
         }
 
         [TestMethod, AutoData]
@@ -465,6 +495,56 @@
             IEnumerable<Message> actual = await sut.QueryEventMessages(streamId);
 
             actual.Should().BeEquivalentTo(await sut.QueryEventMessages(streamId));
+        }
+
+        [TestMethod, AutoData]
+        public async Task QueryEvents_throws_if_cannot_resolve_event_type(
+            FullNameTypeNameResolvingStrategy typeNameStrategy,
+            Guid streamId,
+            Event1 evt,
+            IMessageBus eventBus,
+            TracingProperties tracingProperties)
+        {
+            // Arrange
+            string typeName = typeNameStrategy.ResolveTypeName(typeof(Event1));
+            var typeResolver = new TypeResolver(
+                typeNameStrategy,
+                Mock.Of<ITypeResolvingStrategy>(x => x.TryResolveType(typeName) == null));
+
+            T sut = GenerateEventStore(typeResolver, eventBus);
+            object[] events = new object[] { evt };
+            await sut.CollectEvents(streamId, startVersion: 1, events, tracingProperties);
+
+            // Act
+            Func<Task> action = () => sut.QueryEvents(streamId);
+
+            // Assert
+            await action.Should().ThrowAsync<InvalidOperationException>();
+        }
+
+        [TestMethod, AutoData]
+        public async Task QueryEventMessages_throws_if_cannot_resolve_event_type(
+            FullNameTypeNameResolvingStrategy typeNameStrategy,
+            Guid streamId,
+            Event1 evt,
+            IMessageBus eventBus,
+            TracingProperties tracingProperties)
+        {
+            // Arrange
+            string typeName = typeNameStrategy.ResolveTypeName(typeof(Event1));
+            var typeResolver = new TypeResolver(
+                typeNameStrategy,
+                Mock.Of<ITypeResolvingStrategy>(x => x.TryResolveType(typeName) == null));
+
+            T sut = GenerateEventStore(typeResolver, eventBus);
+            object[] events = new object[] { evt };
+            await sut.CollectEvents(streamId, startVersion: 1, events, tracingProperties);
+
+            // Act
+            Func<Task> action = () => sut.QueryEventMessages(streamId);
+
+            // Assert
+            await action.Should().ThrowAsync<InvalidOperationException>();
         }
     }
 }

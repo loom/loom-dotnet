@@ -32,7 +32,7 @@
                                   IEnumerable<object> events,
                                   TracingProperties tracingProperties = default)
         {
-            return SaveAndPublish(stateType: _typeResolver.ResolveTypeName<T>(),
+            return SaveAndPublish(stateType: ResolveName(typeof(T)),
                                   transaction: Guid.NewGuid(),
                                   streamId,
                                   startVersion,
@@ -75,7 +75,7 @@
                         streamId,
                         version: startVersion + i,
                         raisedTimeUtc: DateTime.UtcNow,
-                        eventType: _typeResolver.ResolveTypeName(source.GetType()),
+                        eventType: ResolveName(source.GetType()),
                         payload: _jsonProcessor.ToJson(source),
                         messageId: $"{Guid.NewGuid()}",
                         tracingProperties.OperationId,
@@ -115,18 +115,18 @@
             long fromVersion,
             CancellationToken cancellationToken)
         {
-            string stateType = _typeResolver.ResolveTypeName<T>();
+            string stateType = ResolveName(typeof(T));
             return _table.BuildStreamEventQuery(stateType, streamId, fromVersion).ExecuteAsync(cancellationToken);
         }
 
+        private string ResolveName(Type type)
+            => _typeResolver.ResolveTypeName(type)
+            ?? throw new InvalidOperationException($"Could not resolve the name of type {type}.");
+
         private object RestorePayload(StreamEvent entity)
-        {
-            return entity.RestorePayload(_typeResolver, _jsonProcessor);
-        }
+            => entity.RestorePayload(_typeResolver, _jsonProcessor);
 
         private Message GenerateMessage(StreamEvent entity)
-        {
-            return entity.GenerateMessage(_typeResolver, _jsonProcessor);
-        }
+            => entity.GenerateMessage(_typeResolver, _jsonProcessor);
     }
 }

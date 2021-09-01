@@ -5,7 +5,9 @@
 
     internal class QueueTicket : TableEntity
     {
+#pragma warning disable CS8618 // Properties will be set by Azure Table SDK.
         public QueueTicket()
+#pragma warning restore CS8618
         {
         }
 

@@ -76,7 +76,7 @@
                         streamId,
                         version: startVersion + i,
                         raisedTimeUtc: DateTime.UtcNow,
-                        eventType: _typeResolver.ResolveTypeName(source.GetType()),
+                        eventType: ResolveName(source),
                         payload: _jsonProcessor.ToJson(source),
                         messageId: $"{Guid.NewGuid()}",
                         tracingProperties.OperationId,
@@ -125,6 +125,10 @@
 
             Task PublishPendingEvents() => _publisher.PublishEvents(stateType, streamId);
         }
+
+        private string ResolveName(object source)
+            => _typeResolver.ResolveTypeName(source.GetType())
+            ?? throw new InvalidOperationException($"Could not resolve the name of type {source.GetType()}.");
 
         private IReadOnlyDictionary<string, string> GetUniqueProperties(IEnumerable<object> events)
         {
@@ -188,14 +192,9 @@
         }
 
         private object RestorePayload(StreamEvent entity)
-        {
-            Type type = _typeResolver.TryResolveType(entity.EventType);
-            return _jsonProcessor.FromJson(entity.Payload, type);
-        }
+            => _jsonProcessor.FromJson(entity.Payload, entity.ResolveType(_typeResolver));
 
         private Message GenerateMessage(StreamEvent entity)
-        {
-            return entity.GenerateMessage(_typeResolver, _jsonProcessor);
-        }
+            => entity.GenerateMessage(_typeResolver, _jsonProcessor);
     }
 }

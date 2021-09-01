@@ -17,7 +17,7 @@
         {
             var results = new List<TElement>();
 
-            TableContinuationToken continuation = default;
+            TableContinuationToken? continuation = default;
             do
             {
                 TableQuerySegment<TElement> segment = await query
@@ -36,7 +36,7 @@
             this IQueryable<TElement> query, Func<TElement, Task> action)
             where TElement : ITableEntity, new()
         {
-            TableContinuationToken continuation = default;
+            TableContinuationToken? continuation = default;
             do
             {
                 TableQuerySegment<TElement> segment = await query

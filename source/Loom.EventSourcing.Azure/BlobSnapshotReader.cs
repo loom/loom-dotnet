@@ -20,7 +20,7 @@
             _jsonProcessor = jsonProcessor;
         }
 
-        public async Task<T> TryRestoreSnapshot(Guid streamId)
+        public async Task<T?> TryRestoreSnapshot(Guid streamId)
         {
             CloudBlockBlob blob = GetBlobReference(streamId);
             return await blob.ExistsAsync().ConfigureAwait(continueOnCapturedContext: false)

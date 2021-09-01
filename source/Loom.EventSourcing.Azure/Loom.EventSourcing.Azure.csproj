@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <RootNamespace>Loom.EventSourcing.Azure</RootNamespace>
+    <Nullable>enable</Nullable>
     <CodeAnalysisRuleSet>..\RuleSets\Loom.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 

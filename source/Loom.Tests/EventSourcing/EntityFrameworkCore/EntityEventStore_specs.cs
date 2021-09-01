@@ -37,15 +37,25 @@
             _connection.Dispose();
         }
 
-        protected override EntityEventStore<State1> GenerateEventStore(IMessageBus eventBus)
+        protected override EntityEventStore<State1> GenerateEventStore(
+            TypeResolver typeResolver,
+            IMessageBus eventBus)
         {
-            return GenerateEventStore<State1>(eventBus);
+            return GenerateEventStore<State1>(typeResolver, eventBus);
         }
 
-        protected EntityEventStore<T> GenerateEventStore<T>(IMessageBus eventBus)
+        private EntityEventStore<T> GenerateEventStore<T>(
+            TypeResolver typeResolver,
+            IMessageBus eventBus)
         {
-            EventStoreContext factory() => new EventStoreContext(_options);
-            return new EntityEventStore<T>(factory, TypeResolver, JsonProcessor, eventBus);
+            static EventStoreContext Factory() => new (_options);
+            return new EntityEventStore<T>(Factory, typeResolver, JsonProcessor, eventBus);
+        }
+
+        private EntityEventStore<T> GenerateEventStore<T>(IMessageBus eventBus)
+        {
+            static EventStoreContext Factory() => new (_options);
+            return new EntityEventStore<T>(Factory, TypeResolver, JsonProcessor, eventBus);
         }
 
         public EntityEventStore<State1> GenerateEventStore(
@@ -57,7 +67,7 @@
         public EntityEventStore<T> GenerateEventStore<T>(
             IUniquePropertyDetector uniquePropertyDetector, IMessageBus eventBus)
         {
-            EventStoreContext factory() => new EventStoreContext(_options);
+            EventStoreContext factory() => new (_options);
             return new EntityEventStore<T>(factory, uniquePropertyDetector, TypeResolver, JsonProcessor, eventBus);
         }
 

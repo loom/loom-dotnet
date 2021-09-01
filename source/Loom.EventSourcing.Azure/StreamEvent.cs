@@ -8,7 +8,9 @@
 
     internal class StreamEvent : TableEntity
     {
+#pragma warning disable CS8618 // Properties will be set by Azure Table SDK.
         public StreamEvent()
+#pragma warning restore CS8618
         {
         }
 
@@ -20,8 +22,8 @@
                            string payload,
                            string messageId,
                            string operationId,
-                           string contributor,
-                           string parentId,
+                           string? contributor,
+                           string? parentId,
                            Guid transaction)
             : base(partitionKey: $"{stateType}:{streamId}", rowKey: FormatVersion(version))
         {
@@ -54,36 +56,34 @@
 
         public string OperationId { get; set; }
 
-        public string Contributor { get; set; }
+        public string? Contributor { get; set; }
 
-        public string ParentId { get; set; }
+        public string? ParentId { get; set; }
 
         public Guid Transaction { get; set; }
 
         [IgnoreProperty]
-        public TracingProperties TracingProperties
-            => new TracingProperties(OperationId, Contributor, ParentId);
+        public TracingProperties TracingProperties => new (OperationId, Contributor, ParentId);
 
         public static string FormatVersion(long version) => $"{version:D19}";
 
         private object DeserializePayload(IJsonProcessor jsonProcessor, Type type)
             => jsonProcessor.FromJson(json: Payload, dataType: type);
 
-        public object RestorePayload(
-            TypeResolver typeResolver, IJsonProcessor jsonProcessor)
-        {
-            Type type = typeResolver.TryResolveType(EventType);
-            return DeserializePayload(jsonProcessor, type);
-        }
+        public object RestorePayload(TypeResolver typeResolver, IJsonProcessor jsonProcessor)
+            => DeserializePayload(jsonProcessor, ResolveType(typeResolver));
 
-        public Message GenerateMessage(
-            TypeResolver typeResolver, IJsonProcessor jsonProcessor)
-        {
-            Type type = typeResolver.TryResolveType(EventType);
+        public Message GenerateMessage(TypeResolver typeResolver, IJsonProcessor jsonProcessor)
+            => GenerateMessage(ResolveType(typeResolver), jsonProcessor);
 
-            ConstructorInfo constructor = typeof(StreamEvent<>)
+        private Type ResolveType(TypeResolver typeResolver)
+            => typeResolver.TryResolveType(EventType)
+            ?? throw new InvalidOperationException($"Could not resolve type with \"{EventType}\".");
+
+        private Message GenerateMessage(Type type, IJsonProcessor jsonProcessor)
+        {
+            ConstructorInfo? constructor = typeof(StreamEvent<>)
                 .MakeGenericType(type)
-                .GetTypeInfo()
                 .GetConstructor(types: new[]
                 {
                     typeof(Guid),
@@ -92,7 +92,7 @@
                     type,
                 });
 
-            object data = constructor.Invoke(parameters: new object[]
+            object data = constructor!.Invoke(parameters: new object[]
             {
                 StreamId,
                 Version,

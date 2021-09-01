@@ -20,13 +20,23 @@
                    select e;
         }
 
+        public static Type ResolveType(this IEvent entity, TypeResolver typeResolver)
+            => typeResolver.TryResolveType(entity.EventType)
+            ?? throw new InvalidOperationException($"Could not resolve type with \"{entity.EventType}\".");
+
         public static Message GenerateMessage(
             this IEvent entity,
             TypeResolver typeResolver,
             IJsonProcessor jsonProcessor)
         {
-            Type type = typeResolver.TryResolveType(entity.EventType);
+            return entity.GenerateMessage(entity.ResolveType(typeResolver), jsonProcessor);
+        }
 
+        private static Message GenerateMessage(
+            this IEvent entity,
+            Type type,
+            IJsonProcessor jsonProcessor)
+        {
             ConstructorInfo constructor = typeof(StreamEvent<>)
                 .MakeGenericType(type)
                 .GetTypeInfo()
