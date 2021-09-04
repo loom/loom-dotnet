@@ -1,20 +1,20 @@
-﻿namespace Loom.EventSourcing
-{
-    using System;
-    using System.Collections.Concurrent;
-    using System.Collections.Generic;
-    using System.Collections.Immutable;
-    using System.Linq;
-    using System.Threading.Tasks;
-    using FluentAssertions;
-    using FluentAssertions.Equivalency;
-    using Loom.Json;
-    using Loom.Messaging;
-    using Loom.Testing;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using Moq;
-    using Newtonsoft.Json;
+﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Linq;
+using System.Threading.Tasks;
+using FluentAssertions;
+using FluentAssertions.Equivalency;
+using Loom.Json;
+using Loom.Messaging;
+using Loom.Testing;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
+using Newtonsoft.Json;
 
+namespace Loom.EventSourcing
+{
     public abstract class EventStoreUnitTests<T>
         where T : IEventCollector, IEventReader
     {

@@ -1,9 +1,9 @@
-﻿namespace Loom.Messaging
-{
-    using System;
-    using FluentAssertions;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System;
+using FluentAssertions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+namespace Loom.Messaging
+{
     [TestClass]
     public class FullNameTypeNameResolvingStrategy_specs
     {

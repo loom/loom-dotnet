@@ -1,13 +1,13 @@
-﻿namespace Loom.Messaging
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Reflection;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 
+namespace Loom.Messaging
+{
     public class TypeResolvingStrategy : ITypeResolvingStrategy
     {
-        private static readonly Lazy<IReadOnlyList<Type>> _types = new Lazy<IReadOnlyList<Type>>(GetAllTypes);
+        private static readonly Lazy<IReadOnlyList<Type>> _types = new(GetAllTypes);
 
         private static IReadOnlyList<Type> GetAllTypes()
         {

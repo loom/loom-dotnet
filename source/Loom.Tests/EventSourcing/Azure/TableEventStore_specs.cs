@@ -1,15 +1,15 @@
-﻿namespace Loom.EventSourcing.Azure
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Threading.Tasks;
-    using FluentAssertions;
-    using Loom.Messaging;
-    using Loom.Testing;
-    using Microsoft.Azure.Cosmos.Table;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using Moq;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using FluentAssertions;
+using Loom.Messaging;
+using Loom.Testing;
+using Microsoft.Azure.Cosmos.Table;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 
+namespace Loom.EventSourcing.Azure
+{
     [TestClass]
     public class TableEventStore_specs :
         EventStoreUnitTests<TableEventStore<State1>>

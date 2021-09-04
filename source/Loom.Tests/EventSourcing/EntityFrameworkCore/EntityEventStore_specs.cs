@@ -1,17 +1,18 @@
-﻿namespace Loom.EventSourcing.EntityFrameworkCore
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Collections.Immutable;
-    using System.Linq;
-    using System.Threading.Tasks;
-    using FluentAssertions;
-    using Loom.Messaging;
-    using Loom.Testing;
-    using Microsoft.Data.Sqlite;
-    using Microsoft.EntityFrameworkCore;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Threading.Tasks;
+using FluentAssertions;
+using Loom.Messaging;
+using Loom.Testing;
+using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+namespace Loom.EventSourcing.EntityFrameworkCore
+{
     [TestClass]
     public class EntityEventStore_specs :
         EventStoreUnitTests<EntityEventStore<State1>>
@@ -22,6 +23,8 @@
         public TestContext TestContext { get; set; }
 
         [ClassInitialize]
+        [SuppressMessage("Usage", "CA1801:Review unused parameters", Justification = "Reviewed")]
+        [SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Reviewed")]
         public static async Task ClassInitialize(TestContext context)
         {
             _connection = new SqliteConnection("DataSource=:memory:");
@@ -67,8 +70,8 @@
         public EntityEventStore<T> GenerateEventStore<T>(
             IUniquePropertyDetector uniquePropertyDetector, IMessageBus eventBus)
         {
-            EventStoreContext factory() => new(_options);
-            return new EntityEventStore<T>(factory, uniquePropertyDetector, TypeResolver, JsonProcessor, eventBus);
+            static EventStoreContext Factory() => new(_options);
+            return new EntityEventStore<T>(Factory, uniquePropertyDetector, TypeResolver, JsonProcessor, eventBus);
         }
 
         [TestMethod, AutoData]

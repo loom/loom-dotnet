@@ -1,14 +1,14 @@
-﻿namespace Loom.Messaging.Azure
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Text;
-    using FluentAssertions;
-    using Loom.Json;
-    using Loom.Testing;
-    using Microsoft.Azure.EventHubs;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using FluentAssertions;
+using Loom.Json;
+using Loom.Testing;
+using Microsoft.Azure.EventHubs;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+namespace Loom.Messaging.Azure
+{
     [TestClass]
     public class EventConverter_specs
     {

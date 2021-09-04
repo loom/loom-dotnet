@@ -1,17 +1,17 @@
-﻿namespace Loom.EventSourcing.Azure
-{
-    using System;
-    using System.Collections.Immutable;
-    using System.Linq;
-    using System.Threading.Tasks;
-    using FluentAssertions;
-    using Loom.Json;
-    using Loom.Messaging;
-    using Loom.Testing;
-    using Microsoft.Azure.Cosmos.Table;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using Newtonsoft.Json;
+﻿using System;
+using System.Collections.Immutable;
+using System.Linq;
+using System.Threading.Tasks;
+using FluentAssertions;
+using Loom.Json;
+using Loom.Messaging;
+using Loom.Testing;
+using Microsoft.Azure.Cosmos.Table;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json;
 
+namespace Loom.EventSourcing.Azure
+{
     [TestClass]
     public class TablePendingEventScanner_specs
     {
@@ -43,8 +43,8 @@
             typeof(TablePendingEventScanner).Should().Implement<IPendingEventScanner>();
         }
 
-        private TableEventStore<State1> GenerateEventStore(IMessageBus eventBus) =>
-            new TableEventStore<State1>(Table, TypeResolver, JsonProcessor, eventBus);
+        private TableEventStore<State1> GenerateEventStore(IMessageBus eventBus)
+            => new(Table, TypeResolver, JsonProcessor, eventBus);
 
         [TestMethod, AutoData]
         public async Task sut_sends_flush_commands_for_streams_containing_cold_pending_events(

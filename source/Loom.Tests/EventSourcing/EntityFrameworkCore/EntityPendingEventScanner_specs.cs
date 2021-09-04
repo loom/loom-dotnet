@@ -1,18 +1,18 @@
-﻿namespace Loom.EventSourcing.EntityFrameworkCore
-{
-    using System;
-    using System.Collections.Immutable;
-    using System.Linq;
-    using System.Threading.Tasks;
-    using FluentAssertions;
-    using Loom.Json;
-    using Loom.Messaging;
-    using Loom.Testing;
-    using Microsoft.Data.Sqlite;
-    using Microsoft.EntityFrameworkCore;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using Newtonsoft.Json;
+﻿using System;
+using System.Collections.Immutable;
+using System.Linq;
+using System.Threading.Tasks;
+using FluentAssertions;
+using Loom.Json;
+using Loom.Messaging;
+using Loom.Testing;
+using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json;
 
+namespace Loom.EventSourcing.EntityFrameworkCore
+{
     [TestClass]
     public class EntityPendingEventScanner_specs
     {
@@ -33,17 +33,15 @@
             await Connection.OpenAsync();
             DbContextOptions options = new DbContextOptionsBuilder().UseSqlite(Connection).Options;
             ContextFactory = () => new EventStoreContext(options);
-            using (EventStoreContext db = ContextFactory.Invoke())
-            {
-                await db.Database.EnsureCreatedAsync();
-            }
+            using EventStoreContext db = ContextFactory.Invoke();
+            await db.Database.EnsureCreatedAsync();
         }
 
         [TestCleanup]
         public void TestCleanup() => Connection.Dispose();
 
-        private EntityEventStore<T> GenerateEventStore<T>(IMessageBus eventBus) =>
-            new EntityEventStore<T>(ContextFactory, TypeResolver, JsonProcessor, eventBus);
+        private EntityEventStore<T> GenerateEventStore<T>(IMessageBus eventBus)
+            => new(ContextFactory, TypeResolver, JsonProcessor, eventBus);
 
         [TestMethod, AutoData]
         public async Task sut_sends_flush_commands_for_streams_containing_cold_pending_events(

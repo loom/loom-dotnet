@@ -1,10 +1,10 @@
-﻿namespace Loom.Messaging
-{
-    using System;
-    using FluentAssertions;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using Moq;
+﻿using System;
+using FluentAssertions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 
+namespace Loom.Messaging
+{
     [TestClass]
     public class TypeResolver_specs
     {

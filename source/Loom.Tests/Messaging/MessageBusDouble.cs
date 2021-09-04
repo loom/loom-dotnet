@@ -1,12 +1,12 @@
-﻿namespace Loom.Messaging
-{
-    using System;
-    using System.Collections.Concurrent;
-    using System.Collections.Generic;
-    using System.Collections.Immutable;
-    using System.Linq;
-    using System.Threading.Tasks;
+﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Linq;
+using System.Threading.Tasks;
 
+namespace Loom.Messaging
+{
     public sealed class MessageBusDouble : IMessageBus
     {
         private readonly ConcurrentQueue<(ImmutableArray<Message>, string)> _calls;

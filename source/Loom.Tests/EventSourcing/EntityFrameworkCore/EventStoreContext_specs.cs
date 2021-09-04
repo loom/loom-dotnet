@@ -1,11 +1,12 @@
-﻿namespace Loom.EventSourcing.EntityFrameworkCore
-{
-    using System.Threading.Tasks;
-    using FluentAssertions;
-    using Microsoft.Data.Sqlite;
-    using Microsoft.EntityFrameworkCore;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Threading.Tasks;
+using FluentAssertions;
+using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+namespace Loom.EventSourcing.EntityFrameworkCore
+{
     [TestClass]
     public class EventStoreContext_specs
     {
@@ -21,6 +22,8 @@
         private static DbContextOptions _options;
 
         [ClassInitialize]
+        [SuppressMessage("Usage", "CA1801:Review unused parameters", Justification = "Reviewed")]
+        [SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Reviewed")]
         public static async Task ClassInitialize(TestContext context)
         {
             _connection = new SqliteConnection("DataSource=:memory:");

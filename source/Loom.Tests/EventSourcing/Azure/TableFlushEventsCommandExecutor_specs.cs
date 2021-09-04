@@ -1,15 +1,15 @@
-﻿namespace Loom.EventSourcing.Azure
-{
-    using System;
-    using System.Threading.Tasks;
-    using FluentAssertions;
-    using Loom.Json;
-    using Loom.Messaging;
-    using Loom.Testing;
-    using Microsoft.Azure.Cosmos.Table;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using Newtonsoft.Json;
+﻿using System;
+using System.Threading.Tasks;
+using FluentAssertions;
+using Loom.Json;
+using Loom.Messaging;
+using Loom.Testing;
+using Microsoft.Azure.Cosmos.Table;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json;
 
+namespace Loom.EventSourcing.Azure
+{
     [TestClass]
     public class TableFlushEventsCommandExecutor_specs
     {
@@ -27,11 +27,11 @@
             typeof(TableFlushEventsCommandExecutor).Should().Implement<IMessageHandler>();
         }
 
-        private TableFlushEventsCommandExecutor GenerateSut(IMessageBus eventBus) =>
-            new TableFlushEventsCommandExecutor(Table, TypeResolver, JsonProcessor, eventBus);
+        private TableFlushEventsCommandExecutor GenerateSut(IMessageBus eventBus)
+            => new(Table, TypeResolver, JsonProcessor, eventBus);
 
-        private TableEventStore<State1> GenerateEventStore(IMessageBus eventBus) =>
-            new TableEventStore<State1>(Table, TypeResolver, JsonProcessor, eventBus);
+        private TableEventStore<State1> GenerateEventStore(IMessageBus eventBus)
+            => new(Table, TypeResolver, JsonProcessor, eventBus);
 
         [TestMethod, AutoData]
         public void CanHandle_returns_true_for_FlushTableEvents_command_message(
