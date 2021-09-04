@@ -1,7 +1,7 @@
-﻿namespace Loom.Messaging
-{
-    using System;
+﻿using System;
 
+namespace Loom.Messaging
+{
     public sealed class TypeResolver
     {
         private readonly ITypeNameResolvingStrategy _typeNameResolvingStrategy;

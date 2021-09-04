@@ -1,7 +1,7 @@
-﻿namespace Loom.Messaging
-{
-    using System;
+﻿using System;
 
+namespace Loom.Messaging
+{
     public class FullNameTypeNameResolvingStrategy : ITypeNameResolvingStrategy
     {
         public string? TryResolveTypeName(Type type) => type switch

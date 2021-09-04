@@ -1,10 +1,10 @@
-﻿namespace Loom.Messaging
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Reflection;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 
+namespace Loom.Messaging
+{
     [Obsolete("This class is unstable. Use your own implementation of ITypeResolvingStrategy please.")]
     public class FullNameTypeResolvingStrategy : ITypeResolvingStrategy
     {
