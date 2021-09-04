@@ -25,7 +25,7 @@
         public Task Handle(Message message) => message switch
         {
             null => throw new ArgumentNullException(nameof(message)),
-            _ => Execute(command: (FlushEvents)message.Data)
+            _ => Execute(command: (FlushEvents)message.Data),
         };
 
         private Task Execute(FlushEvents command)

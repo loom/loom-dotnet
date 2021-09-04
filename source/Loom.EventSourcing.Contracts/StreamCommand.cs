@@ -28,7 +28,7 @@
             }
         }
 
-        private static (Guid streamId, object payload) Decompose<T>(StreamCommand<T> command)
+        private static (Guid StreamId, object Payload) Decompose<T>(StreamCommand<T> command)
         {
             return (command.StreamId, command.Payload);
         }

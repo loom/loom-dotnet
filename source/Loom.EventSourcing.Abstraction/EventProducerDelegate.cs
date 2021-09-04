@@ -19,7 +19,7 @@
                 | BindingFlags.Instance
                 | BindingFlags.Public;
 
-            IEnumerable<(Type commandType, MethodInfo function)> query =
+            IEnumerable<(Type CommandType, MethodInfo Function)> query =
                 from method in _producer.GetType().GetMethods(bindingFlags)
 
                 where method.Name == "ProduceEvents"
@@ -36,8 +36,8 @@
                 select (commandType, function: method);
 
             _functions = query.ToDictionary(
-                keySelector: t => t.commandType,
-                elementSelector: t => t.function);
+                keySelector: t => t.CommandType,
+                elementSelector: t => t.Function);
         }
 
         public IEnumerable<object> ProduceEvents(T state, object command)
@@ -50,7 +50,7 @@
             Type commandType = command.GetType();
             return _functions.TryGetValue(commandType, out MethodInfo? function) switch
             {
-                true => (IEnumerable<object>)function.Invoke(_producer, new[] { state, command }) !,
+                true => (IEnumerable<object>)function.Invoke(_producer, new[] { state, command })!,
                 _ => throw new InvalidOperationException($"Cannot execute the command of type {commandType}."),
             };
         }

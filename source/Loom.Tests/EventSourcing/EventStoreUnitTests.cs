@@ -239,7 +239,7 @@
             {
             }
 
-            var log = new List<(IEnumerable<Message> messages, string partitionKey)>();
+            var log = new List<(IEnumerable<Message> Messages, string PartitionKey)>();
 
             Mock.Get(stub)
                 .Setup(x => x.Send(It.IsAny<IEnumerable<Message>>(), It.IsAny<string>()))
@@ -252,19 +252,21 @@
             // Assert
             log.Should().HaveCount(2);
 
-            log[0].messages.Select(x => x.Data).Should().BeEquivalentTo(new object[]
+            log[0].Messages.Select(x => x.Data).Should().BeEquivalentTo(new object[]
             {
                 new StreamEvent<Event1>(streamId, startVersion + 0, default, evt1),
                 new StreamEvent<Event2>(streamId, startVersion + 1, default, evt2),
-            }, c => c.WithStrictOrdering().Excluding((IMemberInfo m) => m.SelectedMemberInfo.Name == "RaisedTimeUtc"));
-            log[0].partitionKey.Should().Be($"{streamId}");
+            },
+            c => c.WithStrictOrdering().Excluding((IMemberInfo m) => m.SelectedMemberInfo.Name == "RaisedTimeUtc"));
+            log[0].PartitionKey.Should().Be($"{streamId}");
 
-            log[1].messages.Select(x => x.Data).Should().BeEquivalentTo(new object[]
+            log[1].Messages.Select(x => x.Data).Should().BeEquivalentTo(new object[]
             {
                 new StreamEvent<Event3>(streamId, startVersion + 2, default, evt3),
                 new StreamEvent<Event4>(streamId, startVersion + 3, default, evt4),
-            }, c => c.WithStrictOrdering().Excluding((IMemberInfo m) => m.SelectedMemberInfo.Name == "RaisedTimeUtc"));
-            log[1].partitionKey.Should().Be($"{streamId}");
+            },
+            c => c.WithStrictOrdering().Excluding((IMemberInfo m) => m.SelectedMemberInfo.Name == "RaisedTimeUtc"));
+            log[1].PartitionKey.Should().Be($"{streamId}");
         }
 
         [TestMethod, AutoData]
@@ -289,19 +291,21 @@
 
             calls.Should().HaveCount(2);
 
-            calls[0].messages.Select(x => x.Data).Should().BeEquivalentTo(new object[]
+            calls[0].Messages.Select(x => x.Data).Should().BeEquivalentTo(new object[]
             {
                 new StreamEvent<Event1>(streamId, startVersion + 0, default, evt1),
                 new StreamEvent<Event2>(streamId, startVersion + 1, default, evt2),
-            }, c => c.WithStrictOrdering().Excluding((IMemberInfo m) => m.SelectedMemberInfo.Name == "RaisedTimeUtc"));
-            calls[0].partitionKey.Should().Be($"{streamId}");
+            },
+            c => c.WithStrictOrdering().Excluding((IMemberInfo m) => m.SelectedMemberInfo.Name == "RaisedTimeUtc"));
+            calls[0].PartitionKey.Should().Be($"{streamId}");
 
-            calls[1].messages.Select(x => x.Data).Should().BeEquivalentTo(new object[]
+            calls[1].Messages.Select(x => x.Data).Should().BeEquivalentTo(new object[]
             {
                 new StreamEvent<Event3>(streamId, startVersion + 2, default, evt3),
                 new StreamEvent<Event4>(streamId, startVersion + 3, default, evt4),
-            }, c => c.WithStrictOrdering().Excluding((IMemberInfo m) => m.SelectedMemberInfo.Name == "RaisedTimeUtc"));
-            calls[1].partitionKey.Should().Be($"{streamId}");
+            },
+            c => c.WithStrictOrdering().Excluding((IMemberInfo m) => m.SelectedMemberInfo.Name == "RaisedTimeUtc"));
+            calls[1].PartitionKey.Should().Be($"{streamId}");
         }
 
         [TestMethod, AutoData]
@@ -322,7 +326,7 @@
             await sut.CollectEvents(streamId, startVersion + 2, new object[] { evt3, evt4 });
 
             // Assert
-            spy.Calls.SelectMany(x => x.messages).Select(x => x.Id).Should().OnlyHaveUniqueItems();
+            spy.Calls.SelectMany(x => x.Messages).Select(x => x.Id).Should().OnlyHaveUniqueItems();
         }
 
         [TestMethod, AutoData]
@@ -376,7 +380,7 @@
             await sut.CollectEvents(streamId, startVersion, new[] { evt });
 
             // Assert
-            Message message = spy.Calls.SelectMany(x => x.messages).Single();
+            Message message = spy.Calls.SelectMany(x => x.Messages).Single();
             DateTime actual = message.Data.As<StreamEvent<Event1>>().RaisedTimeUtc;
             actual.Kind.Should().Be(DateTimeKind.Utc);
             actual.Should().BeCloseTo(nowUtc, precision: 1000);

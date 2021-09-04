@@ -8,7 +8,7 @@
     [Obsolete("This class is unstable. Use your own implementation of ITypeResolvingStrategy please.")]
     public class FullNameTypeResolvingStrategy : ITypeResolvingStrategy
     {
-        private static readonly Lazy<IReadOnlyList<Type>> _types = new (GetAllTypes);
+        private static readonly Lazy<IReadOnlyList<Type>> _types = new(GetAllTypes);
 
         private static IReadOnlyList<Type> GetAllTypes()
         {

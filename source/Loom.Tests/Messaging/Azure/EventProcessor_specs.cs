@@ -66,7 +66,7 @@
         public void sut_throws_aggregate_exception_for_bad_messages(
             IEventConverter converter,
             IMessageHandler handler,
-            (Message message, Exception exception)[] tuples)
+            (Message Message, Exception Exception)[] tuples)
         {
             // Arrange
             EventProcessor sut = new EventProcessorBuilder(converter, handler).Build();
@@ -79,7 +79,7 @@
             }
 
             IEnumerable<EventData> events = tuples
-                .Select(t => t.message)
+                .Select(t => t.Message)
                 .Select(converter.ConvertToEvent);
 
             // Act
@@ -89,7 +89,7 @@
             action.Should().ThrowAsync<AggregateException>()
                   .GetAwaiter().GetResult()
                   .Which.InnerExceptions
-                  .Should().BeEquivalentTo(tuples.Select(t => t.exception));
+                  .Should().BeEquivalentTo(tuples.Select(t => t.Exception));
         }
     }
 }

@@ -48,13 +48,13 @@
             TypeResolver typeResolver,
             IMessageBus eventBus)
         {
-            static EventStoreContext Factory() => new (_options);
+            static EventStoreContext Factory() => new(_options);
             return new EntityEventStore<T>(Factory, typeResolver, JsonProcessor, eventBus);
         }
 
         private EntityEventStore<T> GenerateEventStore<T>(IMessageBus eventBus)
         {
-            static EventStoreContext Factory() => new (_options);
+            static EventStoreContext Factory() => new(_options);
             return new EntityEventStore<T>(Factory, TypeResolver, JsonProcessor, eventBus);
         }
 
@@ -67,7 +67,7 @@
         public EntityEventStore<T> GenerateEventStore<T>(
             IUniquePropertyDetector uniquePropertyDetector, IMessageBus eventBus)
         {
-            EventStoreContext factory() => new (_options);
+            EventStoreContext factory() => new(_options);
             return new EntityEventStore<T>(factory, uniquePropertyDetector, TypeResolver, JsonProcessor, eventBus);
         }
 

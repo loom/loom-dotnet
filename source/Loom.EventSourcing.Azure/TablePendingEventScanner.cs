@@ -40,7 +40,7 @@
 
         private Task ScanQueueTickets(IQueryable<QueueTicket> query)
         {
-            var marks = new HashSet<(string stateType, Guid streamId)>();
+            var marks = new HashSet<(string StateType, Guid StreamId)>();
             return query.ForEach(async t =>
             {
                 if (DateTimeOffset.UtcNow - t.Timestamp >= _minimumPendingTime &&

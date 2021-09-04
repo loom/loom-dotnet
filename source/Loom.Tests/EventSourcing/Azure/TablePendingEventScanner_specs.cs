@@ -95,7 +95,7 @@
             await sut.ScanPendingEvents();
 
             // Assert
-            TracingProperties actual = commandBus.Calls.Single().messages.Single().TracingProperties;
+            TracingProperties actual = commandBus.Calls.Single().Messages.Single().TracingProperties;
             actual.OperationId.Should().NotBeNullOrWhiteSpace();
             actual.Contributor.Should().Be("Loom.EventSourcing.Azure.TablePendingEventScanner");
             actual.ParentId.Should().BeNull();

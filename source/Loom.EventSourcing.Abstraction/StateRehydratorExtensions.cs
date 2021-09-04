@@ -17,7 +17,7 @@
             return await rehydrator.TryRehydrateState(streamId).ConfigureAwait(continueOnCapturedContext: false) switch
             {
                 T state => state,
-                _ => throw new InvalidOperationException($"Could not rehydrate state with stream id '{streamId}'.")
+                _ => throw new InvalidOperationException($"Could not rehydrate state with stream id '{streamId}'."),
             };
         }
     }

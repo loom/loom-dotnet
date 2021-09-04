@@ -28,7 +28,7 @@
         {
         }
 
-        public IEnumerable<(ImmutableArray<Message> messages, string partitionKey)> Calls => _calls;
+        public IEnumerable<(ImmutableArray<Message> Messages, string PartitionKey)> Calls => _calls;
 
         public async Task Send(IEnumerable<Message> messages, string partitionKey)
         {

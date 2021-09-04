@@ -7,7 +7,7 @@
         public string? TryResolveTypeName(Type type) => type switch
         {
             null => throw new ArgumentNullException(nameof(type)),
-            _ => type.FullName
+            _ => type.FullName,
         };
     }
 }
