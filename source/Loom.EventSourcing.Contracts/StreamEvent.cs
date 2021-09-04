@@ -1,8 +1,8 @@
-﻿namespace Loom.EventSourcing
-{
-    using System;
-    using System.Reflection;
+﻿using System;
+using System.Reflection;
 
+namespace Loom.EventSourcing
+{
     public static class StreamEvent
     {
         public static StreamEvent<T> Create<T>(Guid streamId,
@@ -39,7 +39,7 @@
             }
         }
 
-        private static StreamEvent<object> ToWeaklyTyped<T>(StreamEvent<T> value) =>
-            new StreamEvent<object>(value.StreamId, value.Version, value.RaisedTimeUtc, value.Payload);
+        private static StreamEvent<object> ToWeaklyTyped<T>(StreamEvent<T> value)
+            => new(value.StreamId, value.Version, value.RaisedTimeUtc, value.Payload);
     }
 }

@@ -1,12 +1,11 @@
-﻿namespace Loom.EventSourcing
-{
-    using System;
-    using System.Reflection;
+﻿using System;
+using System.Reflection;
 
+namespace Loom.EventSourcing
+{
     public static class StreamCommand
     {
-        public static StreamCommand<T> Create<T>(Guid streamId, T payload)
-            => new StreamCommand<T>(streamId, payload);
+        public static StreamCommand<T> Create<T>(Guid streamId, T payload) => new(streamId, payload);
 
         public static bool TryDecompose(object value, out Guid streamId, out object payload)
         {
