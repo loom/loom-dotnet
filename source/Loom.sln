@@ -27,7 +27,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Loom.Json", "Loom.Json\Loom
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Loom.Messaging.Azure", "Loom.Messaging.Azure\Loom.Messaging.Azure.csproj", "{3A8C4BC6-3694-4CE5-B1E6-D7BFC17113C5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Loom.EventSourcing.InMemory", "Loom.EventSourcing.InMemory\Loom.EventSourcing.InMemory.csproj", "{592BE1DF-0376-4608-88F9-459076A8DF42}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Loom.EventSourcing.InMemory", "Loom.EventSourcing.InMemory\Loom.EventSourcing.InMemory.csproj", "{592BE1DF-0376-4608-88F9-459076A8DF42}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{1A04C3A6-D205-44AC-93DB-B84166E52A5B}"
+	ProjectSection(SolutionItems) = preProject
+		..\.editorconfig = ..\.editorconfig
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
