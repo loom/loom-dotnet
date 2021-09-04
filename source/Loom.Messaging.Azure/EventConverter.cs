@@ -1,10 +1,10 @@
-﻿namespace Loom.Messaging.Azure
-{
-    using System;
-    using System.Text;
-    using Loom.Json;
-    using Microsoft.Azure.EventHubs;
+﻿using System;
+using System.Text;
+using Loom.Json;
+using Microsoft.Azure.EventHubs;
 
+namespace Loom.Messaging.Azure
+{
     public sealed class EventConverter : IEventConverter
     {
         private readonly IJsonProcessor _jsonProcessor;
