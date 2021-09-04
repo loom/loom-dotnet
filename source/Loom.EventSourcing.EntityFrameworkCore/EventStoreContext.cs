@@ -1,9 +1,9 @@
-﻿namespace Loom.EventSourcing.EntityFrameworkCore
-{
-    using System;
-    using Microsoft.EntityFrameworkCore;
-    using Microsoft.EntityFrameworkCore.Metadata.Builders;
+﻿using System;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
+namespace Loom.EventSourcing.EntityFrameworkCore
+{
     public class EventStoreContext : DbContext
     {
         public EventStoreContext(DbContextOptions options)

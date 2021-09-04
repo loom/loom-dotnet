@@ -1,15 +1,15 @@
-﻿namespace Loom.EventSourcing.EntityFrameworkCore
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Collections.Immutable;
-    using System.Linq;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using Loom.Json;
-    using Loom.Messaging;
-    using Microsoft.EntityFrameworkCore;
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Loom.Json;
+using Loom.Messaging;
+using Microsoft.EntityFrameworkCore;
 
+namespace Loom.EventSourcing.EntityFrameworkCore
+{
     public class EntityEventStore<T> :
         IEventStore<T>, IEventCollector, IEventReader
     {

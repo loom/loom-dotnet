@@ -1,7 +1,7 @@
-﻿namespace Loom.EventSourcing.EntityFrameworkCore
-{
-    using System;
+﻿using System;
 
+namespace Loom.EventSourcing.EntityFrameworkCore
+{
     public class StreamEvent : IEvent
     {
         private StreamEvent()

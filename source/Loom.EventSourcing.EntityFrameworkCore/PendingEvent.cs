@@ -1,7 +1,7 @@
-﻿namespace Loom.EventSourcing.EntityFrameworkCore
-{
-    using System;
+﻿using System;
 
+namespace Loom.EventSourcing.EntityFrameworkCore
+{
     public class PendingEvent : IEvent
     {
         private PendingEvent()
@@ -30,7 +30,7 @@
 
         public Guid Transaction { get; private set; }
 
-        internal static PendingEvent Create(StreamEvent source) => new PendingEvent
+        internal static PendingEvent Create(StreamEvent source) => new()
         {
             StateType = source.StateType,
             StreamId = source.StreamId,
