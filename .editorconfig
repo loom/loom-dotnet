@@ -19,7 +19,7 @@ charset = utf-8-bom
 dotnet_diagnostic.IDE0003.severity = error
 dotnet_diagnostic.IDE0005.severity = error
 dotnet_diagnostic.IDE0055.severity = suggestion
-dotnet_diagnostic.IDE0065.severity = suggestion
+dotnet_diagnostic.IDE0065.severity = error
 dotnet_diagnostic.IDE1006.severity = suggestion
 
 dotnet_sort_system_directives_first = true
