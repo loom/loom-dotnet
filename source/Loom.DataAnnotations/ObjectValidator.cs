@@ -1,12 +1,12 @@
-﻿namespace Loom.DataAnnotations
-{
-    using System;
-    using System.Collections;
-    using System.Collections.Generic;
-    using System.ComponentModel.DataAnnotations;
-    using System.Linq;
-    using System.Reflection;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Reflection;
 
+namespace Loom.DataAnnotations
+{
     /// <summary>
     /// Provides a helper class that can be used to validate objects. Unlike <see cref="Validator"/>, <see cref="ObjectValidator"/> traverses an object graph and provides full paths of properties as member names for validation failures.
     /// </summary>
@@ -79,7 +79,10 @@
                 validationResultCollector.Invoke(new ValidationError(error).ValidationResult);
             });
 
+            // 'hasError == false' is not always 'true'.
+#pragma warning disable CA1508 // Avoid dead conditional code
             return hasError == false;
+#pragma warning restore CA1508 // Avoid dead conditional code
         }
 
         /// <summary>
@@ -102,8 +105,12 @@
                 validationErrors.Add(error);
             });
 
+            // 'validationErrors' is not always 'null'.
+            // 'hasError == false' is not always 'true'.
+#pragma warning disable CA1508 // Avoid dead conditional code
             errors = validationErrors?.AsReadOnly() ?? Enumerable.Empty<ObjectValidationError>();
             return hasError == false;
+#pragma warning restore CA1508 // Avoid dead conditional code
         }
 
         [Obsolete]
@@ -125,7 +132,7 @@
             public object? Value { get; }
 
             public ValidationException ToException()
-                => new ValidationException(ValidationResult, ValidationAttribute, Value);
+                => new(ValidationResult, ValidationAttribute, Value);
         }
 
         private class CompositeVisitorStrategy : IVisitorStrategy
@@ -202,7 +209,7 @@
                     new DateTimeInstanceStrategy(),
                     new DateTimeOffsetInstanceStrategy());
 
-            private readonly Stack<object> _history = new Stack<object>();
+            private readonly Stack<object> _history = new();
 
             private readonly bool _breakOnFirstError;
             private readonly Action<ObjectValidationError> _onError;
@@ -265,7 +272,7 @@
                        select property;
             }
 
-            private IEnumerable<Type> AscendTypeHierarchy(object instance)
+            private static IEnumerable<Type> AscendTypeHierarchy(object instance)
             {
                 Type? type = instance.GetType();
                 while (type != null)
@@ -275,7 +282,7 @@
                 }
             }
 
-            private IEnumerable<PropertyInfo> GetDeclaredProperties(Type type)
+            private static IEnumerable<PropertyInfo> GetDeclaredProperties(Type type)
                 => type.GetTypeInfo().DeclaredProperties;
 
             private bool ShouldVisit(object instance, PropertyInfo property)
