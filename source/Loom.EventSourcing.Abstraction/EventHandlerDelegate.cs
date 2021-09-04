@@ -1,10 +1,10 @@
-﻿namespace Loom.EventSourcing
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Reflection;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 
+namespace Loom.EventSourcing
+{
     public sealed class EventHandlerDelegate<T> : IEventHandler<T>
     {
         private readonly object _handler;
@@ -14,13 +14,13 @@
         {
             _handler = handler ?? throw new ArgumentNullException(nameof(handler));
 
-            const BindingFlags bindingFlags
+            const BindingFlags BindingFlags
                 = BindingFlags.Static
                 | BindingFlags.Instance
                 | BindingFlags.Public;
 
             IEnumerable<(Type EventType, MethodInfo Function)> query =
-                from method in _handler.GetType().GetMethods(bindingFlags)
+                from method in _handler.GetType().GetMethods(BindingFlags)
 
                 where method.Name == "HandleEvent"
                 where method.ReturnType == typeof(T)

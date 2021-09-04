@@ -1,10 +1,10 @@
-﻿namespace Loom.EventSourcing
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Reflection;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 
+namespace Loom.EventSourcing
+{
     public sealed class EventProducerDelegate<T> : IEventProducer<T>
     {
         private readonly object _producer;
@@ -14,13 +14,13 @@
         {
             _producer = producer ?? throw new ArgumentNullException(nameof(producer));
 
-            const BindingFlags bindingFlags
+            const BindingFlags BindingFlags
                 = BindingFlags.Static
                 | BindingFlags.Instance
                 | BindingFlags.Public;
 
             IEnumerable<(Type CommandType, MethodInfo Function)> query =
-                from method in _producer.GetType().GetMethods(bindingFlags)
+                from method in _producer.GetType().GetMethods(BindingFlags)
 
                 where method.Name == "ProduceEvents"
                 where method.ReturnType == typeof(IEnumerable<object>)

@@ -1,8 +1,8 @@
-﻿namespace Loom.EventSourcing
-{
-    using System;
-    using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 
+namespace Loom.EventSourcing
+{
     public static class StateRehydratorExtensions
     {
         public static async Task<T> RehydrateState<T>(
