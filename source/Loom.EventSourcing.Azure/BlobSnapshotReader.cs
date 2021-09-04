@@ -1,12 +1,12 @@
-﻿namespace Loom.EventSourcing.Azure
-{
-    using System;
-    using System.IO;
-    using System.Text;
-    using System.Threading.Tasks;
-    using Loom.Json;
-    using Microsoft.Azure.Storage.Blob;
+﻿using System;
+using System.IO;
+using System.Text;
+using System.Threading.Tasks;
+using Loom.Json;
+using Microsoft.Azure.Storage.Blob;
 
+namespace Loom.EventSourcing.Azure
+{
     public class BlobSnapshotReader<T> : ISnapshotReader<T>
         where T : class
     {
@@ -35,12 +35,10 @@
 
         private async Task<T> RestoreSnapshot(CloudBlockBlob blob)
         {
-            using (var stream = new MemoryStream())
-            {
-                await blob.DownloadToStreamAsync(stream).ConfigureAwait(continueOnCapturedContext: false);
-                string content = Encoding.UTF8.GetString(stream.ToArray());
-                return (T)_jsonProcessor.FromJson(content, dataType: typeof(T));
-            }
+            using var stream = new MemoryStream();
+            await blob.DownloadToStreamAsync(stream).ConfigureAwait(continueOnCapturedContext: false);
+            string content = Encoding.UTF8.GetString(stream.ToArray());
+            return (T)_jsonProcessor.FromJson(content, dataType: typeof(T));
         }
     }
 }

@@ -1,11 +1,11 @@
-﻿namespace Loom.EventSourcing.Azure
-{
-    using System;
-    using System.Threading.Tasks;
-    using Loom.Json;
-    using Loom.Messaging;
-    using Microsoft.Azure.Cosmos.Table;
+﻿using System;
+using System.Threading.Tasks;
+using Loom.Json;
+using Loom.Messaging;
+using Microsoft.Azure.Cosmos.Table;
 
+namespace Loom.EventSourcing.Azure
+{
     public sealed class TableFlushEventsCommandExecutor : IMessageHandler
     {
         private readonly EventPublisher _publisher;

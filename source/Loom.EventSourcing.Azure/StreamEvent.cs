@@ -1,11 +1,11 @@
-﻿namespace Loom.EventSourcing.Azure
-{
-    using System;
-    using System.Reflection;
-    using Loom.Json;
-    using Loom.Messaging;
-    using Microsoft.Azure.Cosmos.Table;
+﻿using System;
+using System.Reflection;
+using Loom.Json;
+using Loom.Messaging;
+using Microsoft.Azure.Cosmos.Table;
 
+namespace Loom.EventSourcing.Azure
+{
     internal class StreamEvent : TableEntity
     {
 #pragma warning disable CS8618 // Properties will be set by Azure Table SDK.

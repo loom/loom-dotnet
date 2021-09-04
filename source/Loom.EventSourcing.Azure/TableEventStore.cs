@@ -1,14 +1,14 @@
-﻿namespace Loom.EventSourcing.Azure
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using Loom.Json;
-    using Loom.Messaging;
-    using Microsoft.Azure.Cosmos.Table;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Loom.Json;
+using Loom.Messaging;
+using Microsoft.Azure.Cosmos.Table;
 
+namespace Loom.EventSourcing.Azure
+{
     public class TableEventStore<T> : IEventStore<T>, IEventCollector, IEventReader
     {
         private readonly CloudTable _table;
