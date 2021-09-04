@@ -1,16 +1,15 @@
-﻿namespace Loom.EventSourcing.InMemory
-{
-    using System;
-    using System.Collections.Concurrent;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Reflection;
-    using Loom.Messaging;
+﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using Loom.Messaging;
 
+namespace Loom.EventSourcing.InMemory
+{
     public class InMemoryEventSourcingEngine<T>
     {
-        private readonly ConcurrentDictionary<Guid, Dictionary<long, Message>> _store =
-            new ConcurrentDictionary<Guid, Dictionary<long, Message>>();
+        private readonly ConcurrentDictionary<Guid, Dictionary<long, Message>> _store = new();
 
         public static InMemoryEventSourcingEngine<T> Default { get; } = new InMemoryEventSourcingEngine<T>();
 
