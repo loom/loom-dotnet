@@ -1,7 +1,7 @@
-﻿namespace Loom.Messaging
-{
-    using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
+namespace Loom.Messaging
+{
     public sealed class ActivityError
     {
         public ActivityError(string code,

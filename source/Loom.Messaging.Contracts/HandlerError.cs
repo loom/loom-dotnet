@@ -1,8 +1,8 @@
-﻿namespace Loom.Messaging
-{
-    using System;
-    using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
+namespace Loom.Messaging
+{
     [Obsolete("Use ActivityError class instead.")]
     public class HandlerError
     {
