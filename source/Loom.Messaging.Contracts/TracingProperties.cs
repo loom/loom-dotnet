@@ -1,7 +1,8 @@
-﻿namespace Loom.Messaging
-{
-    using System;
+﻿using System;
 
+namespace Loom.Messaging
+{
+    [Obsolete("This struct will be removed.")]
     public readonly struct TracingProperties : IEquatable<TracingProperties>
     {
         public TracingProperties(string operationId, string? contributor, string? parentId)
