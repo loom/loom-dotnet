@@ -5,14 +5,17 @@ namespace Loom.Messaging
     // TODO: Change to positional record.
     public sealed class Message
     {
-        // Change the signature to (string id, string processId, string initiator, string? predecessorId).
-        [Obsolete("Use Create factory method instead.")]
-        public Message(string id, object data, TracingProperties tracingProperties)
+        public Message(
+            string id,
+            string processId,
+            string? initiator,
+            string? predecessorId,
+            object data)
         {
             Id = id;
-            ProcessId = tracingProperties.OperationId;
-            Initiator = tracingProperties.Contributor;
-            PredecessorId = tracingProperties.ParentId;
+            ProcessId = processId;
+            Initiator = initiator;
+            PredecessorId = predecessorId;
             Data = data;
         }
 
@@ -33,12 +36,18 @@ namespace Loom.Messaging
             contributor: Initiator,
             parentId: PredecessorId);
 
+        [Obsolete("Use the public constructor instead")]
         public static Message Create(
             string id,
             object data,
             TracingProperties tracingProperties)
         {
-            return new Message(id, data, tracingProperties);
+            return new Message(
+                id,
+                processId: tracingProperties.OperationId,
+                initiator: tracingProperties.Contributor,
+                predecessorId: tracingProperties.ParentId,
+                data);
         }
     }
 }
