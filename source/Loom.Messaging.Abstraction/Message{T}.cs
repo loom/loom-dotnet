@@ -3,6 +3,20 @@
     // TODO: Change to positional record.
     public sealed class Message<T>
     {
+        public Message(
+            string id,
+            string processId,
+            string? initiator,
+            string? predecessorId,
+            T data)
+        {
+            Id = id;
+            ProcessId = processId;
+            Initiator = initiator;
+            PredecessorId = predecessorId;
+            Data = data;
+        }
+
         public Message(string id, T data, TracingProperties tracingProperties)
         {
             Id = id;
