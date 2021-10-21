@@ -100,7 +100,7 @@ namespace Loom.EventSourcing.Azure
                 DeserializePayload(jsonProcessor, type),
             });
 
-            return new Message(id: MessageId, data, TracingProperties);
+            return Message.Create(id: MessageId, data, TracingProperties);
         }
     }
 }

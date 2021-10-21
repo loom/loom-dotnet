@@ -26,7 +26,7 @@ namespace Loom.Messaging.Azure
             [Frozen] IJsonProcessor jsonProcessor,
             EventConverter sut)
         {
-            var message = new Message(id, data, tracingProperties);
+            var message = Message.Create(id, data, tracingProperties);
 
             EventData actual = sut.ConvertToEvent(message);
 
@@ -43,7 +43,7 @@ namespace Loom.Messaging.Azure
             [Frozen] TypeResolver typeResolver,
             EventConverter sut)
         {
-            var message = new Message(id, data, tracingProperties);
+            var message = Message.Create(id, data, tracingProperties);
 
             EventData actual = sut.ConvertToEvent(message);
 
@@ -62,7 +62,7 @@ namespace Loom.Messaging.Azure
             TracingProperties tracingProperties,
             EventConverter sut)
         {
-            var message = new Message(id, data, tracingProperties);
+            var message = Message.Create(id, data, tracingProperties);
             EventData eventData = sut.ConvertToEvent(message);
 
             Message actual = sut.TryConvertToMessage(eventData);

@@ -1,16 +1,16 @@
-﻿namespace Loom.EventSourcing.EntityFrameworkCore
-{
-    using System;
-    using System.Threading.Tasks;
-    using FluentAssertions;
-    using Loom.Json;
-    using Loom.Messaging;
-    using Loom.Testing;
-    using Microsoft.Data.Sqlite;
-    using Microsoft.EntityFrameworkCore;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using Newtonsoft.Json;
+﻿using System;
+using System.Threading.Tasks;
+using FluentAssertions;
+using Loom.Json;
+using Loom.Messaging;
+using Loom.Testing;
+using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Newtonsoft.Json;
 
+namespace Loom.EventSourcing.EntityFrameworkCore
+{
     [TestClass]
     public class EntityFlushEventsCommandExecutor_specs
     {
@@ -57,7 +57,7 @@
             TracingProperties tracingProperties,
             IMessageBus eventBus)
         {
-            var message = new Message(id: commandId, data: command, tracingProperties);
+            var message = Message.Create(id: commandId, data: command, tracingProperties);
             EntityFlushEventsCommandExecutor sut = GenerateSut(eventBus);
 
             bool actual = sut.CanHandle(message);
@@ -72,7 +72,7 @@
             TracingProperties tracingProperties,
             IMessageBus eventBus)
         {
-            var message = new Message(id, data, tracingProperties);
+            var message = Message.Create(id, data, tracingProperties);
             EntityFlushEventsCommandExecutor sut = GenerateSut(eventBus);
 
             bool actual = sut.CanHandle(message);
@@ -96,7 +96,7 @@
 
             EntityFlushEventsCommandExecutor sut = GenerateSut(eventBus);
             var command = new FlushEvents(TypeResolver.TryResolveTypeName<State1>(), streamId);
-            var message = new Message(id: commandId, data: command, tracingProperties);
+            var message = Message.Create(id: commandId, data: command, tracingProperties);
 
             // Act
             await sut.Handle(message);
@@ -121,7 +121,7 @@
 
             EntityFlushEventsCommandExecutor sut = GenerateSut(eventBus);
             var command = new FlushEvents(TypeResolver.TryResolveTypeName<State1>(), streamId);
-            var message = new Message(id: commandId, data: command, tracingProperties);
+            var message = Message.Create(id: commandId, data: command, tracingProperties);
 
             // Act
             await sut.Handle(message);

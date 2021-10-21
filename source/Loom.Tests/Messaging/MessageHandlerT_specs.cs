@@ -1,15 +1,15 @@
-﻿namespace Loom.Messaging
-{
-    using System;
-    using System.Linq.Expressions;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using FluentAssertions;
-    using Loom.Testing;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using Moq;
-    using Moq.Protected;
+﻿using System;
+using System.Linq.Expressions;
+using System.Threading;
+using System.Threading.Tasks;
+using FluentAssertions;
+using Loom.Testing;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
+using Moq.Protected;
 
+namespace Loom.Messaging
+{
     [TestClass]
     public class MessageHandlerT_specs
     {
@@ -26,7 +26,7 @@
             Expression arg = ItExpr.Is<Message<MessageData2>>(x => ReferenceEquals(x.Data, data));
             Mock.Get(sut).Protected().Setup<bool>("CanHandle", arg).Returns(result).Verifiable();
 
-            bool actual = sut.CanHandle(new Message(id, data, tracingProperties));
+            bool actual = sut.CanHandle(Message.Create(id, data, tracingProperties));
 
             Mock.Get(sut).VerifyAll();
             actual.Should().Be(result);
@@ -39,7 +39,7 @@
             MessageData1 data,
             TracingProperties tracingProperties)
         {
-            bool actual = sut.CanHandle(new Message(id, data, tracingProperties));
+            bool actual = sut.CanHandle(Message.Create(id, data, tracingProperties));
             actual.Should().BeTrue();
         }
 
@@ -50,7 +50,7 @@
             MessageData2 data,
             TracingProperties tracingProperties)
         {
-            bool actual = sut.CanHandle(new Message(id, data, tracingProperties));
+            bool actual = sut.CanHandle(Message.Create(id, data, tracingProperties));
             actual.Should().BeFalse();
         }
 
@@ -65,7 +65,7 @@
             Expression arg = ItExpr.Is<Message<MessageData2>>(x => ReferenceEquals(x.Data, data));
             Mock.Get(sut).Protected().Setup<Task>("Handle", arg, CancellationToken.None).Returns(result).Verifiable();
 
-            Task actual = sut.Handle(new Message(id, data, tracingProperties));
+            Task actual = sut.Handle(Message.Create(id, data, tracingProperties));
 
             Mock.Get(sut).VerifyAll();
             actual.Should().BeSameAs(result);
@@ -78,7 +78,7 @@
             MessageData2 data,
             TracingProperties tracingProperties)
         {
-            await sut.Handle(new Message(id, data, tracingProperties));
+            await sut.Handle(Message.Create(id, data, tracingProperties));
 
             object[] args = new object[]
             {
