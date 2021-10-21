@@ -32,7 +32,7 @@ namespace Loom.EventSourcing.InMemory
             foreach (object payload in events)
             {
                 object data = PackEvent(streamId, version, payload);
-                var message = new Message($"{Guid.NewGuid()}", data, tracingProperties);
+                var message = Message.Create($"{Guid.NewGuid()}", data, tracingProperties);
 
                 stream.Add(version, message);
 

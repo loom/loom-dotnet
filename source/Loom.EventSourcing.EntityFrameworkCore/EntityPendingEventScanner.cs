@@ -57,7 +57,7 @@
             string operationId = $"{Guid.NewGuid()}";
             string contributor = typeof(EntityPendingEventScanner).FullName;
             var tracingProperties = new TracingProperties(operationId, contributor, parentId: default);
-            return new Message(commandId, command, tracingProperties);
+            return Message.Create(commandId, command, tracingProperties);
         }
 
         private Task Send(Message message, string partitionKey)

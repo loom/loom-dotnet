@@ -40,7 +40,7 @@ namespace Loom.EventSourcing.Azure
             TracingProperties tracingProperties,
             IMessageBus eventBus)
         {
-            var message = new Message(id: commandId, data: command, tracingProperties);
+            var message = Message.Create(id: commandId, data: command, tracingProperties);
             TableFlushEventsCommandExecutor sut = GenerateSut(eventBus);
 
             bool actual = sut.CanHandle(message);
@@ -55,7 +55,7 @@ namespace Loom.EventSourcing.Azure
             TracingProperties tracingProperties,
             IMessageBus eventBus)
         {
-            var message = new Message(id, data, tracingProperties);
+            var message = Message.Create(id, data, tracingProperties);
             TableFlushEventsCommandExecutor sut = GenerateSut(eventBus);
 
             bool actual = sut.CanHandle(message);
@@ -79,7 +79,7 @@ namespace Loom.EventSourcing.Azure
 
             TableFlushEventsCommandExecutor sut = GenerateSut(eventBus);
             var command = new FlushEvents(TypeResolver.TryResolveTypeName<State1>(), streamId);
-            var message = new Message(id: commandId, data: command, tracingProperties);
+            var message = Message.Create(id: commandId, data: command, tracingProperties);
 
             // Act
             await sut.Handle(message);
@@ -104,7 +104,7 @@ namespace Loom.EventSourcing.Azure
 
             TableFlushEventsCommandExecutor sut = GenerateSut(eventBus);
             var command = new FlushEvents(TypeResolver.TryResolveTypeName<State1>(), streamId);
-            var message = new Message(id: commandId, data: command, tracingProperties);
+            var message = Message.Create(id: commandId, data: command, tracingProperties);
 
             // Act
             await sut.Handle(message);

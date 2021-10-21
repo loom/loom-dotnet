@@ -61,7 +61,7 @@
                 entity.Contributor,
                 entity.ParentId);
 
-            return new Message(id: entity.MessageId, data, tracingProperties);
+            return Message.Create(id: entity.MessageId, data, tracingProperties);
         }
 
         public static void Deconstruct<TKey, TValue>(

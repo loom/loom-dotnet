@@ -1,15 +1,15 @@
-﻿namespace Loom.Messaging.Azure
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading.Tasks;
-    using AutoFixture;
-    using FluentAssertions;
-    using Loom.Testing;
-    using Microsoft.Azure.EventHubs;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using AutoFixture;
+using FluentAssertions;
+using Loom.Testing;
+using Microsoft.Azure.EventHubs;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+namespace Loom.Messaging.Azure
+{
     [TestClass]
     public class EventHubMessageBus_specs
     {
@@ -106,7 +106,7 @@
             string partitionKey)
         {
             var sut = new EventHubMessageBus(EventHub, converter);
-            var message = new Message(id, data, tracingProperties);
+            var message = Message.Create(id, data, tracingProperties);
 
             await sut.Send(new[] { message }, partitionKey);
 
@@ -139,7 +139,7 @@
                 .Range(0, count)
                 .Select(_ => new string(generator.First(), 1000))
                 .Select(value => new MessageData1(1, value))
-                .Select(data => new Message($"{Guid.NewGuid()}", data, tracingProperties: default))
+                .Select(data => Message.Create($"{Guid.NewGuid()}", data, tracingProperties: default))
                 .ToArray();
 
             await sut.Send(messages, partitionKey);

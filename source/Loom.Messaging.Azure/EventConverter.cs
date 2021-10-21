@@ -51,9 +51,9 @@ namespace Loom.Messaging.Azure
             {
                 Type dataType => GetData(eventData, dataType) switch
                 {
-                    object data => new Message(GetId(eventData),
-                                               data,
-                                               GetTracingProperties(eventData)),
+                    object data => Message.Create(GetId(eventData),
+                                                  data,
+                                                  GetTracingProperties(eventData)),
                     _ => null,
                 },
                 _ => null,

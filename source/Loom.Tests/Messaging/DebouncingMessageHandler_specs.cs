@@ -1,13 +1,13 @@
-﻿namespace Loom.Messaging
-{
-    using System;
-    using System.Linq.Expressions;
-    using System.Threading.Tasks;
-    using FluentAssertions;
-    using Loom.Testing;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using Moq;
+﻿using System;
+using System.Linq.Expressions;
+using System.Threading.Tasks;
+using FluentAssertions;
+using Loom.Testing;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 
+namespace Loom.Messaging
+{
     [TestClass]
     public class DebouncingMessageHandler_specs
     {
@@ -54,7 +54,7 @@
         {
             await debouncer.Register(debouncable);
             var sut = new DebouncingMessageHandler(debouncer, handler);
-            var message = new Message(id, debouncable, tracingProperties);
+            var message = Message.Create(id, debouncable, tracingProperties);
 
             await sut.Handle(message);
 
@@ -70,7 +70,7 @@
             IMessageHandler handler)
         {
             var sut = new DebouncingMessageHandler(debouncer, handler);
-            var message = new Message(id, debouncable, tracingProperties);
+            var message = Message.Create(id, debouncable, tracingProperties);
 
             await sut.Handle(message);
 

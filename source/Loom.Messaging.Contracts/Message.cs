@@ -1,9 +1,12 @@
-﻿namespace Loom.Messaging
+﻿using System;
+
+namespace Loom.Messaging
 {
     // TODO: Change to positional record.
     public sealed class Message
     {
         // Change the signature to (string id, string processId, string initiator, string? predecessorId).
+        [Obsolete("Use Create factory method instead.")]
         public Message(string id, object data, TracingProperties tracingProperties)
         {
             Id = id;
@@ -29,5 +32,13 @@
             operationId: ProcessId,
             contributor: Initiator,
             parentId: PredecessorId);
+
+        public static Message Create(
+            string id,
+            object data,
+            TracingProperties tracingProperties)
+        {
+            return new Message(id, data, tracingProperties);
+        }
     }
 }

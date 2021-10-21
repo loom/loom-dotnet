@@ -22,7 +22,7 @@ namespace Loom.Messaging.Azure
             TracingProperties tracingProperties)
         {
             EventProcessor sut = new EventProcessorBuilder(converter, spy).Build();
-            var message = new Message(id, data, tracingProperties);
+            var message = Message.Create(id, data, tracingProperties);
             EventData eventData = converter.ConvertToEvent(message);
 
             await sut.Process(new[] { eventData });
