@@ -1,10 +1,10 @@
-﻿namespace Loom.EventSourcing
-{
-    using System;
-    using FluentAssertions;
-    using Loom.Testing;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System;
+using FluentAssertions;
+using Loom.Testing;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+namespace Loom.EventSourcing
+{
     [TestClass]
     public class StreamCommand_specs
     {

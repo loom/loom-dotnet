@@ -1,12 +1,12 @@
-﻿namespace Loom.EventSourcing
-{
-    using System;
-    using System.Threading.Tasks;
-    using FluentAssertions;
-    using Loom.Testing;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using Moq;
+﻿using System;
+using System.Threading.Tasks;
+using FluentAssertions;
+using Loom.Testing;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 
+namespace Loom.EventSourcing
+{
     [TestClass]
     public class StateRehydratorExtensions_specs
     {

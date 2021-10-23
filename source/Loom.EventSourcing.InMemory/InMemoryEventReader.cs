@@ -1,11 +1,11 @@
-﻿namespace Loom.EventSourcing.InMemory
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using Loom.Messaging;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using Loom.Messaging;
 
+namespace Loom.EventSourcing.InMemory
+{
     public class InMemoryEventReader<T> : IEventReader<T>
     {
         private readonly InMemoryEventSourcingEngine<T> _engine;

@@ -1,12 +1,12 @@
-﻿namespace Loom.EventSourcing.Azure
-{
-    using System;
-    using System.IO;
-    using System.Text;
-    using System.Threading.Tasks;
-    using Loom.Json;
-    using Microsoft.Azure.Storage.Blob;
+﻿using System;
+using System.IO;
+using System.Text;
+using System.Threading.Tasks;
+using Loom.Json;
+using Microsoft.Azure.Storage.Blob;
 
+namespace Loom.EventSourcing.Azure
+{
     public class BlobSnapshotter<T> : ISnapshotter
         where T : class
     {

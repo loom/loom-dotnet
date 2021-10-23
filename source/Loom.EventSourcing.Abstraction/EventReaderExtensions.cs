@@ -1,9 +1,9 @@
-﻿namespace Loom.EventSourcing
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Threading.Tasks;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
+namespace Loom.EventSourcing
+{
     public static class EventReaderExtensions
     {
         public static Task<IEnumerable<object>> QueryEvents(
