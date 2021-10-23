@@ -1,9 +1,9 @@
-﻿namespace Loom.EventSourcing.Azure
-{
-    using System;
-    using System.Linq;
-    using Microsoft.Azure.Cosmos.Table;
+﻿using System;
+using System.Linq;
+using Microsoft.Azure.Cosmos.Table;
 
+namespace Loom.EventSourcing.Azure
+{
     internal static class QueryBuilder
     {
         public static IQueryable<QueueTicket> BuildQueueTicketsQuery(this CloudTable table)

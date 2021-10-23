@@ -1,10 +1,10 @@
-﻿namespace Loom.EventSourcing.EntityFrameworkCore
-{
-    using System;
-    using System.Linq;
-    using System.Threading.Tasks;
-    using Loom.Messaging;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Loom.Messaging;
 
+namespace Loom.EventSourcing.EntityFrameworkCore
+{
     public sealed class EntityPendingEventScanner : IPendingEventScanner
     {
         private readonly Func<EventStoreContext> _contextFactory;

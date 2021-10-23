@@ -1,8 +1,8 @@
-﻿namespace Loom.EventSourcing
-{
-    using System;
-    using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 
+namespace Loom.EventSourcing
+{
     internal class DelegatingSnapshotReader<T> : ISnapshotReader<T>
         where T : class
     {

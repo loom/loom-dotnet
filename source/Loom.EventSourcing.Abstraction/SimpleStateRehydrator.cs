@@ -1,10 +1,10 @@
-﻿namespace Loom.EventSourcing
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading.Tasks;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
+namespace Loom.EventSourcing
+{
     public class SimpleStateRehydrator<T> : IStateRehydrator<T>
         where T : class
     {

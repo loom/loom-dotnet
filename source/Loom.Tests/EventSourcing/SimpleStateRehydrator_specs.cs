@@ -1,14 +1,14 @@
-﻿namespace Loom.EventSourcing
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading.Tasks;
-    using AutoFixture;
-    using FluentAssertions;
-    using Loom.Testing;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using AutoFixture;
+using FluentAssertions;
+using Loom.Testing;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+namespace Loom.EventSourcing
+{
     [TestClass]
     public class SimpleStateRehydrator_specs
     {

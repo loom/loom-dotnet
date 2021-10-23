@@ -1,7 +1,7 @@
-﻿namespace Loom.EventSourcing
-{
-    using System;
+﻿using System;
 
+namespace Loom.EventSourcing
+{
     public sealed class FlushEvents
     {
         public FlushEvents(string stateType, Guid streamId)

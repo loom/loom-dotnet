@@ -1,16 +1,16 @@
-﻿namespace Loom.EventSourcing
-{
-    using System;
-    using System.Collections.Generic;
-    using System.ComponentModel.DataAnnotations;
-    using System.Linq;
-    using System.Threading.Tasks;
-    using AutoFixture;
-    using AutoFixture.Kernel;
-    using FluentAssertions;
-    using Loom.Testing;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Threading.Tasks;
+using AutoFixture;
+using AutoFixture.Kernel;
+using FluentAssertions;
+using Loom.Testing;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+namespace Loom.EventSourcing
+{
     [TestClass]
     public class SnapshottedStateRehydrator_specs
     {

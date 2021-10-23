@@ -1,11 +1,11 @@
-﻿namespace Loom.EventSourcing
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using Loom.Messaging;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using Loom.Messaging;
 
+namespace Loom.EventSourcing
+{
     internal class DelegatingEventReader : IEventReader
     {
         private readonly Func<Guid, long, Task<IEnumerable<object>>> _function;

@@ -1,14 +1,14 @@
-﻿namespace Loom.EventSourcing.Azure
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using Loom.Json;
-    using Loom.Messaging;
-    using Microsoft.Azure.Cosmos.Table;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Loom.Json;
+using Loom.Messaging;
+using Microsoft.Azure.Cosmos.Table;
 
+namespace Loom.EventSourcing.Azure
+{
     internal sealed class EventPublisher
     {
         private readonly CloudTable _table;

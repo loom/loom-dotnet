@@ -1,15 +1,15 @@
-﻿namespace Loom.EventSourcing.Azure
-{
-    using System;
-    using System.Threading.Tasks;
-    using AutoFixture;
-    using FluentAssertions;
-    using Loom.Json;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using Moq;
-    using Newtonsoft.Json;
-    using static StorageEmulator;
+﻿using System;
+using System.Threading.Tasks;
+using AutoFixture;
+using FluentAssertions;
+using Loom.Json;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
+using Newtonsoft.Json;
+using static Loom.EventSourcing.Azure.StorageEmulator;
 
+namespace Loom.EventSourcing.Azure
+{
     [TestClass]
     public class BlobSnapshotReader_specs
     {
