@@ -21,9 +21,9 @@ namespace Loom.EventSourcing.Azure
                            string eventType,
                            string payload,
                            string messageId,
-                           string operationId,
-                           string? contributor,
-                           string? parentId,
+                           string processId,
+                           string? initiator,
+                           string? predecessorId,
                            Guid transaction)
             : base(partitionKey: $"{stateType}:{streamId}", rowKey: FormatVersion(version))
         {
@@ -34,9 +34,9 @@ namespace Loom.EventSourcing.Azure
             EventType = eventType;
             Payload = payload;
             MessageId = messageId;
-            OperationId = operationId;
-            Contributor = contributor;
-            ParentId = parentId;
+            ProcessId = processId;
+            Initiator = initiator;
+            PredecessorId = predecessorId;
             Transaction = transaction;
         }
 
@@ -54,16 +54,13 @@ namespace Loom.EventSourcing.Azure
 
         public string MessageId { get; set; }
 
-        public string OperationId { get; set; }
+        public string ProcessId { get; set; }
 
-        public string? Contributor { get; set; }
+        public string? Initiator { get; set; }
 
-        public string? ParentId { get; set; }
+        public string? PredecessorId { get; set; }
 
         public Guid Transaction { get; set; }
-
-        [IgnoreProperty]
-        public TracingProperties TracingProperties => new(OperationId, Contributor, ParentId);
 
         public static string FormatVersion(long version) => $"{version:D19}";
 
@@ -100,7 +97,12 @@ namespace Loom.EventSourcing.Azure
                 DeserializePayload(jsonProcessor, type),
             });
 
-            return Message.Create(id: MessageId, data, TracingProperties);
+            return new Message(
+                MessageId,
+                ProcessId,
+                Initiator,
+                PredecessorId,
+                data);
         }
     }
 }

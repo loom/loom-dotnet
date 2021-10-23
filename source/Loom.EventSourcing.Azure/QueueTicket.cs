@@ -1,8 +1,8 @@
-﻿namespace Loom.EventSourcing.Azure
-{
-    using System;
-    using Microsoft.Azure.Cosmos.Table;
+﻿using System;
+using Microsoft.Azure.Cosmos.Table;
 
+namespace Loom.EventSourcing.Azure
+{
     internal class QueueTicket : TableEntity
     {
 #pragma warning disable CS8618 // Properties will be set by Azure Table SDK.
