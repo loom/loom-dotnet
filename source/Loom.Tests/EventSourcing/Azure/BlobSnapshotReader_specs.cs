@@ -7,7 +7,6 @@ using Loom.Testing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Newtonsoft.Json;
-using static Loom.EventSourcing.Azure.StorageEmulator;
 
 namespace Loom.EventSourcing.Azure
 {
@@ -39,7 +38,8 @@ namespace Loom.EventSourcing.Azure
                 .Should().Implement<ISnapshotReader<State>>();
         }
 
-        private BlobSnapshotReader<State> GenerateSut() => new(SnapshotContainer, JsonProcessor);
+        private BlobSnapshotReader<State> GenerateSut() =>
+            new(StorageEmulator.SnapshotContainer, JsonProcessor);
 
         [TestMethod, AutoData]
         public async Task TryRestoreSnapshot_returns_null_if_snapshot_not_exists(string streamId)
@@ -64,7 +64,7 @@ namespace Loom.EventSourcing.Azure
                 .ReturnsAsync(state);
 
             var snapshotter = new BlobSnapshotter<State>(
-                rehydrator, JsonProcessor, SnapshotContainer);
+                rehydrator, JsonProcessor, StorageEmulator.SnapshotContainer);
             await snapshotter.TakeSnapshot(streamId);
 
             // Act

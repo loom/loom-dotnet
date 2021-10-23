@@ -1,9 +1,9 @@
-﻿namespace Loom.EventSourcing.Azure
-{
-    using System.Threading.Tasks;
-    using Microsoft.Azure.Cosmos.Table;
-    using Microsoft.Azure.Storage.Blob;
+﻿using System.Threading.Tasks;
+using Azure.Storage.Blobs;
+using Microsoft.Azure.Cosmos.Table;
 
+namespace Loom.EventSourcing.Azure
+{
     public static class StorageEmulator
     {
         public static string EventStoreName => "UnitTestingEventStore";
@@ -15,11 +15,8 @@
 
         public static string SnapshotContainerName => "unit-testing-snapshot-store";
 
-        public static CloudBlobContainer SnapshotContainer { get; } =
-            Microsoft.Azure.Storage.CloudStorageAccount
-                .DevelopmentStorageAccount
-                .CreateCloudBlobClient()
-                .GetContainerReference(SnapshotContainerName);
+        public static BlobContainerClient SnapshotContainer { get; } =
+            new("UseDevelopmentStorage=true", SnapshotContainerName);
 
         public static async Task Initialize()
         {

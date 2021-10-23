@@ -1,18 +1,19 @@
-﻿using System.IO;
-using System.Text;
+﻿using System.Text;
 using System.Threading.Tasks;
+using Azure;
+using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 using Loom.Json;
-using Microsoft.Azure.Storage.Blob;
 
 namespace Loom.EventSourcing.Azure
 {
     public class BlobSnapshotReader<T> : ISnapshotReader<T>
         where T : class
     {
-        private readonly CloudBlobContainer _container;
+        private readonly BlobContainerClient _container;
         private readonly IJsonProcessor _jsonProcessor;
 
-        public BlobSnapshotReader(CloudBlobContainer container,
+        public BlobSnapshotReader(BlobContainerClient container,
                                   IJsonProcessor jsonProcessor)
         {
             _container = container;
@@ -21,23 +22,31 @@ namespace Loom.EventSourcing.Azure
 
         public async Task<T?> TryRestoreSnapshot(string streamId)
         {
-            CloudBlockBlob blob = GetBlobReference(streamId);
+            BlobClient blob = GetBlob(streamId);
             return await blob.ExistsAsync().ConfigureAwait(continueOnCapturedContext: false)
                  ? await RestoreSnapshot(blob).ConfigureAwait(continueOnCapturedContext: false)
                  : default;
         }
 
-        private CloudBlockBlob GetBlobReference(string streamId)
+        private BlobClient GetBlob(string streamId)
         {
-            return _container.GetBlockBlobReference($"{streamId}.json");
+            return _container.GetBlobClient(blobName: $"{streamId}.json");
         }
 
-        private async Task<T> RestoreSnapshot(CloudBlockBlob blob)
+        private async Task<T> RestoreSnapshot(BlobClient blob)
         {
-            using var stream = new MemoryStream();
-            await blob.DownloadToStreamAsync(stream).ConfigureAwait(continueOnCapturedContext: false);
-            string content = Encoding.UTF8.GetString(stream.ToArray());
+            byte[] bytes = await GetBytes(blob).ConfigureAwait(continueOnCapturedContext: false);
+            string content = Encoding.UTF8.GetString(bytes);
             return (T)_jsonProcessor.FromJson(content, dataType: typeof(T));
+        }
+
+        private static async Task<byte[]> GetBytes(BlobClient blob)
+        {
+            Response<BlobDownloadResult> response = await blob
+                .DownloadContentAsync()
+                .ConfigureAwait(continueOnCapturedContext: false);
+
+            return response.Value.Content.ToArray();
         }
     }
 }
