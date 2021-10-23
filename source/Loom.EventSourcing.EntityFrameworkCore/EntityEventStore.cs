@@ -59,22 +59,6 @@ namespace Loom.EventSourcing.EntityFrameworkCore
                                   events.ToImmutableArray());
         }
 
-        [Obsolete("Use metadata decapsulated overload instead.")]
-        public Task CollectEvents(string streamId,
-                                  long startVersion,
-                                  IEnumerable<object> events,
-                                  TracingProperties tracingProperties = default)
-        {
-            return SaveAndPublish(stateType: _typeResolver.TryResolveTypeName<T>(),
-                                  processId: tracingProperties.OperationId,
-                                  initiator: tracingProperties.Contributor,
-                                  predecessorId: tracingProperties.ParentId,
-                                  transaction: Guid.NewGuid(),
-                                  streamId,
-                                  startVersion,
-                                  events.ToImmutableArray());
-        }
-
         private async Task SaveAndPublish(string stateType,
                                           string processId,
                                           string initiator,

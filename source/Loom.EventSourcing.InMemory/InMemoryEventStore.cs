@@ -49,22 +49,6 @@ namespace Loom.EventSourcing.InMemory
             return _eventBus.Send(messages, partitionKey: $"{streamId}");
         }
 
-        [Obsolete("Use metadata decapsulated overload instead.")]
-        public Task CollectEvents(
-            string streamId,
-            long startVersion,
-            IEnumerable<object> events,
-            TracingProperties tracingProperties = default)
-        {
-            return CollectEvents(
-                tracingProperties.OperationId,
-                tracingProperties.Contributor,
-                tracingProperties.ParentId,
-                streamId,
-                startVersion,
-                events);
-        }
-
         public Task<IEnumerable<object>> QueryEvents(
             string streamId,
             long fromVersion)
