@@ -11,7 +11,9 @@ using Microsoft.EntityFrameworkCore;
 namespace Loom.EventSourcing.EntityFrameworkCore
 {
     public class EntityEventStore<T> :
-        IEventStore<T>, IEventCollector, IEventReader
+        IEventStore<T>,
+        IEventCollector,
+        IEventReader
     {
         private readonly Func<EventStoreContext> _contextFactory;
         private readonly IUniquePropertyDetector _uniquePropertyDetector;
@@ -38,6 +40,20 @@ namespace Loom.EventSourcing.EntityFrameworkCore
                                 IMessageBus eventBus)
             : this(contextFactory, uniquePropertyDetector: default, typeResolver, jsonProcessor, eventBus)
         {
+        }
+
+        public Task CollectEvents(string processId,
+                                  string initiator,
+                                  string predecessorId,
+                                  Guid streamId,
+                                  long startVersion,
+                                  IEnumerable<object> events)
+        {
+            return CollectEvents(
+                streamId,
+                startVersion,
+                events,
+                new TracingProperties(processId, initiator, predecessorId));
         }
 
         public Task CollectEvents(Guid streamId,

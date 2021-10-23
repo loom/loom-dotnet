@@ -9,7 +9,10 @@ using Microsoft.Azure.Cosmos.Table;
 
 namespace Loom.EventSourcing.Azure
 {
-    public class TableEventStore<T> : IEventStore<T>, IEventCollector, IEventReader
+    public class TableEventStore<T> :
+        IEventStore<T>,
+        IEventCollector,
+        IEventReader
     {
         private readonly CloudTable _table;
         private readonly TypeResolver _typeResolver;
@@ -25,6 +28,20 @@ namespace Loom.EventSourcing.Azure
             _typeResolver = typeResolver;
             _jsonProcessor = jsonProcessor;
             _publisher = new EventPublisher(table, typeResolver, jsonProcessor, eventBus);
+        }
+
+        public Task CollectEvents(string processId,
+                                  string? initiator,
+                                  string? predecessorId,
+                                  Guid streamId,
+                                  long startVersion,
+                                  IEnumerable<object> events)
+        {
+            return CollectEvents(
+                streamId,
+                startVersion,
+                events,
+                new TracingProperties(processId, initiator, predecessorId));
         }
 
         public Task CollectEvents(Guid streamId,

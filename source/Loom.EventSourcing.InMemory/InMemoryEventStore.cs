@@ -1,12 +1,15 @@
-﻿namespace Loom.EventSourcing.InMemory
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using Loom.Messaging;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using Loom.Messaging;
 
-    public class InMemoryEventStore<T> : IEventStore<T>
+namespace Loom.EventSourcing.InMemory
+{
+    public class InMemoryEventStore<T> :
+        IEventStore<T>,
+        IEventCollector,
+        IEventReader
     {
         private readonly InMemoryEventSourcingEngine<T> _engine;
         private readonly IMessageBus _eventBus;
@@ -21,6 +24,20 @@
         public InMemoryEventStore(IMessageBus eventBus)
             : this(InMemoryEventSourcingEngine<T>.Default, eventBus)
         {
+        }
+
+        public Task CollectEvents(string processId,
+                                  string initiator,
+                                  string predecessorId,
+                                  Guid streamId,
+                                  long startVersion,
+                                  IEnumerable<object> events)
+        {
+            return CollectEvents(
+                streamId,
+                startVersion,
+                events,
+                new TracingProperties(processId, initiator, predecessorId));
         }
 
         public Task CollectEvents(
