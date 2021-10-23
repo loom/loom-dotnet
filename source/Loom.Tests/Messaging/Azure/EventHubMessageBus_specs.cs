@@ -160,7 +160,6 @@ namespace Loom.Messaging.Azure
                 opts.Excluding(m => m.ProcessId)
                     .Excluding(m => m.Initiator)
                     .Excluding(m => m.PredecessorId)
-                    .Excluding(m => m.TracingProperties)
                     .WithStrictOrdering());
         }
 

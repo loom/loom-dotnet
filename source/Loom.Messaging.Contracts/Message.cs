@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Loom.Messaging
+﻿namespace Loom.Messaging
 {
     // TODO: Change to positional record.
     public sealed class Message
@@ -29,12 +27,5 @@ namespace Loom.Messaging
         public string? PredecessorId { get; }
 
         public object Data { get; }
-
-        // TODO: Remove the property.
-        [Obsolete("Use metadata properties directly instead.")]
-        public TracingProperties TracingProperties => new(
-            operationId: ProcessId,
-            contributor: Initiator,
-            parentId: PredecessorId);
     }
 }
