@@ -47,14 +47,16 @@ namespace Loom.Messaging
         [TestMethod, AutoData]
         public async Task given_data_is_debouncable_and_alive_then_Handle_relays(
             string id,
+            string processId,
+            string initiator,
+            string predecessorId,
             IDebouncable debouncable,
-            TracingProperties tracingProperties,
             Debouncer debouncer,
             IMessageHandler handler)
         {
             await debouncer.Register(debouncable);
             var sut = new DebouncingMessageHandler(debouncer, handler);
-            var message = Message.Create(id, debouncable, tracingProperties);
+            Message message = new(id, processId, initiator, predecessorId, data: debouncable);
 
             await sut.Handle(message);
 
@@ -64,13 +66,15 @@ namespace Loom.Messaging
         [TestMethod, AutoData]
         public async Task given_data_is_debouncable_and_expired_then_Handle_relays(
             string id,
+            string processId,
+            string initiator,
+            string predecessorId,
             IDebouncable debouncable,
-            TracingProperties tracingProperties,
             Debouncer debouncer,
             IMessageHandler handler)
         {
             var sut = new DebouncingMessageHandler(debouncer, handler);
-            var message = Message.Create(id, debouncable, tracingProperties);
+            Message message = new(id, processId, initiator, predecessorId, data: debouncable);
 
             await sut.Handle(message);
 

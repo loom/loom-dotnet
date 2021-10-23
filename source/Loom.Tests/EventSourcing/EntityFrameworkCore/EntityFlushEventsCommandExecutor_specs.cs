@@ -50,11 +50,13 @@ namespace Loom.EventSourcing.EntityFrameworkCore
         [TestMethod, AutoData]
         public void sut_accepts_FlushEntityFrameworkEvents_command_message(
             string commandId,
+            string processId,
+            string initiator,
+            string predecessorId,
             FlushEvents command,
-            TracingProperties tracingProperties,
             IMessageBus eventBus)
         {
-            var message = Message.Create(id: commandId, data: command, tracingProperties);
+            Message message = new(commandId, processId, initiator, predecessorId, data: command);
             EntityFlushEventsCommandExecutor sut = GenerateSut(eventBus);
 
             bool actual = sut.Accepts(message);
@@ -64,16 +66,11 @@ namespace Loom.EventSourcing.EntityFrameworkCore
 
         [TestMethod, AutoData]
         public void sut_does_not_accept_non_FlushTableEvents_command_message(
-            string id,
-            object data,
-            TracingProperties tracingProperties,
+            Message message,
             IMessageBus eventBus)
         {
-            var message = Message.Create(id, data, tracingProperties);
             EntityFlushEventsCommandExecutor sut = GenerateSut(eventBus);
-
             bool actual = sut.Accepts(message);
-
             actual.Should().BeFalse();
         }
 
@@ -83,7 +80,9 @@ namespace Loom.EventSourcing.EntityFrameworkCore
             long startVersion,
             Event1[] events,
             string commandId,
-            TracingProperties tracingProperties,
+            string processId,
+            string initiator,
+            string predecessorId,
             MessageBusDouble eventBus)
         {
             // Arrange
@@ -93,7 +92,7 @@ namespace Loom.EventSourcing.EntityFrameworkCore
 
             EntityFlushEventsCommandExecutor sut = GenerateSut(eventBus);
             var command = new FlushEvents(TypeResolver.TryResolveTypeName<State1>(), streamId);
-            var message = Message.Create(id: commandId, data: command, tracingProperties);
+            Message message = new(commandId, processId, initiator, predecessorId, data: command);
 
             // Act
             await sut.Handle(message);
@@ -108,7 +107,9 @@ namespace Loom.EventSourcing.EntityFrameworkCore
             long startVersion,
             Event1[] events,
             string commandId,
-            TracingProperties tracingProperties,
+            string processId,
+            string initiator,
+            string predecessorId,
             MessageBusDouble eventBus)
         {
             // Arrange
@@ -118,7 +119,7 @@ namespace Loom.EventSourcing.EntityFrameworkCore
 
             EntityFlushEventsCommandExecutor sut = GenerateSut(eventBus);
             var command = new FlushEvents(TypeResolver.TryResolveTypeName<State1>(), streamId);
-            var message = Message.Create(id: commandId, data: command, tracingProperties);
+            Message message = new(commandId, processId, initiator, predecessorId, data: command);
 
             // Act
             await sut.Handle(message);

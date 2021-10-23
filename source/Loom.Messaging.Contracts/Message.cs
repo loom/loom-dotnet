@@ -36,19 +36,5 @@ namespace Loom.Messaging
             operationId: ProcessId,
             contributor: Initiator,
             parentId: PredecessorId);
-
-        [Obsolete("Use the public constructor instead")]
-        public static Message Create(
-            string id,
-            object data,
-            TracingProperties tracingProperties)
-        {
-            return new Message(
-                id,
-                processId: tracingProperties.OperationId,
-                initiator: tracingProperties.Contributor,
-                predecessorId: tracingProperties.ParentId,
-                data);
-        }
     }
 }
