@@ -56,7 +56,7 @@ namespace Loom.Messaging
         {
             await debouncer.Register(debouncable);
             var sut = new DebouncingMessageHandler(debouncer, handler);
-            Message message = new(id, processId, initiator, predecessorId, data: debouncable);
+            Message message = new(id, processId, initiator, predecessorId, Data: debouncable);
 
             await sut.Handle(message);
 
@@ -74,7 +74,7 @@ namespace Loom.Messaging
             IMessageHandler handler)
         {
             var sut = new DebouncingMessageHandler(debouncer, handler);
-            Message message = new(id, processId, initiator, predecessorId, data: debouncable);
+            Message message = new(id, processId, initiator, predecessorId, Data: debouncable);
 
             await sut.Handle(message);
 

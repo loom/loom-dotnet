@@ -95,10 +95,10 @@ namespace Loom.EventSourcing.EntityFrameworkCore
             await action.Should().NotThrowAsync();
 
             IEnumerable<object> actual1 = await store1.QueryEvents(streamId, fromVersion: 1);
-            actual1.Should().BeEquivalentTo(evt1);
+            actual1.Should().BeEquivalentTo(new[] { evt1 });
 
             IEnumerable<object> actual2 = await store2.QueryEvents(streamId, fromVersion: 1);
-            actual2.Should().BeEquivalentTo(evt2);
+            actual2.Should().BeEquivalentTo(new[] { evt2 });
         }
 
         public class UniquePropertyDetector : IUniquePropertyDetector

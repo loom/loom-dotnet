@@ -54,7 +54,7 @@ namespace Loom.EventSourcing.EntityFrameworkCore
             string commandId = $"{Guid.NewGuid()}";
             string processId = $"{Guid.NewGuid()}";
             string initiator = typeof(EntityPendingEventScanner).FullName;
-            return new(commandId, processId, initiator, predecessorId: default, command);
+            return new(commandId, processId, initiator, PredecessorId: default, command);
         }
 
         private Task Send(Message message, string partitionKey)

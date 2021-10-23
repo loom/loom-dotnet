@@ -56,7 +56,7 @@ namespace Loom.EventSourcing.EntityFrameworkCore
             FlushEvents command,
             IMessageBus eventBus)
         {
-            Message message = new(commandId, processId, initiator, predecessorId, data: command);
+            Message message = new(commandId, processId, initiator, predecessorId, Data: command);
             EntityFlushEventsCommandExecutor sut = GenerateSut(eventBus);
 
             bool actual = sut.Accepts(message);
@@ -92,7 +92,7 @@ namespace Loom.EventSourcing.EntityFrameworkCore
 
             EntityFlushEventsCommandExecutor sut = GenerateSut(eventBus);
             var command = new FlushEvents(TypeResolver.TryResolveTypeName<State1>(), streamId);
-            Message message = new(commandId, processId, initiator, predecessorId, data: command);
+            Message message = new(commandId, processId, initiator, predecessorId, Data: command);
 
             // Act
             await sut.Handle(message);
@@ -119,7 +119,7 @@ namespace Loom.EventSourcing.EntityFrameworkCore
 
             EntityFlushEventsCommandExecutor sut = GenerateSut(eventBus);
             var command = new FlushEvents(TypeResolver.TryResolveTypeName<State1>(), streamId);
-            Message message = new(commandId, processId, initiator, predecessorId, data: command);
+            Message message = new(commandId, processId, initiator, predecessorId, Data: command);
 
             // Act
             await sut.Handle(message);

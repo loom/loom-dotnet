@@ -42,7 +42,7 @@ namespace Loom.EventSourcing.Azure
             FlushEvents command,
             IMessageBus eventBus)
         {
-            Message message = new(commandId, processId, initiator, predecessorId, data: command);
+            Message message = new(commandId, processId, initiator, predecessorId, Data: command);
             TableFlushEventsCommandExecutor sut = GenerateSut(eventBus);
 
             bool actual = sut.Accepts(message);
@@ -78,7 +78,7 @@ namespace Loom.EventSourcing.Azure
 
             TableFlushEventsCommandExecutor sut = GenerateSut(eventBus);
             var command = new FlushEvents(TypeResolver.TryResolveTypeName<State1>(), streamId);
-            Message message = new(commandId, processId, initiator, predecessorId, data: command);
+            Message message = new(commandId, processId, initiator, predecessorId, Data: command);
 
             // Act
             await sut.Handle(message);
@@ -105,7 +105,7 @@ namespace Loom.EventSourcing.Azure
 
             TableFlushEventsCommandExecutor sut = GenerateSut(eventBus);
             var command = new FlushEvents(TypeResolver.TryResolveTypeName<State1>(), streamId);
-            Message message = new(commandId, processId, initiator, predecessorId, data: command);
+            Message message = new(commandId, processId, initiator, predecessorId, Data: command);
 
             // Act
             await sut.Handle(message);

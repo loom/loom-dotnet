@@ -146,7 +146,7 @@ namespace Loom.Messaging.Azure
                 .Range(0, count)
                 .Select(_ => new string(generator.First(), 1000))
                 .Select(value => new MessageData1(1, value))
-                .Select(data => new Message(id: $"{Guid.NewGuid()}", processId, initiator, predecessorId, data))
+                .Select(data => new Message(Id: $"{Guid.NewGuid()}", processId, initiator, predecessorId, data))
                 .ToArray();
 
             await sut.Send(messages, partitionKey);
