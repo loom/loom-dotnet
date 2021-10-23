@@ -1,10 +1,9 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace Loom.EventSourcing
 {
     public interface ISnapshotter
     {
-        Task TakeSnapshot(Guid streamId);
+        Task TakeSnapshot(string streamId);
     }
 }

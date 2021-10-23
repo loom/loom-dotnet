@@ -9,7 +9,7 @@ namespace Loom.EventSourcing.InMemory
 {
     public class InMemoryEventSourcingEngine<T>
     {
-        private readonly ConcurrentDictionary<Guid, Dictionary<long, Message>> _store = new();
+        private readonly ConcurrentDictionary<string, Dictionary<long, Message>> _store = new();
 
         public static InMemoryEventSourcingEngine<T> Default { get; } = new InMemoryEventSourcingEngine<T>();
 
@@ -17,7 +17,7 @@ namespace Loom.EventSourcing.InMemory
             string processId,
             string initiator,
             string predecessorId,
-            Guid streamId,
+            string streamId,
             long startVersion,
             IEnumerable<object> events)
         {
@@ -46,7 +46,7 @@ namespace Loom.EventSourcing.InMemory
             return messages;
         }
 
-        private static object PackEvent(Guid streamId, long version, object payload)
+        private static object PackEvent(string streamId, long version, object payload)
         {
             object[] arguments = new[] { streamId, version, DateTime.UtcNow, payload };
 
@@ -56,7 +56,7 @@ namespace Loom.EventSourcing.InMemory
                 .Invoke(obj: default, arguments);
         }
 
-        internal IEnumerable<object> QueryEvents(Guid streamId, long fromVersion)
+        internal IEnumerable<object> QueryEvents(string streamId, long fromVersion)
         {
             if (_store.TryGetValue(streamId, out Dictionary<long, Message> stream))
             {
@@ -73,7 +73,7 @@ namespace Loom.EventSourcing.InMemory
             return Enumerable.Empty<object>();
         }
 
-        internal IEnumerable<Message> QueryEventMessages(Guid streamId)
+        internal IEnumerable<Message> QueryEventMessages(string streamId)
         {
             if (_store.TryGetValue(streamId, out Dictionary<long, Message> stream))
             {
@@ -87,7 +87,7 @@ namespace Loom.EventSourcing.InMemory
             return Enumerable.Empty<Message>();
         }
 
-        public IReadOnlyDictionary<Guid, IEnumerable<Message>> Snapshot()
+        public IReadOnlyDictionary<string, IEnumerable<Message>> Snapshot()
         {
             return _store.ToDictionary(t => t.Key, t => Serialize(t.Value));
         }

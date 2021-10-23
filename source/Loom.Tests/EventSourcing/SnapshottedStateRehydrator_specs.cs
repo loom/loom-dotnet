@@ -16,18 +16,18 @@ namespace Loom.EventSourcing
     {
         public class State : IVersioned
         {
-            public State(Guid id) => Id = id;
+            public State(string id) => Id = id;
 
-            public State(Guid id, long version, int value)
+            public State(string id, long version, int value)
                 => (Id, Version, Value) = (id, version, value);
 
-            public Guid Id { get; }
+            public string Id { get; }
 
             public long Version { get; }
 
             public int Value { get; }
 
-            public static State SeedFactory(Guid id) => new State(id);
+            public static State SeedFactory(string id) => new(id);
         }
 
         public class ValueAdded
@@ -57,7 +57,7 @@ namespace Loom.EventSourcing
 
         [TestMethod, AutoData]
         public async Task given_no_snapshot_and_no_event_then_TryRehydrateState_returns_null(
-            EventHandler handler, Guid streamId)
+            EventHandler handler, string streamId)
         {
             // Arrange
             ISnapshotReader<State> snapshotReader =
@@ -83,7 +83,7 @@ namespace Loom.EventSourcing
 
         [TestMethod, AutoData]
         public async Task given_no_snapshot_and_some_events_then_TryRehydrateState_restores_state_correctly(
-            Generator<ValueAdded> generator, Guid streamId, EventHandler handler)
+            Generator<ValueAdded> generator, string streamId, EventHandler handler)
         {
             // Arrange
             ISnapshotReader<State> snapshotReader =
@@ -119,9 +119,10 @@ namespace Loom.EventSourcing
             // Arrange
             var methodQuery = new GreedyConstructorQuery();
             builder.Customizations.Add(new MethodInvoker(methodQuery));
+            builder.Register(() => $"{Guid.NewGuid()}");
             State snapshot = builder.Create<State>();
 
-            Guid streamId = snapshot.Id;
+            string streamId = snapshot.Id;
 
             ISnapshotReader<State> snapshotReader =
                 new DelegatingSnapshotReader<State>(
@@ -153,9 +154,10 @@ namespace Loom.EventSourcing
             // Arrange
             var methodQuery = new GreedyConstructorQuery();
             builder.Customizations.Add(new MethodInvoker(methodQuery));
+            builder.Register(() => $"{Guid.NewGuid()}");
             State snapshot = builder.Create<State>();
 
-            Guid streamId = snapshot.Id;
+            string streamId = snapshot.Id;
 
             ISnapshotReader<State> snapshotReader =
                 new DelegatingSnapshotReader<State>(
@@ -188,7 +190,7 @@ namespace Loom.EventSourcing
 
         [TestMethod, AutoData]
         public async Task given_no_event_then_TryRehydrateStateAt_returns_null(
-            Guid streamId, long version, ISnapshotReader<State> snapshotReader, EventHandler handler)
+            string streamId, long version, ISnapshotReader<State> snapshotReader, EventHandler handler)
         {
             // Arrange
             IEventReader eventReader =
@@ -211,7 +213,7 @@ namespace Loom.EventSourcing
         [TestMethod, AutoDataRepeat(10)]
         public async Task given_some_events_then_TryRehydrateStateAt_with_existing_version_restores_state_correctly(
             Generator<ValueAdded> generator,
-            Guid streamId,
+            string streamId,
             [Range(1, 10)] long version,
             ISnapshotReader<State> snapshotReader,
             EventHandler handler)
@@ -242,7 +244,7 @@ namespace Loom.EventSourcing
         [TestMethod, AutoDataRepeat(10)]
         public async Task given_some_events_then_TryRehydrateStateAt_with_nonexistent_version_throws_exception(
             Generator<ValueAdded> generator,
-            Guid streamId,
+            string streamId,
             [Range(11, 20)] long version,
             ISnapshotReader<State> snapshotReader,
             EventHandler handler)

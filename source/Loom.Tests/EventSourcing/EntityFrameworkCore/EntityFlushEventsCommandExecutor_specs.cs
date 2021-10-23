@@ -31,10 +31,8 @@ namespace Loom.EventSourcing.EntityFrameworkCore
             await Connection.OpenAsync();
             DbContextOptions options = new DbContextOptionsBuilder().UseSqlite(Connection).Options;
             ContextFactory = () => new EventStoreContext(options);
-            using (EventStoreContext db = ContextFactory.Invoke())
-            {
-                await db.Database.EnsureCreatedAsync();
-            }
+            using EventStoreContext db = ContextFactory.Invoke();
+            await db.Database.EnsureCreatedAsync();
         }
 
         [TestMethod]
@@ -44,11 +42,10 @@ namespace Loom.EventSourcing.EntityFrameworkCore
         }
 
         private EntityFlushEventsCommandExecutor GenerateSut(IMessageBus eventBus) =>
-            new EntityFlushEventsCommandExecutor(
-                ContextFactory, TypeResolver, JsonProcessor, eventBus);
+            new(ContextFactory, TypeResolver, JsonProcessor, eventBus);
 
         private EntityEventStore<T> GenerateEventStore<T>(IMessageBus eventBus) =>
-            new EntityEventStore<T>(ContextFactory, TypeResolver, JsonProcessor, eventBus);
+            new(ContextFactory, TypeResolver, JsonProcessor, eventBus);
 
         [TestMethod, AutoData]
         public void sut_accepts_FlushEntityFrameworkEvents_command_message(
@@ -82,7 +79,7 @@ namespace Loom.EventSourcing.EntityFrameworkCore
 
         [TestMethod, AutoData]
         public async Task Handle_publishes_all_pending_events(
-            Guid streamId,
+            string streamId,
             long startVersion,
             Event1[] events,
             string commandId,
@@ -107,7 +104,7 @@ namespace Loom.EventSourcing.EntityFrameworkCore
 
         [TestMethod, AutoData]
         public async Task Handle_is_idempotent(
-            Guid streamId,
+            string streamId,
             long startVersion,
             Event1[] events,
             string commandId,

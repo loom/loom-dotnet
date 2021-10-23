@@ -29,7 +29,7 @@ namespace Loom.EventSourcing.InMemory
         public Task CollectEvents(string processId,
                                   string initiator,
                                   string predecessorId,
-                                  Guid streamId,
+                                  string streamId,
                                   long startVersion,
                                   IEnumerable<object> events)
         {
@@ -51,7 +51,7 @@ namespace Loom.EventSourcing.InMemory
 
         [Obsolete("Use metadata decapsulated overload instead.")]
         public Task CollectEvents(
-            Guid streamId,
+            string streamId,
             long startVersion,
             IEnumerable<object> events,
             TracingProperties tracingProperties = default)
@@ -66,14 +66,14 @@ namespace Loom.EventSourcing.InMemory
         }
 
         public Task<IEnumerable<object>> QueryEvents(
-            Guid streamId,
+            string streamId,
             long fromVersion)
         {
             return Task.FromResult(_engine.QueryEvents(streamId, fromVersion));
         }
 
         public Task<IEnumerable<Message>> QueryEventMessages(
-            Guid streamId,
+            string streamId,
             CancellationToken cancellationToken = default)
         {
             return Task.FromResult(_engine.QueryEventMessages(streamId));

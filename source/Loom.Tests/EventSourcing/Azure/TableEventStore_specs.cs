@@ -37,7 +37,7 @@ namespace Loom.EventSourcing.Azure
 
         [TestMethod, AutoData]
         public async Task sut_supports_multiple_state_types_having_same_stream_id(
-            IMessageBus eventBus, Guid streamId, Event1 evt1, Event2 evt2)
+            IMessageBus eventBus, string streamId, Event1 evt1, Event2 evt2)
         {
             // Arrange
             TableEventStore<State1> store1 = GenerateEventStore<State1>(eventBus);
@@ -64,7 +64,7 @@ namespace Loom.EventSourcing.Azure
 
         [TestMethod, AutoData]
         public async Task CollectEvents_does_not_fail_for_empty_event_list(
-            IMessageBus eventBus, Guid streamId)
+            IMessageBus eventBus, string streamId)
         {
             TableEventStore<State1> sut = GenerateEventStore(eventBus);
             Func<Task> action = () => sut.CollectEvents(streamId, startVersion: 1, Array.Empty<object>());
@@ -75,7 +75,7 @@ namespace Loom.EventSourcing.Azure
         public async Task CollectEvents_throws_if_cannot_resolve_state_type_name(
             TypeResolvingStrategy typeStrategy,
             IMessageBus eventBus,
-            Guid streamId,
+            string streamId,
             Event1 evt,
             long version)
         {
@@ -97,7 +97,7 @@ namespace Loom.EventSourcing.Azure
         public async Task QueryEvents_throws_if_cannot_resolve_state_type_name(
             TypeResolvingStrategy typeStrategy,
             IMessageBus eventBus,
-            Guid streamId,
+            string streamId,
             Event1 evt)
         {
             // Arrange

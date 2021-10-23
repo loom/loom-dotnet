@@ -10,7 +10,7 @@ namespace Loom.EventSourcing.EntityFrameworkCore
 
         public string StateType { get; private set; }
 
-        public Guid StreamId { get; private set; }
+        public string StreamId { get; private set; }
 
         public long Version { get; private set; }
 

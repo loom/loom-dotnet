@@ -8,11 +8,11 @@ namespace Loom.EventSourcing
     public class SimpleStateRehydrator<T> : IStateRehydrator<T>
         where T : class
     {
-        private readonly Func<Guid, T> _seedFactory;
+        private readonly Func<string, T> _seedFactory;
         private readonly IEventReader _eventReader;
         private readonly IEventHandler<T> _eventHandler;
 
-        public SimpleStateRehydrator(Func<Guid, T> seedFactory,
+        public SimpleStateRehydrator(Func<string, T> seedFactory,
                                      IEventReader eventReader,
                                      IEventHandler<T> eventHandler)
         {
@@ -21,7 +21,7 @@ namespace Loom.EventSourcing
             _eventHandler = eventHandler;
         }
 
-        public async Task<T?> TryRehydrateState(Guid streamId)
+        public async Task<T?> TryRehydrateState(string streamId)
         {
             return (await _eventReader.QueryEvents(streamId, fromVersion: 1).ConfigureAwait(continueOnCapturedContext: false)) switch
             {
@@ -30,7 +30,7 @@ namespace Loom.EventSourcing
             };
         }
 
-        public async Task<T?> TryRehydrateStateAt(Guid streamId, long version)
+        public async Task<T?> TryRehydrateStateAt(string streamId, long version)
         {
             return (await _eventReader.QueryEvents(streamId, fromVersion: 1).ConfigureAwait(continueOnCapturedContext: false)) switch
             {

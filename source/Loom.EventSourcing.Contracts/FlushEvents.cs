@@ -1,10 +1,8 @@
-﻿using System;
-
-namespace Loom.EventSourcing
+﻿namespace Loom.EventSourcing
 {
     public sealed class FlushEvents
     {
-        public FlushEvents(string stateType, Guid streamId)
+        public FlushEvents(string stateType, string streamId)
         {
             StateType = stateType;
             StreamId = streamId;
@@ -12,6 +10,6 @@ namespace Loom.EventSourcing
 
         public string StateType { get; }
 
-        public Guid StreamId { get; }
+        public string StreamId { get; }
     }
 }

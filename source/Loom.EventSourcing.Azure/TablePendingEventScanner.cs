@@ -40,7 +40,7 @@ namespace Loom.EventSourcing.Azure
 
         private Task ScanQueueTickets(IQueryable<QueueTicket> query)
         {
-            var marks = new HashSet<(string StateType, Guid StreamId)>();
+            var marks = new HashSet<(string StateType, string StreamId)>();
             return query.ForEach(async t =>
             {
                 if (DateTimeOffset.UtcNow - t.Timestamp >= _minimumPendingTime &&
@@ -52,7 +52,7 @@ namespace Loom.EventSourcing.Azure
             });
         }
 
-        private Task SendFlushCommand(string stateType, Guid streamId)
+        private Task SendFlushCommand(string stateType, string streamId)
         {
             Message message = Envelop(command: new FlushEvents(stateType, streamId));
             return Send(message, partitionKey: $"{streamId}");

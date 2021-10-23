@@ -27,7 +27,7 @@ namespace Loom.EventSourcing.EntityFrameworkCore
             _eventBus = eventBus;
         }
 
-        public async Task PublishEvents(string stateType, Guid streamId)
+        public async Task PublishEvents(string stateType, string streamId)
         {
             using EventStoreContext context = _contextFactory.Invoke();
             await FlushEvents(context, stateType, streamId).ConfigureAwait(continueOnCapturedContext: false);
@@ -35,7 +35,7 @@ namespace Loom.EventSourcing.EntityFrameworkCore
 
         private async Task FlushEvents(EventStoreContext context,
                                        string stateType,
-                                       Guid streamId)
+                                       string streamId)
         {
             IQueryable<PendingEvent> query = context.GetPendingEventsQuery(stateType, streamId);
             List<PendingEvent> pendingEvents = await query.ToListAsync().ConfigureAwait(continueOnCapturedContext: false);

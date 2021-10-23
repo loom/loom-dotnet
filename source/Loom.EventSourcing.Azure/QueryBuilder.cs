@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using Microsoft.Azure.Cosmos.Table;
 
 namespace Loom.EventSourcing.Azure
@@ -14,7 +13,7 @@ namespace Loom.EventSourcing.Azure
         }
 
         public static IQueryable<QueueTicket> BuildQueueTicketsQuery(
-            this CloudTable table, string stateType, Guid streamId)
+            this CloudTable table, string stateType, string streamId)
         {
             return from t in table.CreateQuery<QueueTicket>()
                    where t.PartitionKey == $"~{stateType}:{streamId}"
@@ -33,7 +32,7 @@ namespace Loom.EventSourcing.Azure
         }
 
         public static IQueryable<StreamEvent> BuildStreamEventQuery(
-            this CloudTable table, string stateType, Guid streamId, long fromVersion)
+            this CloudTable table, string stateType, string streamId, long fromVersion)
         {
             return from e in table.CreateQuery<StreamEvent>()
                    where e.PartitionKey == $"{stateType}:{streamId}"

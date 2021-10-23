@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Loom.Json;
@@ -25,7 +24,7 @@ namespace Loom.EventSourcing.Azure
             _container = container;
         }
 
-        public async Task TakeSnapshot(Guid streamId)
+        public async Task TakeSnapshot(string streamId)
         {
             T state = await _rehydrator.RehydrateState(streamId).ConfigureAwait(continueOnCapturedContext: false);
             CloudBlockBlob blob = GetBlobReference(streamId);
@@ -33,7 +32,7 @@ namespace Loom.EventSourcing.Azure
             await SetProperties(blob).ConfigureAwait(continueOnCapturedContext: false);
         }
 
-        private CloudBlockBlob GetBlobReference(Guid streamId)
+        private CloudBlockBlob GetBlobReference(string streamId)
         {
             return _container.GetBlockBlobReference($"{streamId}.json");
         }
@@ -41,10 +40,8 @@ namespace Loom.EventSourcing.Azure
         private async Task SetContent(CloudBlockBlob blob, T state)
         {
             string content = _jsonProcessor.ToJson(state);
-            using (var source = new MemoryStream(_encoding.GetBytes(content)))
-            {
-                await blob.UploadFromStreamAsync(source).ConfigureAwait(continueOnCapturedContext: false);
-            }
+            using var source = new MemoryStream(_encoding.GetBytes(content));
+            await blob.UploadFromStreamAsync(source).ConfigureAwait(continueOnCapturedContext: false);
         }
 
         private static Task SetProperties(CloudBlockBlob blob)

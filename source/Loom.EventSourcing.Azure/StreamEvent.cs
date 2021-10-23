@@ -19,7 +19,7 @@ namespace Loom.EventSourcing.Azure
                            string processId,
                            string? initiator,
                            string? predecessorId,
-                           Guid streamId,
+                           string streamId,
                            long version,
                            DateTime raisedTimeUtc,
                            string eventType,
@@ -42,7 +42,7 @@ namespace Loom.EventSourcing.Azure
 
         public string StateType { get; set; }
 
-        public Guid StreamId { get; set; }
+        public string StreamId { get; set; }
 
         public long Version { get; set; }
 
@@ -83,7 +83,7 @@ namespace Loom.EventSourcing.Azure
                 .MakeGenericType(type)
                 .GetConstructor(types: new[]
                 {
-                    typeof(Guid),
+                    typeof(string),
                     typeof(long),
                     typeof(DateTime),
                     type,

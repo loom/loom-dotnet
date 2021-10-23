@@ -12,7 +12,7 @@ namespace Loom.EventSourcing.EntityFrameworkCore
         public static IQueryable<PendingEvent> GetPendingEventsQuery(
             this EventStoreContext context,
             string stateType,
-            Guid streamId)
+            string streamId)
         {
             return from e in context.PendingEvents
                    where e.StateType == stateType && e.StreamId == streamId
@@ -42,7 +42,7 @@ namespace Loom.EventSourcing.EntityFrameworkCore
                 .GetTypeInfo()
                 .GetConstructor(new[]
                 {
-                    typeof(Guid),
+                    typeof(string),
                     typeof(long),
                     typeof(DateTime),
                     type,

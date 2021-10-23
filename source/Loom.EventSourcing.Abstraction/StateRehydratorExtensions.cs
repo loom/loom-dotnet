@@ -6,7 +6,7 @@ namespace Loom.EventSourcing
     public static class StateRehydratorExtensions
     {
         public static async Task<T> RehydrateState<T>(
-            this IStateRehydrator<T> rehydrator, Guid streamId)
+            this IStateRehydrator<T> rehydrator, string streamId)
             where T : class
         {
             if (rehydrator is null)

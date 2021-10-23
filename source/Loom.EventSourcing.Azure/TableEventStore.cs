@@ -33,7 +33,7 @@ namespace Loom.EventSourcing.Azure
         public Task CollectEvents(string processId,
                                   string? initiator,
                                   string? predecessorId,
-                                  Guid streamId,
+                                  string streamId,
                                   long startVersion,
                                   IEnumerable<object> events)
         {
@@ -48,7 +48,7 @@ namespace Loom.EventSourcing.Azure
         }
 
         [Obsolete("Use metadata decapsulated overload instead.")]
-        public Task CollectEvents(Guid streamId,
+        public Task CollectEvents(string streamId,
                                   long startVersion,
                                   IEnumerable<object> events,
                                   TracingProperties tracingProperties = default)
@@ -68,7 +68,7 @@ namespace Loom.EventSourcing.Azure
                                           string? initiator,
                                           string? predecessorId,
                                           Guid transaction,
-                                          Guid streamId,
+                                          string streamId,
                                           long startVersion,
                                           IReadOnlyList<object> events)
         {
@@ -117,7 +117,7 @@ namespace Loom.EventSourcing.Azure
             Task PublishPendingEvents() => _publisher.PublishEvents(stateType, streamId);
         }
 
-        public async Task<IEnumerable<object>> QueryEvents(Guid streamId, long fromVersion)
+        public async Task<IEnumerable<object>> QueryEvents(string streamId, long fromVersion)
         {
             CancellationToken cancellationToken = CancellationToken.None;
             IEnumerable<StreamEvent> source = await GetEntities(streamId, fromVersion, cancellationToken)
@@ -126,7 +126,7 @@ namespace Loom.EventSourcing.Azure
         }
 
         public async Task<IEnumerable<Message>> QueryEventMessages(
-            Guid streamId,
+            string streamId,
             CancellationToken cancellationToken = default)
         {
             long fromVersion = 1;
@@ -136,7 +136,7 @@ namespace Loom.EventSourcing.Azure
         }
 
         private Task<IEnumerable<StreamEvent>> GetEntities(
-            Guid streamId,
+            string streamId,
             long fromVersion,
             CancellationToken cancellationToken)
         {

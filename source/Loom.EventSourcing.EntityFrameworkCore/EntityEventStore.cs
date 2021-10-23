@@ -45,7 +45,7 @@ namespace Loom.EventSourcing.EntityFrameworkCore
         public Task CollectEvents(string processId,
                                   string initiator,
                                   string predecessorId,
-                                  Guid streamId,
+                                  string streamId,
                                   long startVersion,
                                   IEnumerable<object> events)
         {
@@ -60,7 +60,7 @@ namespace Loom.EventSourcing.EntityFrameworkCore
         }
 
         [Obsolete("Use metadata decapsulated overload instead.")]
-        public Task CollectEvents(Guid streamId,
+        public Task CollectEvents(string streamId,
                                   long startVersion,
                                   IEnumerable<object> events,
                                   TracingProperties tracingProperties = default)
@@ -80,7 +80,7 @@ namespace Loom.EventSourcing.EntityFrameworkCore
                                           string initiator,
                                           string predecessorId,
                                           Guid transaction,
-                                          Guid streamId,
+                                          string streamId,
                                           long startVersion,
                                           ImmutableArray<object> events)
         {
@@ -178,7 +178,7 @@ namespace Loom.EventSourcing.EntityFrameworkCore
         }
 
         public async Task<IEnumerable<object>> QueryEvents(
-            Guid streamId, long fromVersion)
+            string streamId, long fromVersion)
         {
             CancellationToken cancellationToken = CancellationToken.None;
             List<StreamEvent> source = await GetEntities(streamId, fromVersion, cancellationToken)
@@ -187,7 +187,7 @@ namespace Loom.EventSourcing.EntityFrameworkCore
         }
 
         public async Task<IEnumerable<Message>> QueryEventMessages(
-            Guid streamId,
+            string streamId,
             CancellationToken cancellationToken = default)
         {
             int fromVersion = 1;
@@ -197,7 +197,7 @@ namespace Loom.EventSourcing.EntityFrameworkCore
         }
 
         private async Task<List<StreamEvent>> GetEntities(
-            Guid streamId,
+            string streamId,
             long fromVersion,
             CancellationToken cancellationToken)
         {

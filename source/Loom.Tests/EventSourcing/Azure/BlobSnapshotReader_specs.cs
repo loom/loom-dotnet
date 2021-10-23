@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using AutoFixture;
 using FluentAssertions;
 using Loom.Json;
+using Loom.Testing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Newtonsoft.Json;
@@ -38,26 +39,21 @@ namespace Loom.EventSourcing.Azure
                 .Should().Implement<ISnapshotReader<State>>();
         }
 
-        private BlobSnapshotReader<State> GenerateSut() =>
-            new BlobSnapshotReader<State>(SnapshotContainer, JsonProcessor);
+        private BlobSnapshotReader<State> GenerateSut() => new(SnapshotContainer, JsonProcessor);
 
-        [TestMethod]
-        public async Task TryRestoreSnapshot_returns_null_if_snapshot_not_exists()
+        [TestMethod, AutoData]
+        public async Task TryRestoreSnapshot_returns_null_if_snapshot_not_exists(string streamId)
         {
             BlobSnapshotReader<State> sut = GenerateSut();
-            var streamId = Guid.NewGuid();
-
             State actual = await sut.TryRestoreSnapshot(streamId);
-
             actual.Should().BeNull();
         }
 
-        [TestMethod]
-        public async Task TryRestoreSnapshot_restores_snapshot_correctly_if_it_exists()
+        [TestMethod, AutoData]
+        public async Task TryRestoreSnapshot_restores_snapshot_correctly_if_it_exists(string streamId)
         {
             // Arrange
             BlobSnapshotReader<State> sut = GenerateSut();
-            var streamId = Guid.NewGuid();
 
             State state = new Fixture().Create<State>();
 

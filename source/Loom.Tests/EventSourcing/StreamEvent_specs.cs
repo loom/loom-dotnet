@@ -16,7 +16,7 @@ namespace Loom.EventSourcing
 
         [TestMethod, AutoData]
         public void factory_creates_instance_correctly(
-            Guid streamId,
+            string streamId,
             long version,
             DateTime raisedTimeUtc,
             Event1 payload)

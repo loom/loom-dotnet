@@ -12,7 +12,7 @@ namespace Loom.EventSourcing
     {
         [TestMethod, AutoData]
         public async Task RehydrateState_returns_state_correctly(
-            IStateRehydrator<State1> rehydrator, Guid streamId, State1 state)
+            IStateRehydrator<State1> rehydrator, string streamId, State1 state)
         {
             Mock.Get(rehydrator).Setup(x => x.TryRehydrateState(streamId)).ReturnsAsync(state);
             State1 actual = await rehydrator.RehydrateState(streamId);
@@ -21,7 +21,7 @@ namespace Loom.EventSourcing
 
         [TestMethod, AutoData]
         public async Task RehydrateState_fails_if_state_not_exists(
-            IStateRehydrator<State1> rehydrator, Guid streamId)
+            IStateRehydrator<State1> rehydrator, string streamId)
         {
             Mock.Get(rehydrator).Setup(x => x.TryRehydrateState(streamId)).ReturnsAsync(default(State1));
             Func<Task> action = () => rehydrator.RehydrateState(streamId);

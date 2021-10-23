@@ -4,7 +4,7 @@ namespace Loom.EventSourcing.EntityFrameworkCore
 {
     internal interface IEvent
     {
-        Guid StreamId { get; }
+        string StreamId { get; }
 
         long Version { get; }
 
