@@ -31,7 +31,8 @@ namespace Loom.Messaging
         public object Data { get; }
 
         // TODO: Remove the property.
-        public TracingProperties TracingProperties => new TracingProperties(
+        [Obsolete("Use metadata properties directly instead.")]
+        public TracingProperties TracingProperties => new(
             operationId: ProcessId,
             contributor: Initiator,
             parentId: PredecessorId);
