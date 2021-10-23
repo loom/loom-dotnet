@@ -1,11 +1,11 @@
-﻿namespace Loom.EventSourcing
-{
-    using System;
-    using System.Collections.Generic;
-    using FluentAssertions;
-    using Loom.Testing;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System;
+using System.Collections.Generic;
+using FluentAssertions;
+using Loom.Testing;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+namespace Loom.EventSourcing
+{
     [TestClass]
     public class EventProducerDelegate_specs
     {
@@ -72,9 +72,11 @@
 
             IEnumerable<object> actual = sut.ProduceEvents(state, command);
 
-            actual.Should().BeEquivalentTo(
+            actual.Should().BeEquivalentTo(new[]
+            {
                 new ValueChanged(state.Value - 1),
-                new ValueChanged(state.Value - 2));
+                new ValueChanged(state.Value - 2),
+            });
         }
     }
 }

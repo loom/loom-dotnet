@@ -268,7 +268,7 @@ namespace Loom.EventSourcing
                 new StreamEvent<Event1>(streamId, startVersion + 0, default, evt1),
                 new StreamEvent<Event2>(streamId, startVersion + 1, default, evt2),
             },
-            c => c.WithStrictOrdering().Excluding((IMemberInfo m) => m.SelectedMemberInfo.Name == "RaisedTimeUtc"));
+            c => c.WithStrictOrdering().Excluding((IMemberInfo m) => m.Name == "RaisedTimeUtc"));
             log[0].PartitionKey.Should().Be($"{streamId}");
 
             log[1].Messages.Select(x => x.Data).Should().BeEquivalentTo(new object[]
@@ -276,7 +276,7 @@ namespace Loom.EventSourcing
                 new StreamEvent<Event3>(streamId, startVersion + 2, default, evt3),
                 new StreamEvent<Event4>(streamId, startVersion + 3, default, evt4),
             },
-            c => c.WithStrictOrdering().Excluding((IMemberInfo m) => m.SelectedMemberInfo.Name == "RaisedTimeUtc"));
+            c => c.WithStrictOrdering().Excluding((IMemberInfo m) => m.Name == "RaisedTimeUtc"));
             log[1].PartitionKey.Should().Be($"{streamId}");
         }
 
@@ -307,7 +307,7 @@ namespace Loom.EventSourcing
                 new StreamEvent<Event1>(streamId, startVersion + 0, default, evt1),
                 new StreamEvent<Event2>(streamId, startVersion + 1, default, evt2),
             },
-            c => c.WithStrictOrdering().Excluding((IMemberInfo m) => m.SelectedMemberInfo.Name == "RaisedTimeUtc"));
+            c => c.WithStrictOrdering().Excluding((IMemberInfo m) => m.Name == "RaisedTimeUtc"));
             calls[0].PartitionKey.Should().Be($"{streamId}");
 
             calls[1].Messages.Select(x => x.Data).Should().BeEquivalentTo(new object[]
@@ -315,7 +315,7 @@ namespace Loom.EventSourcing
                 new StreamEvent<Event3>(streamId, startVersion + 2, default, evt3),
                 new StreamEvent<Event4>(streamId, startVersion + 3, default, evt4),
             },
-            c => c.WithStrictOrdering().Excluding((IMemberInfo m) => m.SelectedMemberInfo.Name == "RaisedTimeUtc"));
+            c => c.WithStrictOrdering().Excluding((IMemberInfo m) => m.Name == "RaisedTimeUtc"));
             calls[1].PartitionKey.Should().Be($"{streamId}");
         }
 
@@ -394,7 +394,7 @@ namespace Loom.EventSourcing
             Message message = spy.Calls.SelectMany(x => x.Messages).Single();
             DateTime actual = message.Data.As<StreamEvent<Event1>>().RaisedTimeUtc;
             actual.Kind.Should().Be(DateTimeKind.Utc);
-            actual.Should().BeCloseTo(nowUtc, precision: 1000);
+            actual.Should().BeCloseTo(nowUtc, precision: TimeSpan.FromSeconds(1));
         }
 
         [TestMethod, AutoData]
@@ -490,7 +490,7 @@ namespace Loom.EventSourcing
                                                   .Select(x => x.Data.RaisedTimeUtc))
             {
                 raisedTime.Kind.Should().Be(DateTimeKind.Utc);
-                raisedTime.Should().BeCloseTo(nowUtc, precision: 1000);
+                raisedTime.Should().BeCloseTo(nowUtc, precision: TimeSpan.FromSeconds(1));
             }
 
             actual.ElementAt(0).Data.Should().BeOfType<StreamEvent<Event1>>();

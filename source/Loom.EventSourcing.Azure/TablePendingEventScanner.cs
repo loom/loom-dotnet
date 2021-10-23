@@ -63,7 +63,7 @@ namespace Loom.EventSourcing.Azure
             string commandId = $"{Guid.NewGuid()}";
             string processId = $"{Guid.NewGuid()}";
             string? initiator = typeof(TablePendingEventScanner).FullName;
-            return new(commandId, processId, initiator, predecessorId: default, command);
+            return new(commandId, processId, initiator, PredecessorId: default, command);
         }
 
         private Task Send(Message message, string partitionKey)
