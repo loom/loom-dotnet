@@ -52,10 +52,9 @@ namespace Loom.EventSourcing.EntityFrameworkCore
         private static Message Envelop(FlushEvents command)
         {
             string commandId = $"{Guid.NewGuid()}";
-            string operationId = $"{Guid.NewGuid()}";
-            string contributor = typeof(EntityPendingEventScanner).FullName;
-            var tracingProperties = new TracingProperties(operationId, contributor, parentId: default);
-            return Message.Create(commandId, command, tracingProperties);
+            string processId = $"{Guid.NewGuid()}";
+            string initiator = typeof(EntityPendingEventScanner).FullName;
+            return new(commandId, processId, initiator, predecessorId: default, command);
         }
 
         private Task Send(Message message, string partitionKey)

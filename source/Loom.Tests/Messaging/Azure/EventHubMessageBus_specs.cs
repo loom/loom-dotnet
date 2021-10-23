@@ -101,12 +101,14 @@ namespace Loom.Messaging.Azure
         public async Task Send_sends_single_message_correctly(
             IEventConverter converter,
             string id,
+            string processId,
+            string initiator,
+            string predecessorId,
             MessageData1 data,
-            TracingProperties tracingProperties,
             string partitionKey)
         {
             var sut = new EventHubMessageBus(EventHub, converter);
-            var message = Message.Create(id, data, tracingProperties);
+            Message message = new(id, processId, initiator, predecessorId, data);
 
             await sut.Send(new[] { message }, partitionKey);
 
@@ -131,7 +133,12 @@ namespace Loom.Messaging.Azure
 
         [TestMethod, AutoData]
         public async Task Send_sends_massive_messages_correctly(
-            IEventConverter converter, Generator<char> generator, string partitionKey)
+            IEventConverter converter,
+            Generator<char> generator,
+            string processId,
+            string initiator,
+            string predecessorId,
+            string partitionKey)
         {
             var sut = new EventHubMessageBus(EventHub, converter);
             int count = 10000;
@@ -139,7 +146,7 @@ namespace Loom.Messaging.Azure
                 .Range(0, count)
                 .Select(_ => new string(generator.First(), 1000))
                 .Select(value => new MessageData1(1, value))
-                .Select(data => Message.Create($"{Guid.NewGuid()}", data, tracingProperties: default))
+                .Select(data => new Message(id: $"{Guid.NewGuid()}", processId, initiator, predecessorId, data))
                 .ToArray();
 
             await sut.Send(messages, partitionKey);
@@ -147,7 +154,14 @@ namespace Loom.Messaging.Azure
             EventData[] events = await ReceiveEvents(maxCountPerPartition: count);
             events.Should().HaveCount(count);
             IEnumerable<Message> actual = events.Select(converter.TryConvertToMessage).ToArray();
-            actual.Should().BeEquivalentTo(messages, c => c.Excluding(m => m.TracingProperties).WithStrictOrdering());
+            actual.Should().BeEquivalentTo(
+                messages,
+                opts =>
+                opts.Excluding(m => m.ProcessId)
+                    .Excluding(m => m.Initiator)
+                    .Excluding(m => m.PredecessorId)
+                    .Excluding(m => m.TracingProperties)
+                    .WithStrictOrdering());
         }
 
         [TestMethod, AutoData]

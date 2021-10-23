@@ -18,11 +18,13 @@ namespace Loom.Messaging.Azure
             IEventConverter converter,
             LoggingMessageHandler spy,
             string id,
-            MessageData1 data,
-            TracingProperties tracingProperties)
+            string processId,
+            string initiator,
+            string predecessorId,
+            MessageData1 data)
         {
             EventProcessor sut = new EventProcessorBuilder(converter, spy).Build();
-            var message = Message.Create(id, data, tracingProperties);
+            Message message = new(id, processId, initiator, predecessorId, data);
             EventData eventData = converter.ConvertToEvent(message);
 
             await sut.Process(new[] { eventData });
