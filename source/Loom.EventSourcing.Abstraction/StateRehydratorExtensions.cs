@@ -5,6 +5,7 @@ namespace Loom.EventSourcing
 {
     public static class StateRehydratorExtensions
     {
+        // TODO: Add a parameter of CancellationToken.
         public static async Task<T> RehydrateState<T>(
             this IStateRehydrator<T> rehydrator, string streamId)
             where T : class

@@ -5,6 +5,7 @@ namespace Loom.EventSourcing
 {
     public interface IEventCollector
     {
+        // TODO: Add a parameter of CancellationToken.
         Task CollectEvents(string processId,
                            string? initiator,
                            string? predecessorId,
