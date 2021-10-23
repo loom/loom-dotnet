@@ -11,14 +11,14 @@
         public SequentialCompositeMessageHandler(params IMessageHandler[] handlers)
             => _handlers = handlers.ToList().AsReadOnly();
 
-        public bool CanHandle(Message message)
-            => _handlers.Any(x => x.CanHandle(message));
+        public bool Accepts(Message message)
+            => _handlers.Any(x => x.Accepts(message));
 
         public async Task Handle(Message message)
         {
             foreach (IMessageHandler handler in _handlers)
             {
-                if (handler.CanHandle(message))
+                if (handler.Accepts(message))
                 {
                     await handler.Handle(message).ConfigureAwait(continueOnCapturedContext: false);
                 }

@@ -34,7 +34,7 @@ namespace Loom.EventSourcing.Azure
             => new(Table, TypeResolver, JsonProcessor, eventBus);
 
         [TestMethod, AutoData]
-        public void CanHandle_returns_true_for_FlushTableEvents_command_message(
+        public void sut_accepts_FlushTableEvents_command_message(
             string commandId,
             FlushEvents command,
             TracingProperties tracingProperties,
@@ -43,13 +43,13 @@ namespace Loom.EventSourcing.Azure
             var message = Message.Create(id: commandId, data: command, tracingProperties);
             TableFlushEventsCommandExecutor sut = GenerateSut(eventBus);
 
-            bool actual = sut.CanHandle(message);
+            bool actual = sut.Accepts(message);
 
             actual.Should().BeTrue();
         }
 
         [TestMethod, AutoData]
-        public void CanHandle_returns_false_for_non_FlushTableEvents_command_message(
+        public void sut_does_not_accept_non_FlushTableEvents_command_message(
             string id,
             object data,
             TracingProperties tracingProperties,
@@ -58,7 +58,7 @@ namespace Loom.EventSourcing.Azure
             var message = Message.Create(id, data, tracingProperties);
             TableFlushEventsCommandExecutor sut = GenerateSut(eventBus);
 
-            bool actual = sut.CanHandle(message);
+            bool actual = sut.Accepts(message);
 
             actual.Should().BeFalse();
         }

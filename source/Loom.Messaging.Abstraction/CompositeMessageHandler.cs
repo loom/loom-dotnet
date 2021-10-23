@@ -11,10 +11,10 @@
         public CompositeMessageHandler(params IMessageHandler[] handlers)
             => _handlers = handlers.ToList().AsReadOnly();
 
-        public bool CanHandle(Message message)
-            => _handlers.Any(x => x.CanHandle(message));
+        public bool Accepts(Message message)
+            => _handlers.Any(x => x.Accepts(message));
 
         public Task Handle(Message message)
-            => Task.WhenAll(_handlers.Where(x => x.CanHandle(message)).Select(x => x.Handle(message)));
+            => Task.WhenAll(_handlers.Where(x => x.Accepts(message)).Select(x => x.Handle(message)));
     }
 }

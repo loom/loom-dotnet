@@ -51,7 +51,7 @@ namespace Loom.EventSourcing.EntityFrameworkCore
             new EntityEventStore<T>(ContextFactory, TypeResolver, JsonProcessor, eventBus);
 
         [TestMethod, AutoData]
-        public void CanHandle_returns_true_for_FlushEntityFrameworkEvents_command_message(
+        public void sut_accepts_FlushEntityFrameworkEvents_command_message(
             string commandId,
             FlushEvents command,
             TracingProperties tracingProperties,
@@ -60,13 +60,13 @@ namespace Loom.EventSourcing.EntityFrameworkCore
             var message = Message.Create(id: commandId, data: command, tracingProperties);
             EntityFlushEventsCommandExecutor sut = GenerateSut(eventBus);
 
-            bool actual = sut.CanHandle(message);
+            bool actual = sut.Accepts(message);
 
             actual.Should().BeTrue();
         }
 
         [TestMethod, AutoData]
-        public void CanHandle_returns_false_for_non_FlushTableEvents_command_message(
+        public void sut_does_not_accept_non_FlushTableEvents_command_message(
             string id,
             object data,
             TracingProperties tracingProperties,
@@ -75,7 +75,7 @@ namespace Loom.EventSourcing.EntityFrameworkCore
             var message = Message.Create(id, data, tracingProperties);
             EntityFlushEventsCommandExecutor sut = GenerateSut(eventBus);
 
-            bool actual = sut.CanHandle(message);
+            bool actual = sut.Accepts(message);
 
             actual.Should().BeFalse();
         }

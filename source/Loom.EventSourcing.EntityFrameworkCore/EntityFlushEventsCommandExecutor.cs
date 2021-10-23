@@ -18,7 +18,7 @@
             _publisher = new EventPublisher(contextFactory, typeResolver, jsonProcessor, eventBus);
         }
 
-        public bool CanHandle(Message message)
+        public bool Accepts(Message message)
             => message?.Data is FlushEvents;
 
         public Task Handle(Message message)

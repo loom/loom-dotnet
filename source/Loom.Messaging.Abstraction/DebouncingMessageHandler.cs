@@ -15,7 +15,7 @@
             _handler = handler;
         }
 
-        public bool CanHandle(Message message) => _handler.CanHandle(message);
+        public bool Accepts(Message message) => _handler.Accepts(message);
 
         public Task Handle(Message message)
         {

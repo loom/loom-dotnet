@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -16,7 +15,7 @@ namespace Loom.Messaging
         [TestMethod]
         [InlineAutoData(true)]
         [InlineAutoData(false)]
-        public void CanHandle_invokes_protected_method_when_T_is_assignable_from_data(
+        public void Accepts_invokes_protected_method_when_T_is_assignable_from_data(
             bool result,
             MessageHandler<MessageData2> sut,
             string id,
@@ -24,33 +23,33 @@ namespace Loom.Messaging
             TracingProperties tracingProperties)
         {
             Expression arg = ItExpr.Is<Message<MessageData2>>(x => ReferenceEquals(x.Data, data));
-            Mock.Get(sut).Protected().Setup<bool>("CanHandle", arg).Returns(result).Verifiable();
+            Mock.Get(sut).Protected().Setup<bool>("Accepts", arg).Returns(result).Verifiable();
 
-            bool actual = sut.CanHandle(Message.Create(id, data, tracingProperties));
+            bool actual = sut.Accepts(Message.Create(id, data, tracingProperties));
 
             Mock.Get(sut).VerifyAll();
             actual.Should().Be(result);
         }
 
         [TestMethod, AutoData]
-        public void protected_CanHandle_returns_true(
+        public void protected_Accepts_returns_true(
             MessageHandler<MessageData1> sut,
             string id,
             MessageData1 data,
             TracingProperties tracingProperties)
         {
-            bool actual = sut.CanHandle(Message.Create(id, data, tracingProperties));
+            bool actual = sut.Accepts(Message.Create(id, data, tracingProperties));
             actual.Should().BeTrue();
         }
 
         [TestMethod, AutoData]
-        public void CanHandle_returns_false_when_T_is_not_assignable_from_data(
+        public void Accepts_returns_false_when_T_is_not_assignable_from_data(
             MessageHandler<MessageData3> sut,
             string id,
             MessageData2 data,
             TracingProperties tracingProperties)
         {
-            bool actual = sut.CanHandle(Message.Create(id, data, tracingProperties));
+            bool actual = sut.Accepts(Message.Create(id, data, tracingProperties));
             actual.Should().BeFalse();
         }
 
