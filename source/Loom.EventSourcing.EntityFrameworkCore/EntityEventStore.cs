@@ -49,32 +49,40 @@ namespace Loom.EventSourcing.EntityFrameworkCore
                                   long startVersion,
                                   IEnumerable<object> events)
         {
-            return CollectEvents(
-                streamId,
-                startVersion,
-                events,
-                new TracingProperties(processId, initiator, predecessorId));
+            return SaveAndPublish(stateType: _typeResolver.TryResolveTypeName<T>(),
+                                  processId,
+                                  initiator,
+                                  predecessorId,
+                                  transaction: Guid.NewGuid(),
+                                  streamId,
+                                  startVersion,
+                                  events.ToImmutableArray());
         }
 
+        [Obsolete("Use metadata decapsulated overload instead.")]
         public Task CollectEvents(Guid streamId,
                                   long startVersion,
                                   IEnumerable<object> events,
                                   TracingProperties tracingProperties = default)
         {
             return SaveAndPublish(stateType: _typeResolver.TryResolveTypeName<T>(),
+                                  processId: tracingProperties.OperationId,
+                                  initiator: tracingProperties.Contributor,
+                                  predecessorId: tracingProperties.ParentId,
                                   transaction: Guid.NewGuid(),
                                   streamId,
                                   startVersion,
-                                  events.ToImmutableArray(),
-                                  tracingProperties);
+                                  events.ToImmutableArray());
         }
 
         private async Task SaveAndPublish(string stateType,
+                                          string processId,
+                                          string initiator,
+                                          string predecessorId,
                                           Guid transaction,
                                           Guid streamId,
                                           long startVersion,
-                                          ImmutableArray<object> events,
-                                          TracingProperties tracingProperties = default)
+                                          ImmutableArray<object> events)
         {
             await SaveEvents().ConfigureAwait(continueOnCapturedContext: false);
             await PublishPendingEvents().ConfigureAwait(continueOnCapturedContext: false);
@@ -95,9 +103,9 @@ namespace Loom.EventSourcing.EntityFrameworkCore
                         eventType: ResolveName(source),
                         payload: _jsonProcessor.ToJson(source),
                         messageId: $"{Guid.NewGuid()}",
-                        tracingProperties.OperationId,
-                        tracingProperties.Contributor,
-                        tracingProperties.ParentId,
+                        processId,
+                        initiator,
+                        predecessorId,
                         transaction);
 
                     context.Add(streamEvent);
