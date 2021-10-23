@@ -1,11 +1,12 @@
 ﻿using System;
-using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Azure;
+using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 using FluentAssertions;
 using Loom.Json;
 using Loom.Testing;
-using Microsoft.Azure.Storage.Blob;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Newtonsoft.Json;
@@ -31,25 +32,20 @@ namespace Loom.EventSourcing.Azure
             public Guid Value3 { get; }
         }
 
-        private static async Task<string> DownloadContent(ICloudBlob blob)
-        {
-            var stream = new MemoryStream();
-            await blob.DownloadToStreamAsync(stream);
-            stream.Seek(offset: 0, SeekOrigin.Begin);
-            using var reader = new StreamReader(stream, Encoding.UTF8);
-            return await reader.ReadToEndAsync();
-        }
-
         private static BlobSnapshotter<State> GenerateSut(IStateRehydrator<State> rehydrator) => new(
             rehydrator,
             jsonProcessor: new JsonProcessor(new JsonSerializer()),
             container: StorageEmulator.SnapshotContainer);
 
-        private static Task<ICloudBlob> GetBlob(string streamId)
+        private static BlobClient GetBlob(string streamId)
         {
-            CloudBlobContainer container = StorageEmulator.SnapshotContainer;
             string blobName = $"{streamId}.json";
-            return container.GetBlobReferenceFromServerAsync(blobName);
+            return StorageEmulator.SnapshotContainer.GetBlobClient(blobName);
+        }
+
+        private static T GetContent<T>(BlobClient blob)
+        {
+            return blob.DownloadContent().Value.Content.ToObjectFromJson<T>();
         }
 
         [TestMethod]
@@ -91,11 +87,7 @@ namespace Loom.EventSourcing.Azure
             await sut.TakeSnapshot(streamId);
 
             // Assert
-            ICloudBlob blob = await GetBlob(streamId);
-
-            string content = await DownloadContent(blob);
-            State snapshot = JsonConvert.DeserializeObject<State>(content);
-
+            State snapshot = GetContent<State>(blob: GetBlob(streamId));
             snapshot.Should().BeEquivalentTo(state);
         }
 
@@ -114,9 +106,10 @@ namespace Loom.EventSourcing.Azure
             await sut.TakeSnapshot(streamId);
 
             // Assert
-            ICloudBlob blob = await GetBlob(streamId);
-            blob.Properties.ContentType.Should().Be("application/json");
-            blob.Properties.ContentEncoding.Should().BeEquivalentTo("UTF-8");
+            BlobClient blob = GetBlob(streamId);
+            Response<BlobProperties> properties = blob.GetProperties();
+            properties.Value.ContentType.Should().Be("application/json");
+            properties.Value.ContentEncoding.Should().BeEquivalentTo("UTF-8");
         }
 
         [TestMethod, AutoData]
@@ -140,11 +133,7 @@ namespace Loom.EventSourcing.Azure
             await sut.TakeSnapshot(streamId);
 
             // Assert
-            ICloudBlob blob = await GetBlob(streamId);
-
-            string content = await DownloadContent(blob);
-            State snapshot = JsonConvert.DeserializeObject<State>(content);
-
+            State snapshot = GetContent<State>(blob: GetBlob(streamId));
             snapshot.Should().BeEquivalentTo(newState);
         }
 
@@ -161,18 +150,20 @@ namespace Loom.EventSourcing.Azure
 
             await sut.TakeSnapshot(streamId);
 
-            ICloudBlob blob = await GetBlob(streamId);
-            blob.Properties.ContentType = "application/text";
-            blob.Properties.ContentEncoding = Encoding.ASCII.WebName;
-            await blob.SetPropertiesAsync();
+            GetBlob(streamId).SetHttpHeaders(new BlobHttpHeaders
+            {
+                ContentType = "application/text",
+                ContentEncoding = Encoding.ASCII.WebName,
+            });
 
             // Act
             await sut.TakeSnapshot(streamId);
 
             // Assert
-            ICloudBlob actual = await GetBlob(streamId);
-            actual.Properties.ContentType.Should().Be("application/json");
-            actual.Properties.ContentEncoding.Should().BeEquivalentTo("UTF-8");
+            BlobClient blob = GetBlob(streamId);
+            Response<BlobProperties> properties = blob.GetProperties();
+            properties.Value.ContentType.Should().Be("application/json");
+            properties.Value.ContentEncoding.Should().BeEquivalentTo("UTF-8");
         }
     }
 }
