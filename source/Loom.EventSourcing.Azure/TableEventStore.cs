@@ -37,32 +37,40 @@ namespace Loom.EventSourcing.Azure
                                   long startVersion,
                                   IEnumerable<object> events)
         {
-            return CollectEvents(
-                streamId,
-                startVersion,
-                events,
-                new TracingProperties(processId, initiator, predecessorId));
+            return SaveAndPublish(stateType: ResolveName(typeof(T)),
+                                  processId,
+                                  initiator,
+                                  predecessorId,
+                                  transaction: Guid.NewGuid(),
+                                  streamId,
+                                  startVersion,
+                                  events.ToList().AsReadOnly());
         }
 
+        [Obsolete("Use metadata decapsulated overload instead.")]
         public Task CollectEvents(Guid streamId,
                                   long startVersion,
                                   IEnumerable<object> events,
                                   TracingProperties tracingProperties = default)
         {
             return SaveAndPublish(stateType: ResolveName(typeof(T)),
+                                  processId: tracingProperties.OperationId,
+                                  initiator: tracingProperties.Contributor,
+                                  predecessorId: tracingProperties.ParentId,
                                   transaction: Guid.NewGuid(),
                                   streamId,
                                   startVersion,
-                                  events.ToList().AsReadOnly(),
-                                  tracingProperties);
+                                  events.ToList().AsReadOnly());
         }
 
         private async Task SaveAndPublish(string stateType,
+                                          string processId,
+                                          string? initiator,
+                                          string? predecessorId,
                                           Guid transaction,
                                           Guid streamId,
                                           long startVersion,
-                                          IReadOnlyList<object> events,
-                                          TracingProperties tracingProperties)
+                                          IReadOnlyList<object> events)
         {
             if (events.Count == 0)
             {
@@ -95,9 +103,9 @@ namespace Loom.EventSourcing.Azure
                         eventType: ResolveName(source.GetType()),
                         payload: _jsonProcessor.ToJson(source),
                         messageId: $"{Guid.NewGuid()}",
-                        tracingProperties.OperationId,
-                        tracingProperties.Contributor,
-                        tracingProperties.ParentId,
+                        processId,
+                        initiator,
+                        predecessorId,
                         transaction);
 
                     batch.Insert(streamEvent);
