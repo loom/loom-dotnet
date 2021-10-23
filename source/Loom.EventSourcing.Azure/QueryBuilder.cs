@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Microsoft.Azure.Cosmos.Table;
 
 namespace Loom.EventSourcing.Azure
@@ -8,7 +9,7 @@ namespace Loom.EventSourcing.Azure
         public static IQueryable<QueueTicket> BuildQueueTicketsQuery(this CloudTable table)
         {
             return from t in table.CreateQuery<QueueTicket>()
-                   where t.PartitionKey.CompareTo("~") >= 0
+                   where Compare(t.PartitionKey, "~") >= 0
                    select t;
         }
 
@@ -25,8 +26,8 @@ namespace Loom.EventSourcing.Azure
         {
             return from e in table.CreateQuery<StreamEvent>()
                    where e.PartitionKey == $"{queueTicket.StateType}:{queueTicket.StreamId}"
-                   where e.RowKey.CompareTo($"{queueTicket.StartVersion:D19}") >= 0
-                   where e.RowKey.CompareTo($"{queueTicket.StartVersion + queueTicket.EventCount:D19}") < 0
+                   where Compare(e.RowKey, $"{queueTicket.StartVersion:D19}") >= 0
+                   where Compare(e.RowKey, $"{queueTicket.StartVersion + queueTicket.EventCount:D19}") < 0
                    where e.Transaction == queueTicket.Transaction
                    select e;
         }
@@ -36,8 +37,10 @@ namespace Loom.EventSourcing.Azure
         {
             return from e in table.CreateQuery<StreamEvent>()
                    where e.PartitionKey == $"{stateType}:{streamId}"
-                   where e.RowKey.CompareTo(StreamEvent.FormatVersion(fromVersion)) >= 0
+                   where Compare(e.RowKey, StreamEvent.FormatVersion(fromVersion)) >= 0
                    select e;
         }
+
+        private static int Compare(string a, string b) => string.Compare(a, b, StringComparison.Ordinal);
     }
 }
