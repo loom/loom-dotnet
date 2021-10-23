@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 
 namespace Loom.Messaging
 {
@@ -11,18 +10,8 @@ namespace Loom.Messaging
 
         private static IReadOnlyList<Type> GetAllTypes()
         {
-            AppDomain appDomain = AppDomain.CurrentDomain;
-
-            // TODO: Remove the code to bypass the damn error after it fixed.
-            // https://github.com/microsoft/vstest/issues/2008
-            string filter = "Microsoft.VisualStudio.TraceDataCollector";
-            IEnumerable<Assembly> assemblies =
-                from assembly in appDomain.GetAssemblies()
-                where assembly.FullName.StartsWith(filter, StringComparison.Ordinal) == false
-                select assembly;
-
             IEnumerable<Type> query =
-                from assembly in assemblies
+                from assembly in AppDomain.CurrentDomain.GetAssemblies()
                 from type in assembly.GetTypes()
                 select type;
 
