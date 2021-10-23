@@ -1,7 +1,7 @@
-﻿namespace Loom.EventSourcing.EntityFrameworkCore
-{
-    using System;
+﻿using System;
 
+namespace Loom.EventSourcing.EntityFrameworkCore
+{
     internal interface IEvent
     {
         Guid StreamId { get; }
@@ -16,10 +16,10 @@
 
         string MessageId { get; }
 
-        string OperationId { get; }
+        string ProcessId { get; }
 
-        string Contributor { get; }
+        string Initiator { get; }
 
-        string ParentId { get; }
+        string PredecessorId { get; }
     }
 }
