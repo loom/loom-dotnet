@@ -21,12 +21,14 @@ namespace Loom.Messaging.Azure
         [TestMethod, AutoData]
         public void ConvertToEvent_serializes_data_correctly(
             string id,
+            string processId,
+            string initiator,
+            string predecessorId,
             MessageData1 data,
-            TracingProperties tracingProperties,
             [Frozen] IJsonProcessor jsonProcessor,
             EventConverter sut)
         {
-            var message = Message.Create(id, data, tracingProperties);
+            var message = new Message(id, processId, initiator, predecessorId, data);
 
             EventData actual = sut.ConvertToEvent(message);
 
@@ -38,31 +40,35 @@ namespace Loom.Messaging.Azure
         [TestMethod, AutoData]
         public void ConvertToEvent_sets_properties_correctly(
             string id,
+            string processId,
+            string initiator,
+            string predecessorId,
             MessageData1 data,
-            TracingProperties tracingProperties,
             [Frozen] TypeResolver typeResolver,
             EventConverter sut)
         {
-            var message = Message.Create(id, data, tracingProperties);
+            var message = new Message(id, processId, initiator, predecessorId, data);
 
             EventData actual = sut.ConvertToEvent(message);
 
             IDictionary<string, object> properties = actual.Properties;
             properties.Should().Contain("Id", id);
             properties.Should().Contain("Type", typeResolver.TryResolveTypeName<MessageData1>());
-            properties.Should().Contain("OperationId", tracingProperties.OperationId);
-            properties.Should().Contain("Contributor", tracingProperties.Contributor);
-            properties.Should().Contain("ParentId", tracingProperties.ParentId);
+            properties.Should().Contain("ProcessId", processId);
+            properties.Should().Contain("Initiator", initiator);
+            properties.Should().Contain("PredecessorId", predecessorId);
         }
 
         [TestMethod, AutoData]
         public void TryConvertToMessage_deserializes_data_correctly(
             string id,
+            string processId,
+            string initiator,
+            string predecessorId,
             MessageData1 data,
-            TracingProperties tracingProperties,
             EventConverter sut)
         {
-            var message = Message.Create(id, data, tracingProperties);
+            var message = new Message(id, processId, initiator, predecessorId, data);
             EventData eventData = sut.ConvertToEvent(message);
 
             Message actual = sut.TryConvertToMessage(eventData);
@@ -84,8 +90,12 @@ namespace Loom.Messaging.Azure
             Message message, EventConverter sut)
         {
             EventData eventData = sut.ConvertToEvent(message);
+
             Message actual = sut.TryConvertToMessage(eventData);
-            actual.TracingProperties.Should().BeEquivalentTo(message.TracingProperties);
+
+            actual.ProcessId.Should().Be(message.ProcessId);
+            actual.Initiator.Should().Be(message.Initiator);
+            actual.PredecessorId.Should().Be(message.PredecessorId);
         }
 
         [TestMethod, AutoData]
@@ -157,57 +167,55 @@ namespace Loom.Messaging.Azure
         }
 
         [TestMethod, AutoData]
-        public void given_no_operation_id_property_then_TryConvertToMessage_sets_operation_id_arbitrarily(
+        public void given_no_process_id_property_then_TryConvertToMessage_sets_it_arbitrarily(
             Message message, EventConverter sut)
         {
             EventData eventData = sut.ConvertToEvent(message);
-            eventData.Properties.Remove("OperationId");
+            eventData.Properties.Remove("ProcessId");
 
             Message actual = sut.TryConvertToMessage(eventData);
 
-            actual.TracingProperties.OperationId.Should().NotBeNull();
-            Guid.TryParse(actual.TracingProperties.OperationId, out Guid operationId).Should().BeTrue();
-            operationId.Should().NotBeEmpty();
-        }
-
-        [TestMethod]
-        [InlineAutoData(true)]
-        [InlineAutoData(1)]
-        public void given_non_string_operation_id_property_then_TryConvertToMessage_sets_operation_id_arbitrarily(
-            object value, Message message, EventConverter sut)
-        {
-            EventData eventData = sut.ConvertToEvent(message);
-            eventData.Properties["OperationId"] = value;
-
-            Message actual = sut.TryConvertToMessage(eventData);
-
-            actual.TracingProperties.OperationId.Should().NotBeNull();
-            Guid.TryParse(actual.TracingProperties.OperationId, out Guid operationId).Should().BeTrue();
-            operationId.Should().NotBeEmpty();
+            actual.ProcessId.Should().NotBeNull();
+            Guid.TryParse(actual.ProcessId, out Guid processId).Should().BeTrue();
+            processId.Should().NotBeEmpty();
         }
 
         [TestMethod, AutoData]
-        public void given_no_contributor_property_then_TryConvertToMessage_sets_contributor_to_null(
+        public void given_non_string_process_id_property_then_TryConvertToMessage_sets_it_arbitrarily(
             Message message, EventConverter sut)
         {
             EventData eventData = sut.ConvertToEvent(message);
-            eventData.Properties.Remove("Contributor");
+            eventData.Properties.Remove("ProcessId");
 
             Message actual = sut.TryConvertToMessage(eventData);
 
-            actual.TracingProperties.Contributor.Should().BeNull();
+            actual.ProcessId.Should().NotBeNull();
+            Guid.TryParse(actual.ProcessId, out Guid processId).Should().BeTrue();
+            processId.Should().NotBeEmpty();
         }
 
         [TestMethod, AutoData]
-        public void given_no_parent_id_property_then_TryConvertToMessage_sets_parent_id_to_null(
+        public void given_no_initiator_property_then_TryConvertToMessage_sets_it_to_null(
             Message message, EventConverter sut)
         {
             EventData eventData = sut.ConvertToEvent(message);
-            eventData.Properties.Remove("ParentId");
+            eventData.Properties.Remove("Initiator");
 
             Message actual = sut.TryConvertToMessage(eventData);
 
-            actual.TracingProperties.ParentId.Should().BeNull();
+            actual.Initiator.Should().BeNull();
+        }
+
+        [TestMethod, AutoData]
+        public void given_no_predecessor_id_property_then_TryConvertToMessage_sets_it_to_null(
+            Message message, EventConverter sut)
+        {
+            EventData eventData = sut.ConvertToEvent(message);
+            eventData.Properties.Remove("PredecessorId");
+
+            Message actual = sut.TryConvertToMessage(eventData);
+
+            actual.PredecessorId.Should().BeNull();
         }
 
         [TestMethod, AutoData]

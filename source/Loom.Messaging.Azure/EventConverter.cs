@@ -25,7 +25,6 @@ namespace Loom.Messaging.Azure
             }
 
             object data = message.Data;
-            TracingProperties tracingProperties = message.TracingProperties;
             byte[] array = Encoding.UTF8.GetBytes(_jsonProcessor.ToJson(data));
             return new EventData(array)
             {
@@ -33,9 +32,9 @@ namespace Loom.Messaging.Azure
                 {
                     ["Id"] = message.Id,
                     ["Type"] = _typeResolver.TryResolveTypeName(data.GetType()),
-                    ["OperationId"] = tracingProperties.OperationId,
-                    ["Contributor"] = tracingProperties.Contributor,
-                    ["ParentId"] = tracingProperties.ParentId,
+                    ["ProcessId"] = message.ProcessId,
+                    ["Initiator"] = message.Initiator,
+                    ["PredecessorId"] = message.PredecessorId,
                 },
             };
         }
@@ -51,9 +50,11 @@ namespace Loom.Messaging.Azure
             {
                 Type dataType => GetData(eventData, dataType) switch
                 {
-                    object data => Message.Create(GetId(eventData),
-                                                  data,
-                                                  GetTracingProperties(eventData)),
+                    object data => new Message(GetId(eventData),
+                                               GetProcessId(eventData),
+                                               GetInitiator(eventData),
+                                               GetPredecessorId(eventData),
+                                               data),
                     _ => null,
                 },
                 _ => null,
@@ -83,29 +84,22 @@ namespace Loom.Messaging.Azure
             return _jsonProcessor.FromJson(json, dataType);
         }
 
-        private static TracingProperties GetTracingProperties(EventData eventData)
+        private static string GetProcessId(EventData eventData)
         {
-            return new TracingProperties(GetOperationId(eventData),
-                                         GetContributor(eventData),
-                                         GetParentId(eventData));
+            eventData.Properties.TryGetValue("ProcessId", out object? value);
+            return value is string processId ? processId : $"{Guid.NewGuid()}";
         }
 
-        private static string GetOperationId(EventData eventData)
+        private static string? GetInitiator(EventData eventData)
         {
-            eventData.Properties.TryGetValue("OperationId", out object? value);
-            return value is string operationId ? operationId : $"{Guid.NewGuid()}";
+            eventData.Properties.TryGetValue("Initiator", out object? value);
+            return value is string initiator ? initiator : null;
         }
 
-        private static string? GetContributor(EventData eventData)
+        private static string? GetPredecessorId(EventData eventData)
         {
-            eventData.Properties.TryGetValue("Contributor", out object? value);
-            return value is string contributor ? contributor : null;
-        }
-
-        private static string? GetParentId(EventData eventData)
-        {
-            eventData.Properties.TryGetValue("ParentId", out object? value);
-            return value is string parentId ? parentId : null;
+            eventData.Properties.TryGetValue("PredecessorId", out object? value);
+            return value is string predecessorId ? predecessorId : null;
         }
     }
 }
