@@ -6,6 +6,7 @@ namespace Loom.Messaging
     {
         bool Accepts(Message message);
 
+        // TODO: Add a parameter of CancellationToken.
         Task Handle(Message message);
     }
 }

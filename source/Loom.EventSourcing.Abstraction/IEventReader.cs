@@ -7,6 +7,7 @@ namespace Loom.EventSourcing
 {
     public interface IEventReader
     {
+        // TODO: Add a parameter of CancellationToken.
         Task<IEnumerable<object>> QueryEvents(
             string streamId,
             long fromVersion);
