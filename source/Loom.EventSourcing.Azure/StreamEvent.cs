@@ -15,15 +15,15 @@ namespace Loom.EventSourcing.Azure
         }
 
         public StreamEvent(string stateType,
+                           string messageId,
+                           string processId,
+                           string? initiator,
+                           string? predecessorId,
                            Guid streamId,
                            long version,
                            DateTime raisedTimeUtc,
                            string eventType,
                            string payload,
-                           string messageId,
-                           string processId,
-                           string? initiator,
-                           string? predecessorId,
                            Guid transaction)
             : base(partitionKey: $"{stateType}:{streamId}", rowKey: FormatVersion(version))
         {
