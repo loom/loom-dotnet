@@ -511,12 +511,11 @@ namespace Loom.EventSourcing
             Event1 evt1,
             Event2 evt2,
             Event3 evt3,
-            IMessageBus eventBus,
-            TracingProperties tracingProperties)
+            IMessageBus eventBus)
         {
             T sut = GenerateEventStore(eventBus);
             object[] events = new object[] { evt1, evt2, evt3 };
-            await sut.CollectEvents(streamId, startVersion: 1, events, tracingProperties);
+            await sut.CollectEvents(streamId, startVersion: 1, events);
 
             IEnumerable<Message> actual = await sut.QueryEventMessages(streamId);
 
@@ -528,8 +527,7 @@ namespace Loom.EventSourcing
             FullNameTypeNameResolvingStrategy typeNameStrategy,
             string streamId,
             Event1 evt,
-            IMessageBus eventBus,
-            TracingProperties tracingProperties)
+            IMessageBus eventBus)
         {
             // Arrange
             string typeName = typeNameStrategy.TryResolveTypeName(typeof(Event1));
@@ -539,7 +537,7 @@ namespace Loom.EventSourcing
 
             T sut = GenerateEventStore(typeResolver, eventBus);
             object[] events = new object[] { evt };
-            await sut.CollectEvents(streamId, startVersion: 1, events, tracingProperties);
+            await sut.CollectEvents(streamId, startVersion: 1, events);
 
             // Act
             Func<Task> action = () => sut.QueryEvents(streamId);
@@ -553,8 +551,7 @@ namespace Loom.EventSourcing
             FullNameTypeNameResolvingStrategy typeNameStrategy,
             string streamId,
             Event1 evt,
-            IMessageBus eventBus,
-            TracingProperties tracingProperties)
+            IMessageBus eventBus)
         {
             // Arrange
             string typeName = typeNameStrategy.TryResolveTypeName(typeof(Event1));
@@ -564,7 +561,7 @@ namespace Loom.EventSourcing
 
             T sut = GenerateEventStore(typeResolver, eventBus);
             object[] events = new object[] { evt };
-            await sut.CollectEvents(streamId, startVersion: 1, events, tracingProperties);
+            await sut.CollectEvents(streamId, startVersion: 1, events);
 
             // Act
             Func<Task> action = () => sut.QueryEventMessages(streamId);
