@@ -6,14 +6,14 @@ namespace Loom.EventSourcing
     internal class DelegatingSnapshotReader<T> : ISnapshotReader<T>
         where T : class
     {
-        private readonly Func<Guid, Task<T>> _function;
+        private readonly Func<string, Task<T>> _function;
 
-        public DelegatingSnapshotReader(Func<Guid, Task<T>> function)
+        public DelegatingSnapshotReader(Func<string, Task<T>> function)
         {
             _function = function;
         }
 
-        public Task<T> TryRestoreSnapshot(Guid streamId)
+        public Task<T> TryRestoreSnapshot(string streamId)
         {
             return _function.Invoke(streamId);
         }

@@ -5,7 +5,7 @@ namespace Loom.EventSourcing
     public static class StreamEvent
     {
         public static StreamEvent<T> Create<T>(
-            Guid streamId,
+            string streamId,
             long version,
             DateTime raisedTimeUtc,
             T payload)

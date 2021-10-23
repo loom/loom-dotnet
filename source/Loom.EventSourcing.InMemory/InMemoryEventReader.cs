@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Loom.Messaging;
@@ -21,14 +20,14 @@ namespace Loom.EventSourcing.InMemory
         }
 
         public Task<IEnumerable<object>> QueryEvents(
-            Guid streamId,
+            string streamId,
             long fromVersion)
         {
             return Task.FromResult(_engine.QueryEvents(streamId, fromVersion));
         }
 
         public Task<IEnumerable<Message>> QueryEventMessages(
-            Guid streamId,
+            string streamId,
             CancellationToken cancellationToken = default)
         {
             return Task.FromResult(_engine.QueryEventMessages(streamId));

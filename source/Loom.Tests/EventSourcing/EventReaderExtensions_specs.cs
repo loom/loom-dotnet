@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Loom.Testing;
@@ -13,7 +12,7 @@ namespace Loom.EventSourcing
     {
         [TestMethod, AutoData]
         public async Task QueryEvents_relays_correctly(
-            IEventReader reader, Guid streamId, IEnumerable<object> events)
+            IEventReader reader, string streamId, IEnumerable<object> events)
         {
             long fromVersion = 1;
             Mock.Get(reader).Setup(x => x.QueryEvents(streamId, fromVersion)).ReturnsAsync(events);

@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Loom.Json;
@@ -20,7 +19,7 @@ namespace Loom.EventSourcing.Azure
             _jsonProcessor = jsonProcessor;
         }
 
-        public async Task<T?> TryRestoreSnapshot(Guid streamId)
+        public async Task<T?> TryRestoreSnapshot(string streamId)
         {
             CloudBlockBlob blob = GetBlobReference(streamId);
             return await blob.ExistsAsync().ConfigureAwait(continueOnCapturedContext: false)
@@ -28,7 +27,7 @@ namespace Loom.EventSourcing.Azure
                  : default;
         }
 
-        private CloudBlockBlob GetBlobReference(Guid streamId)
+        private CloudBlockBlob GetBlobReference(string streamId)
         {
             return _container.GetBlockBlobReference($"{streamId}.json");
         }

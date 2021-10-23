@@ -76,7 +76,7 @@ namespace Loom.EventSourcing.EntityFrameworkCore
 
         [TestMethod, AutoData]
         public async Task sut_supports_multiple_state_types_having_same_stream_id(
-            IMessageBus eventBus, Guid streamId, Event1 evt1, Event2 evt2)
+            IMessageBus eventBus, string streamId, Event1 evt1, Event2 evt2)
         {
             // Arrange
             EntityEventStore<State1> store1 = GenerateEventStore<State1>(eventBus);
@@ -115,7 +115,7 @@ namespace Loom.EventSourcing.EntityFrameworkCore
         public async Task sut_supports_unique_constraint(
             UniquePropertyDetector uniquePropertyDetector,
             IMessageBus eventBus,
-            Guid[] streams,
+            string[] streams,
             Event3 evt)
         {
             // Arrange
@@ -133,7 +133,7 @@ namespace Loom.EventSourcing.EntityFrameworkCore
 
             // Assert
             var events = new List<object>();
-            foreach (Guid streamId in streams)
+            foreach (string streamId in streams)
             {
                 events.AddRange(await store.QueryEvents(streamId, fromVersion: 1));
             }
@@ -145,8 +145,8 @@ namespace Loom.EventSourcing.EntityFrameworkCore
         public async Task same_unique_value_is_allowed_for_different_properties(
             UniquePropertyDetector uniquePropertyDetector,
             IMessageBus eventBus,
-            Guid stream1,
-            Guid stream2,
+            string stream1,
+            string stream2,
             int value)
         {
             EntityEventStore<State1> store = GenerateEventStore<State1>(uniquePropertyDetector, eventBus);
@@ -161,7 +161,7 @@ namespace Loom.EventSourcing.EntityFrameworkCore
         public async Task same_unique_value_is_allowed_for_different_state_types(
             UniquePropertyDetector uniquePropertyDetector,
             IMessageBus eventBus,
-            Guid stream,
+            string stream,
             Event3 evt)
         {
             EntityEventStore<State1> store1 = GenerateEventStore<State1>(uniquePropertyDetector, eventBus);
@@ -177,8 +177,8 @@ namespace Loom.EventSourcing.EntityFrameworkCore
         public async Task replaced_unique_value_is_available(
             UniquePropertyDetector uniquePropertyDetector,
             IMessageBus eventBus,
-            Guid stream1,
-            Guid stream2,
+            string stream1,
+            string stream2,
             string value1,
             string value2)
         {
@@ -195,8 +195,8 @@ namespace Loom.EventSourcing.EntityFrameworkCore
         public async Task deleted_unique_value_is_available(
             UniquePropertyDetector uniquePropertyDetector,
             IMessageBus eventBus,
-            Guid stream1,
-            Guid stream2,
+            string stream1,
+            string stream2,
             string value)
         {
             EntityEventStore<State1> store = GenerateEventStore<State1>(uniquePropertyDetector, eventBus);

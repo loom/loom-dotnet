@@ -65,7 +65,7 @@ namespace Loom.EventSourcing.Azure
 
         [TestMethod, AutoData]
         public async Task Handle_publishes_all_pending_events(
-            Guid streamId,
+            string streamId,
             long startVersion,
             Event1[] events,
             string commandId,
@@ -90,7 +90,7 @@ namespace Loom.EventSourcing.Azure
 
         [TestMethod, AutoData]
         public async Task Handle_is_idempotent(
-            Guid streamId,
+            string streamId,
             long startVersion,
             Event1[] events,
             string commandId,

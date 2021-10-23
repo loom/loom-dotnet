@@ -7,7 +7,7 @@ namespace Loom.EventSourcing
     public static class EventReaderExtensions
     {
         public static Task<IEnumerable<object>> QueryEvents(
-            this IEventReader eventReader, Guid streamId)
+            this IEventReader eventReader, string streamId)
         {
             if (eventReader is null)
             {

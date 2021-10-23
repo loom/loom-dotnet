@@ -10,12 +10,12 @@ namespace Loom.EventSourcing
         Task CollectEvents(string processId,
                            string? initiator,
                            string? predecessorId,
-                           Guid streamId,
+                           string streamId,
                            long startVersion,
                            IEnumerable<object> events);
 
         [Obsolete("Use metadata decapsulated overload instead.")]
-        Task CollectEvents(Guid streamId,
+        Task CollectEvents(string streamId,
                            long startVersion,
                            IEnumerable<object> events,
                            TracingProperties tracingProperties = default);

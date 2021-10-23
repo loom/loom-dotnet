@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoFixture;
@@ -29,12 +28,12 @@ namespace Loom.EventSourcing
         public class EventHandler
         {
             public State HandleEvent(State state, ValueAdded valueAdded)
-                => new State(state.Value + valueAdded.Amount);
+                => new(state.Value + valueAdded.Amount);
         }
 
         [TestMethod, AutoData]
         public async Task given_no_event_then_TryRehydrateState_returns_null(
-            EventHandler handler, Guid streamId)
+            EventHandler handler, string streamId)
         {
             // Arrange
             IEventReader eventReader =
@@ -56,7 +55,7 @@ namespace Loom.EventSourcing
 
         [TestMethod, AutoData]
         public async Task given_some_events_then_TryRehydrateState_restores_state_correctly(
-            Generator<ValueAdded> generator, Guid streamId, EventHandler handler)
+            Generator<ValueAdded> generator, string streamId, EventHandler handler)
         {
             // Arrange
             var events = new List<object>(generator.Where(x => x.Amount >= 0).Take(10));

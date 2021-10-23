@@ -36,19 +36,16 @@ namespace Loom.EventSourcing.Azure
             var stream = new MemoryStream();
             await blob.DownloadToStreamAsync(stream);
             stream.Seek(offset: 0, SeekOrigin.Begin);
-            using (var reader = new StreamReader(stream, Encoding.UTF8))
-            {
-                return await reader.ReadToEndAsync();
-            }
+            using var reader = new StreamReader(stream, Encoding.UTF8);
+            return await reader.ReadToEndAsync();
         }
 
-        private static BlobSnapshotter<State> GenerateSut(IStateRehydrator<State> rehydrator) =>
-            new BlobSnapshotter<State>(
-                rehydrator,
-                jsonProcessor: new JsonProcessor(new JsonSerializer()),
-                container: StorageEmulator.SnapshotContainer);
+        private static BlobSnapshotter<State> GenerateSut(IStateRehydrator<State> rehydrator) => new(
+            rehydrator,
+            jsonProcessor: new JsonProcessor(new JsonSerializer()),
+            container: StorageEmulator.SnapshotContainer);
 
-        private static Task<ICloudBlob> GetBlob(Guid streamId)
+        private static Task<ICloudBlob> GetBlob(string streamId)
         {
             CloudBlobContainer container = StorageEmulator.SnapshotContainer;
             string blobName = $"{streamId}.json";
@@ -63,7 +60,7 @@ namespace Loom.EventSourcing.Azure
 
         [TestMethod, AutoData]
         public async Task TakeSnapshot_throws_exception_if_state_not_exists(
-            Guid streamId, IStateRehydrator<State> rehydrator)
+            string streamId, IStateRehydrator<State> rehydrator)
         {
             // Arrange
             Mock.Get(rehydrator)
@@ -81,7 +78,7 @@ namespace Loom.EventSourcing.Azure
 
         [TestMethod, AutoData]
         public async Task TaksSnapshot_creates_new_snapshot_blob_if_not_exists(
-            Guid streamId, State state, IStateRehydrator<State> rehydrator)
+            string streamId, State state, IStateRehydrator<State> rehydrator)
         {
             // Arrange
             Mock.Get(rehydrator)
@@ -104,7 +101,7 @@ namespace Loom.EventSourcing.Azure
 
         [TestMethod, AutoData]
         public async Task TakeSnapshot_sets_blob_properties_correctly_if_snapshot_blob_not_exists(
-            Guid streamId, State state, IStateRehydrator<State> rehydrator)
+            string streamId, State state, IStateRehydrator<State> rehydrator)
         {
             // Arrange
             Mock.Get(rehydrator)
@@ -124,7 +121,7 @@ namespace Loom.EventSourcing.Azure
 
         [TestMethod, AutoData]
         public async Task TakeSnapshot_updates_snapshot_blob_if_exists(
-            Guid streamId, State pastState, State newState, IStateRehydrator<State> rehydrator)
+            string streamId, State pastState, State newState, IStateRehydrator<State> rehydrator)
         {
             // Arrange
             Mock.Get(rehydrator)
@@ -153,7 +150,7 @@ namespace Loom.EventSourcing.Azure
 
         [TestMethod, AutoData]
         public async Task TakeSnapshot_sets_blob_properties_correctly_if_snapshot_blob_exists(
-            Guid streamId, State state, IStateRehydrator<State> rehydrator)
+            string streamId, State state, IStateRehydrator<State> rehydrator)
         {
             // Arrange
             Mock.Get(rehydrator)

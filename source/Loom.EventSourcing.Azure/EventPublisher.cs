@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -27,7 +26,7 @@ namespace Loom.EventSourcing.Azure
             _eventBus = eventBus;
         }
 
-        public async Task PublishEvents(string stateType, Guid streamId)
+        public async Task PublishEvents(string stateType, string streamId)
         {
             IQueryable<QueueTicket> query = _table.BuildQueueTicketsQuery(stateType, streamId);
             CancellationToken cancellationToken = CancellationToken.None;

@@ -8,12 +8,12 @@ namespace Loom.EventSourcing
     public class SnapshottedStateRehydrator<T> : IStateRehydrator<T>
         where T : class, IVersioned
     {
-        private readonly Func<Guid, T> _seedFactory;
+        private readonly Func<string, T> _seedFactory;
         private readonly ISnapshotReader<T> _snapshotReader;
         private readonly IEventReader _eventReader;
         private readonly IEventHandler<T> _eventHandler;
 
-        public SnapshottedStateRehydrator(Func<Guid, T> seedFactory,
+        public SnapshottedStateRehydrator(Func<string, T> seedFactory,
                                           ISnapshotReader<T> snapshotReader,
                                           IEventReader eventReader,
                                           IEventHandler<T> eventHandler)
@@ -24,7 +24,7 @@ namespace Loom.EventSourcing
             _eventHandler = eventHandler;
         }
 
-        public async Task<T?> TryRehydrateState(Guid streamId)
+        public async Task<T?> TryRehydrateState(string streamId)
         {
             return (await _snapshotReader.TryRestoreSnapshot(streamId).ConfigureAwait(continueOnCapturedContext: false)) switch
             {
@@ -33,7 +33,7 @@ namespace Loom.EventSourcing
             };
         }
 
-        private async Task<T> Rehydrate(Guid streamId, T snapshot)
+        private async Task<T> Rehydrate(string streamId, T snapshot)
         {
             long fromVersion = snapshot.Version + 1;
             return (await _eventReader.QueryEvents(streamId, fromVersion).ConfigureAwait(continueOnCapturedContext: false)) switch
@@ -43,7 +43,7 @@ namespace Loom.EventSourcing
             };
         }
 
-        private async Task<T?> TryRehydrate(Guid streamId)
+        private async Task<T?> TryRehydrate(string streamId)
         {
             return (await _eventReader.QueryEvents(streamId, fromVersion: 1).ConfigureAwait(continueOnCapturedContext: false)) switch
             {
@@ -52,7 +52,7 @@ namespace Loom.EventSourcing
             };
         }
 
-        public async Task<T?> TryRehydrateStateAt(Guid streamId, long version)
+        public async Task<T?> TryRehydrateStateAt(string streamId, long version)
         {
             return (await _eventReader.QueryEvents(streamId, fromVersion: 1).ConfigureAwait(continueOnCapturedContext: false)) switch
             {

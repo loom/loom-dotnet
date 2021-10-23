@@ -34,7 +34,7 @@ namespace Loom.EventSourcing
         [TestMethod, AutoData]
         public async Task QueryEvents_restores_events_correctly(
             IMessageBus eventBus,
-            Guid streamId,
+            string streamId,
             Event1 evt1,
             Event2 evt2,
             Event3 evt3,
@@ -59,8 +59,8 @@ namespace Loom.EventSourcing
         [TestMethod, AutoData]
         public async Task QueryEvents_filters_events_by_stream_id(
             IMessageBus eventBus,
-            Guid streamId,
-            Guid otherStreamId,
+            string streamId,
+            string otherStreamId,
             Event1 evt1,
             Event2 evt2,
             Event3 evt3,
@@ -87,7 +87,7 @@ namespace Loom.EventSourcing
         [TestMethod, AutoData]
         public async Task QueryEvents_filters_events_by_version(
             IMessageBus eventBus,
-            Guid streamId,
+            string streamId,
             Event1 evt1,
             Event2 evt2,
             Event3 evt3,
@@ -111,7 +111,7 @@ namespace Loom.EventSourcing
 
         [TestMethod, AutoData]
         public async Task CollectEvents_controls_concurrency(
-            IMessageBus eventBus, Guid streamId, Event4 evt)
+            IMessageBus eventBus, string streamId, Event4 evt)
         {
             // Arrange
             T sut = GenerateEventStore(eventBus);
@@ -131,7 +131,7 @@ namespace Loom.EventSourcing
             TypeResolvingStrategy typeStrategy,
             FullNameTypeNameResolvingStrategy typeNameStrategy,
             IMessageBus eventBus,
-            Guid streamId,
+            string streamId,
             Event1 evt)
         {
             // Arrange
@@ -153,7 +153,7 @@ namespace Loom.EventSourcing
 
         [TestMethod, AutoData]
         public async Task CollectEvents_sends_messages_correctly(
-            Guid streamId,
+            string streamId,
             MessageBusDouble spy,
             int startVersion,
             Event1 evt1,
@@ -199,7 +199,7 @@ namespace Loom.EventSourcing
 
         [TestMethod, AutoData]
         public async Task CollectEvents_does_not_send_messages_if_it_failed_to_save_events(
-            MessageBusDouble spy, Guid streamId, int version, Event1 evt1, Event2 evt2)
+            MessageBusDouble spy, string streamId, int version, Event1 evt1, Event2 evt2)
         {
             // Arrange
             T sut = GenerateEventStore(eventBus: spy);
@@ -217,7 +217,7 @@ namespace Loom.EventSourcing
         [TestMethod, AutoData]
         public async Task if_CollectEvents_failed_to_send_messages_it_sends_them_next_time(
             IMessageBus stub,
-            Guid streamId,
+            string streamId,
             int startVersion,
             Event1 evt1,
             Event2 evt2,
@@ -272,7 +272,7 @@ namespace Loom.EventSourcing
         [TestMethod, AutoData]
         public async Task CollectEvents_does_not_send_messages_again(
             MessageBusDouble spy,
-            Guid streamId,
+            string streamId,
             int startVersion,
             Event1 evt1,
             Event2 evt2,
@@ -311,7 +311,7 @@ namespace Loom.EventSourcing
         [TestMethod, AutoData]
         public async Task CollectEvents_sets_message_id_properties_to_unique_values(
             MessageBusDouble spy,
-            Guid streamId,
+            string streamId,
             int startVersion,
             Event1 evt1,
             Event2 evt2,
@@ -333,7 +333,7 @@ namespace Loom.EventSourcing
         public async Task CollectEvents_preserves_message_id(
             ConcurrentQueue<Message> messages,
             IMessageBus stub,
-            Guid streamId,
+            string streamId,
             int startVersion,
             Event1 evt1,
             Event2 evt2)
@@ -369,7 +369,7 @@ namespace Loom.EventSourcing
 
         [TestMethod, AutoData]
         public async Task CollectEvents_sets_RaisedTimeUtc_property_correctly(
-            MessageBusDouble spy, Guid streamId, Event1 evt)
+            MessageBusDouble spy, string streamId, Event1 evt)
         {
             // Arrange
             T sut = GenerateEventStore(eventBus: spy);
@@ -390,7 +390,7 @@ namespace Loom.EventSourcing
         public async Task CollectEvents_preserves_RaisedTimeUtc_property(
             ConcurrentQueue<Message> messages,
             IMessageBus stub,
-            Guid streamId,
+            string streamId,
             int startVersion,
             Event1 evt1,
             Event2 evt2)
@@ -437,7 +437,7 @@ namespace Loom.EventSourcing
 
         [TestMethod, AutoData]
         public async Task QueryEventMessages_correctly_restores_event_messages(
-            Guid streamId,
+            string streamId,
             Event1 evt1,
             Event2 evt2,
             Event3 evt3,
@@ -457,7 +457,7 @@ namespace Loom.EventSourcing
             actual.Should().HaveSameCount(events);
 
             actual.Cast<dynamic>()
-                  .Select(x => (Guid)x.Data.StreamId)
+                  .Select(x => (string)x.Data.StreamId)
                   .Should().OnlyContain(x => x == streamId);
 
             actual.Cast<dynamic>()
@@ -485,7 +485,7 @@ namespace Loom.EventSourcing
 
         [TestMethod, AutoData]
         public async Task QueryEventMessages_returns_same_value_for_same_source(
-            Guid streamId,
+            string streamId,
             Event1 evt1,
             Event2 evt2,
             Event3 evt3,
@@ -504,7 +504,7 @@ namespace Loom.EventSourcing
         [TestMethod, AutoData]
         public async Task QueryEvents_throws_if_cannot_resolve_event_type(
             FullNameTypeNameResolvingStrategy typeNameStrategy,
-            Guid streamId,
+            string streamId,
             Event1 evt,
             IMessageBus eventBus,
             TracingProperties tracingProperties)
@@ -529,7 +529,7 @@ namespace Loom.EventSourcing
         [TestMethod, AutoData]
         public async Task QueryEventMessages_throws_if_cannot_resolve_event_type(
             FullNameTypeNameResolvingStrategy typeNameStrategy,
-            Guid streamId,
+            string streamId,
             Event1 evt,
             IMessageBus eventBus,
             TracingProperties tracingProperties)

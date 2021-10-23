@@ -12,7 +12,7 @@ namespace Loom.EventSourcing.Azure
         }
 
         public QueueTicket(string stateType,
-                           Guid streamId,
+                           string streamId,
                            long startVersion,
                            long eventCount,
                            Guid transaction)
@@ -28,7 +28,7 @@ namespace Loom.EventSourcing.Azure
 
         public string StateType { get; set; }
 
-        public Guid StreamId { get; set; }
+        public string StreamId { get; set; }
 
         public long StartVersion { get; set; }
 

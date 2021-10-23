@@ -1,11 +1,10 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace Loom.EventSourcing
 {
     public interface ISnapshotReader<T>
         where T : class
     {
-        Task<T?> TryRestoreSnapshot(Guid streamId);
+        Task<T?> TryRestoreSnapshot(string streamId);
     }
 }

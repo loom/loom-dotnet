@@ -27,10 +27,8 @@ namespace Loom.EventSourcing.EntityFrameworkCore
 
         public async Task ScanPendingEvents()
         {
-            using (EventStoreContext context = _contextFactory.Invoke())
-            {
-                await ScanPendingEvents(context).ConfigureAwait(continueOnCapturedContext: false);
-            }
+            using EventStoreContext context = _contextFactory.Invoke();
+            await ScanPendingEvents(context).ConfigureAwait(continueOnCapturedContext: false);
         }
 
         private Task ScanPendingEvents(EventStoreContext context)
@@ -45,7 +43,7 @@ namespace Loom.EventSourcing.EntityFrameworkCore
             return query.ForEach(t => SendFlushCommand(t.StateType, t.StreamId));
         }
 
-        private Task SendFlushCommand(string stateType, Guid streamId)
+        private Task SendFlushCommand(string stateType, string streamId)
         {
             Message message = Envelop(command: new FlushEvents(stateType, streamId));
             return Send(message, partitionKey: $"{streamId}");

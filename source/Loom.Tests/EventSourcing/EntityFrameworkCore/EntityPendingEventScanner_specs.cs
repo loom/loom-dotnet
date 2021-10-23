@@ -45,7 +45,7 @@ namespace Loom.EventSourcing.EntityFrameworkCore
 
         [TestMethod, AutoData]
         public async Task sut_sends_flush_commands_for_streams_containing_cold_pending_events(
-            Guid streamId, long startVersion, Event1[] events, MessageBusDouble commandBus)
+            string streamId, long startVersion, Event1[] events, MessageBusDouble commandBus)
         {
             // Arrange
             var eventBus = new MessageBusDouble(errors: 1);
@@ -79,7 +79,7 @@ namespace Loom.EventSourcing.EntityFrameworkCore
 
         [TestMethod, AutoData]
         public async Task sut_sets_tracing_properties_correctly(
-            Guid streamId, long startVersion, Event1[] events, MessageBusDouble commandBus)
+            string streamId, long startVersion, Event1[] events, MessageBusDouble commandBus)
         {
             // Arrange
             var eventBus = new MessageBusDouble(errors: 1);
@@ -100,7 +100,7 @@ namespace Loom.EventSourcing.EntityFrameworkCore
 
         [TestMethod, AutoData]
         public async Task sut_distincts_streams(
-            Guid streamId, long startVersion, Event1[] events, MessageBusDouble commandBus)
+            string streamId, long startVersion, Event1[] events, MessageBusDouble commandBus)
         {
             // Arrange
             var eventBus = new MessageBusDouble(errors: 2);
@@ -119,7 +119,7 @@ namespace Loom.EventSourcing.EntityFrameworkCore
 
         [TestMethod, AutoData]
         public async Task sut_does_not_send_flush_command_for_streams_containing_only_hot_pending_events(
-            Guid streamId, long startVersion, Event1[] events, MessageBusDouble commandBus)
+            string streamId, long startVersion, Event1[] events, MessageBusDouble commandBus)
         {
             // Arrange
             var eventBus = new MessageBusDouble(errors: 1);
