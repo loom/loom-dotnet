@@ -33,31 +33,36 @@ namespace Loom.EventSourcing.InMemory
                                   long startVersion,
                                   IEnumerable<object> events)
         {
-            return CollectEvents(
-                streamId,
-                startVersion,
-                events,
-                new TracingProperties(processId, initiator, predecessorId));
-        }
-
-        public Task CollectEvents(
-            Guid streamId,
-            long startVersion,
-            IEnumerable<object> events,
-            TracingProperties tracingProperties = default)
-        {
             if (events is null)
             {
                 throw new ArgumentNullException(nameof(events));
             }
 
             IEnumerable<Message> messages = _engine.CollectEvents(
+                processId,
+                initiator,
+                predecessorId,
                 streamId,
                 startVersion,
-                events,
-                tracingProperties);
+                events);
 
             return _eventBus.Send(messages, partitionKey: $"{streamId}");
+        }
+
+        [Obsolete("Use metadata decapsulated overload instead.")]
+        public Task CollectEvents(
+            Guid streamId,
+            long startVersion,
+            IEnumerable<object> events,
+            TracingProperties tracingProperties = default)
+        {
+            return CollectEvents(
+                tracingProperties.OperationId,
+                tracingProperties.Contributor,
+                tracingProperties.ParentId,
+                streamId,
+                startVersion,
+                events);
         }
 
         public Task<IEnumerable<object>> QueryEvents(

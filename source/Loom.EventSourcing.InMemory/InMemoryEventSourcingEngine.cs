@@ -14,10 +14,12 @@ namespace Loom.EventSourcing.InMemory
         public static InMemoryEventSourcingEngine<T> Default { get; } = new InMemoryEventSourcingEngine<T>();
 
         internal IEnumerable<Message> CollectEvents(
+            string processId,
+            string initiator,
+            string predecessorId,
             Guid streamId,
             long startVersion,
-            IEnumerable<object> events,
-            TracingProperties tracingProperties)
+            IEnumerable<object> events)
         {
             if (events is null)
             {
@@ -32,7 +34,7 @@ namespace Loom.EventSourcing.InMemory
             foreach (object payload in events)
             {
                 object data = PackEvent(streamId, version, payload);
-                var message = Message.Create($"{Guid.NewGuid()}", data, tracingProperties);
+                var message = new Message($"{Guid.NewGuid()}", processId, initiator, predecessorId, data);
 
                 stream.Add(version, message);
 
