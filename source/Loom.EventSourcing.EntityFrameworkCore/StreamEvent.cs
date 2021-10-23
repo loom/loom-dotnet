@@ -15,9 +15,9 @@ namespace Loom.EventSourcing.EntityFrameworkCore
                              string eventType,
                              string payload,
                              string messageId,
-                             string operationId,
-                             string contributor,
-                             string parentId,
+                             string processId,
+                             string initiator,
+                             string predecessorId,
                              Guid transaction)
         {
             StateType = stateType;
@@ -27,9 +27,9 @@ namespace Loom.EventSourcing.EntityFrameworkCore
             EventType = eventType;
             Payload = payload;
             MessageId = messageId;
-            OperationId = operationId;
-            Contributor = contributor;
-            ParentId = parentId;
+            ProcessId = processId;
+            Initiator = initiator;
+            PredecessorId = predecessorId;
             Transaction = transaction;
         }
 
@@ -49,11 +49,11 @@ namespace Loom.EventSourcing.EntityFrameworkCore
 
         public string MessageId { get; private set; }
 
-        public string OperationId { get; private set; }
+        public string ProcessId { get; private set; }
 
-        public string Contributor { get; private set; }
+        public string Initiator { get; private set; }
 
-        public string ParentId { get; private set; }
+        public string PredecessorId { get; private set; }
 
         public Guid Transaction { get; private set; }
     }

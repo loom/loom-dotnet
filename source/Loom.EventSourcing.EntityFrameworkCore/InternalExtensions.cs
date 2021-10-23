@@ -1,12 +1,12 @@
-﻿namespace Loom.EventSourcing.EntityFrameworkCore
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Reflection;
-    using Loom.Json;
-    using Loom.Messaging;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using Loom.Json;
+using Loom.Messaging;
 
+namespace Loom.EventSourcing.EntityFrameworkCore
+{
     internal static class InternalExtensions
     {
         public static IQueryable<PendingEvent> GetPendingEventsQuery(
@@ -56,12 +56,12 @@
                 jsonProcessor.FromJson(entity.Payload, type),
             });
 
-            var tracingProperties = new TracingProperties(
-                entity.OperationId,
-                entity.Contributor,
-                entity.ParentId);
-
-            return Message.Create(id: entity.MessageId, data, tracingProperties);
+            return new Message(
+                entity.MessageId,
+                entity.ProcessId,
+                entity.Initiator,
+                entity.PredecessorId,
+                data);
         }
 
         public static void Deconstruct<TKey, TValue>(

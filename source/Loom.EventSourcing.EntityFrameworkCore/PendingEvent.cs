@@ -22,11 +22,11 @@ namespace Loom.EventSourcing.EntityFrameworkCore
 
         public string MessageId { get; private set; }
 
-        public string OperationId { get; private set; }
+        public string ProcessId { get; private set; }
 
-        public string Contributor { get; private set; }
+        public string Initiator { get; private set; }
 
-        public string ParentId { get; private set; }
+        public string PredecessorId { get; private set; }
 
         public Guid Transaction { get; private set; }
 
@@ -39,9 +39,9 @@ namespace Loom.EventSourcing.EntityFrameworkCore
             EventType = source.EventType,
             Payload = source.Payload,
             MessageId = source.MessageId,
-            OperationId = source.OperationId,
-            Contributor = source.Contributor,
-            ParentId = source.ParentId,
+            ProcessId = source.ProcessId,
+            Initiator = source.Initiator,
+            PredecessorId = source.PredecessorId,
             Transaction = source.Transaction,
         };
     }
