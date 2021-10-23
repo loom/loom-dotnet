@@ -12,7 +12,7 @@
             _handle = handle;
         }
 
-        public bool CanHandle(Message message) => true;
+        public bool Accepts(Message message) => true;
 
         public Task Handle(Message message) => _handle.Invoke(message);
     }

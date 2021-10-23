@@ -1,10 +1,10 @@
-﻿namespace Loom.Messaging
-{
-    using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
+namespace Loom.Messaging
+{
     public interface IMessageHandler
     {
-        bool CanHandle(Message message);
+        bool Accepts(Message message);
 
         Task Handle(Message message);
     }

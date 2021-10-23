@@ -17,12 +17,12 @@
         }
 
         [TestMethod, AutoData]
-        public async Task Send_handles_messages_can_be_handled_immediately(
+        public async Task Send_handles_messages_immediately(
             IMessageHandler handler, Message[] messages, string partitionKey)
         {
             Message[] sample = messages.Sample(2).ToArray();
             var mock = Mock.Get(handler);
-            sample.ForEach(m => mock.Setup(x => x.CanHandle(m)).Returns(true));
+            sample.ForEach(m => mock.Setup(x => x.Accepts(m)).Returns(true));
             var sut = new ImmediateMessageBus(handler);
 
             await sut.Send(messages, partitionKey);

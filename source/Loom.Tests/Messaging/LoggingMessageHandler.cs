@@ -10,7 +10,7 @@
 
         public IEnumerable<Message> Log => _log;
 
-        public bool CanHandle(Message message) => true;
+        public bool Accepts(Message message) => true;
 
         public Task Handle(Message message)
         {

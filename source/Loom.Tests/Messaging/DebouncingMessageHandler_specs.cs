@@ -14,14 +14,14 @@ namespace Loom.Messaging
         [TestMethod]
         [InlineAutoData(true)]
         [InlineAutoData(false)]
-        public void CanHandle_replays_correctly(
+        public void Accepts_relays_correctly(
             bool canHandle,
             [Frozen] IMessageHandler handler,
             Message message,
             DebouncingMessageHandler sut)
         {
-            Mock.Get(handler).Setup(x => x.CanHandle(message)).Returns(canHandle);
-            bool actual = sut.CanHandle(message);
+            Mock.Get(handler).Setup(x => x.Accepts(message)).Returns(canHandle);
+            bool actual = sut.Accepts(message);
             actual.Should().Be(canHandle);
         }
 

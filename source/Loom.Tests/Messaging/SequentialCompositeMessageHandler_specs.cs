@@ -19,23 +19,23 @@
         }
 
         [TestMethod, AutoData]
-        public void if_all_handlers_cannot_handle_message_CanHandle_returns_false(
+        public void sut_do_not_accept_message_if_no_handler_accepts_it(
             IMessageHandler[] handlers, Message message)
         {
             var sut = new SequentialCompositeMessageHandler(handlers);
-            bool actual = sut.CanHandle(message);
+            bool actual = sut.Accepts(message);
             actual.Should().BeFalse();
         }
 
         [TestMethod, AutoData]
-        public void if_some_handler_can_handle_message_CanHandle_returns_true(
+        public void sut_accepts_message_if_some_handler_accepts_it(
             IMessageHandler[] handlers, Message message)
         {
             var sut = new SequentialCompositeMessageHandler(handlers);
             IMessageHandler some = handlers.OrderBy(x => x.GetHashCode()).First();
-            Mock.Get(some).Setup(x => x.CanHandle(message)).Returns(true);
+            Mock.Get(some).Setup(x => x.Accepts(message)).Returns(true);
 
-            bool actual = sut.CanHandle(message);
+            bool actual = sut.Accepts(message);
 
             actual.Should().BeTrue();
         }
@@ -68,12 +68,12 @@
         }
 
         [TestMethod, AutoData]
-        public async Task Handle_does_not_relay_to_handlers_not_able_to_handle_message(
+        public async Task Handle_does_not_relay_to_handlers_not_accepting_message(
             IMessageHandler[] handlers, Message message)
         {
             var sut = new SequentialCompositeMessageHandler(handlers);
             var some = handlers.OrderBy(x => x.GetHashCode()).Skip(1).ToList();
-            some.ForEach(handler => Mock.Get(handler).Setup(x => x.CanHandle(message)).Returns(false));
+            some.ForEach(handler => Mock.Get(handler).Setup(x => x.Accepts(message)).Returns(false));
 
             await sut.Handle(message);
 

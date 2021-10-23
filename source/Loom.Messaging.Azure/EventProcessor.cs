@@ -31,7 +31,7 @@
                 {
                     if (_converter.TryConvertToMessage(eventData) is Message message)
                     {
-                        if (_handler.CanHandle(message))
+                        if (_handler.Accepts(message))
                         {
                             await _handler.Handle(message).ConfigureAwait(continueOnCapturedContext: false);
                         }

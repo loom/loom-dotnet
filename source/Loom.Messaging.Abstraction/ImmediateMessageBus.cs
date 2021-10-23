@@ -19,7 +19,7 @@
 
             foreach (Message message in messages)
             {
-                if (_handler.CanHandle(message))
+                if (_handler.Accepts(message))
                 {
                     await _handler.Handle(message).ConfigureAwait(continueOnCapturedContext: false);
                 }
