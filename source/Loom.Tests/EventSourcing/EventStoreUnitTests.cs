@@ -160,14 +160,21 @@ namespace Loom.EventSourcing
             Event2 evt2,
             Event3 evt3,
             Event4 evt4,
-            TracingProperties tracingProperties)
+            string processId,
+            string initiator,
+            string predecessorId)
         {
             // Arrange
             T sut = GenerateEventStore(eventBus: spy);
             object[] events = new object[] { evt1, evt2, evt3, evt4 };
 
             // Act
-            await sut.CollectEvents(streamId, startVersion, events, tracingProperties);
+            await sut.CollectEvents(processId,
+                                    initiator,
+                                    predecessorId,
+                                    streamId,
+                                    startVersion,
+                                    events);
 
             // Assert
             spy.Calls.Should().ContainSingle();
@@ -176,7 +183,11 @@ namespace Loom.EventSourcing
 
             msgs.Should()
                 .HaveCount(events.Length)
-                .And.OnlyContain(x => x.TracingProperties == tracingProperties);
+                .And.OnlyContain(
+                    x =>
+                    x.ProcessId == processId &&
+                    x.Initiator == initiator &&
+                    x.PredecessorId == predecessorId);
 
             VerifyData(msgs[0].Data, startVersion + 0, evt1);
             VerifyData(msgs[1].Data, startVersion + 1, evt2);
@@ -442,13 +453,20 @@ namespace Loom.EventSourcing
             Event2 evt2,
             Event3 evt3,
             IMessageBus eventBus,
-            TracingProperties tracingProperties)
+            string processId,
+            string initiator,
+            string predecessorId)
         {
             // Arrange
             T sut = GenerateEventStore(eventBus);
             object[] events = new object[] { evt1, evt2, evt3 };
             DateTime nowUtc = DateTime.UtcNow;
-            await sut.CollectEvents(streamId, startVersion: 1, events, tracingProperties);
+            await sut.CollectEvents(processId,
+                                    initiator,
+                                    predecessorId,
+                                    streamId,
+                                    startVersion: 1,
+                                    events);
 
             // Act
             IEnumerable<Message> actual = await sut.QueryEventMessages(streamId);
@@ -480,7 +498,11 @@ namespace Loom.EventSourcing
             actual.ElementAt(2).Data.Should().BeOfType<StreamEvent<Event3>>();
 
             actual.Select(x => x.Id).Should().OnlyHaveUniqueItems();
-            actual.Should().OnlyContain(x => x.TracingProperties == tracingProperties);
+            actual.Should().OnlyContain(
+                x =>
+                x.ProcessId == processId &&
+                x.Initiator == initiator &&
+                x.PredecessorId == predecessorId);
         }
 
         [TestMethod, AutoData]
