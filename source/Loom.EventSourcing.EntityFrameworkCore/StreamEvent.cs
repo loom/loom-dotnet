@@ -9,15 +9,15 @@ namespace Loom.EventSourcing.EntityFrameworkCore
         }
 
         internal StreamEvent(string stateType,
+                             string messageId,
+                             string processId,
+                             string initiator,
+                             string predecessorId,
                              Guid streamId,
                              long version,
                              DateTime raisedTimeUtc,
                              string eventType,
                              string payload,
-                             string messageId,
-                             string processId,
-                             string initiator,
-                             string predecessorId,
                              Guid transaction)
         {
             StateType = stateType;

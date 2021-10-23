@@ -1,7 +1,7 @@
-﻿namespace Loom.EventSourcing
-{
-    using System;
+﻿using System;
 
+namespace Loom.EventSourcing
+{
     public sealed class StreamEvent<T>
     {
         public StreamEvent(Guid streamId, long version, DateTime raisedTimeUtc, T payload)
