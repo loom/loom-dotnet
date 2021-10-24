@@ -42,32 +42,18 @@ namespace Loom.EventSourcing.EntityFrameworkCore
         {
         }
 
-        public Task CollectEvents(string processId,
-                                  string initiator,
-                                  string predecessorId,
-                                  string streamId,
-                                  long startVersion,
-                                  IEnumerable<object> events)
+        public async Task CollectEvents(string processId,
+                                        string initiator,
+                                        string predecessorId,
+                                        string streamId,
+                                        long startVersion,
+                                        IEnumerable<object> events,
+                                        CancellationToken cancellationToken)
         {
-            return SaveAndPublish(stateType: _typeResolver.TryResolveTypeName<T>(),
-                                  processId,
-                                  initiator,
-                                  predecessorId,
-                                  transaction: Guid.NewGuid(),
-                                  streamId,
-                                  startVersion,
-                                  events.ToImmutableArray());
-        }
+            var eventList = events.ToImmutableArray();
+            string stateType = ResolveName(typeof(T));
+            var transaction = Guid.NewGuid();
 
-        private async Task SaveAndPublish(string stateType,
-                                          string processId,
-                                          string initiator,
-                                          string predecessorId,
-                                          Guid transaction,
-                                          string streamId,
-                                          long startVersion,
-                                          ImmutableArray<object> events)
-        {
             await SaveEvents().ConfigureAwait(continueOnCapturedContext: false);
             await PublishPendingEvents().ConfigureAwait(continueOnCapturedContext: false);
 
@@ -75,9 +61,9 @@ namespace Loom.EventSourcing.EntityFrameworkCore
             {
                 using EventStoreContext context = _contextFactory.Invoke();
 
-                for (int i = 0; i < events.Length; i++)
+                for (int i = 0; i < eventList.Length; i++)
                 {
-                    object source = events[i];
+                    object source = eventList[i];
 
                     var streamEvent = new StreamEvent(
                         stateType,
@@ -100,10 +86,10 @@ namespace Loom.EventSourcing.EntityFrameworkCore
                     .Set<UniqueProperty>()
                     .Where(p => p.StateType == stateType && p.StreamId == streamId)
                     .AsNoTracking()
-                    .ToListAsync()
+                    .ToListAsync(cancellationToken)
                     .ConfigureAwait(continueOnCapturedContext: false);
 
-                foreach ((string name, string value) in GetUniqueProperties(events))
+                foreach ((string name, string value) in GetUniqueProperties(eventList))
                 {
                     UniqueProperty property = uniqueProperties.Find(p => p.Name == name);
 
@@ -128,15 +114,17 @@ namespace Loom.EventSourcing.EntityFrameworkCore
                     }
                 }
 
-                await context.SaveChangesAsync().ConfigureAwait(continueOnCapturedContext: false);
+                await context.SaveChangesAsync(cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
             }
 
             Task PublishPendingEvents() => _publisher.PublishEvents(stateType, streamId);
         }
 
-        private string ResolveName(object source)
-            => _typeResolver.TryResolveTypeName(source.GetType())
-            ?? throw new InvalidOperationException($"Could not resolve the name of type {source.GetType()}.");
+        private string ResolveName(object source) => ResolveName(source.GetType());
+
+        private string ResolveName(Type type)
+            => _typeResolver.TryResolveTypeName(type)
+            ?? throw new InvalidOperationException($"Could not resolve the name of type {type}.");
 
         private IReadOnlyDictionary<string, string> GetUniqueProperties(IEnumerable<object> events)
         {

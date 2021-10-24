@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using AutoFixture;
 
@@ -12,7 +13,8 @@ namespace Loom.EventSourcing
             this IEventCollector collector,
             string streamId,
             long startVersion,
-            IEnumerable<object> events)
+            IEnumerable<object> events,
+            CancellationToken cancellationToken = default)
         {
             return collector.CollectEvents(
                 processId: _builder.Create<string>(),
@@ -20,7 +22,8 @@ namespace Loom.EventSourcing
                 predecessorId: _builder.Create<string>(),
                 streamId,
                 startVersion,
-                events);
+                events,
+                cancellationToken);
         }
     }
 }
