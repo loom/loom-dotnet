@@ -1,10 +1,10 @@
-﻿namespace Loom.Messaging.Azure
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Threading.Tasks;
-    using Microsoft.Azure.EventHubs;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Azure.Messaging.EventHubs;
 
+namespace Loom.Messaging.Azure
+{
     public sealed class EventProcessor
     {
         private readonly IEventConverter _converter;

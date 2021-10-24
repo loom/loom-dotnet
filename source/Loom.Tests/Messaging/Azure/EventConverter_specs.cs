@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Azure.Messaging.EventHubs;
 using FluentAssertions;
 using Loom.Json;
 using Loom.Testing;
-using Microsoft.Azure.EventHubs;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Loom.Messaging.Azure
@@ -32,9 +32,23 @@ namespace Loom.Messaging.Azure
 
             EventData actual = sut.ConvertToEvent(message);
 
-            string body = Encoding.UTF8.GetString(actual.Body.Array);
+            string body = Encoding.UTF8.GetString(actual.EventBody.ToArray());
             MessageData1 content = jsonProcessor.FromJson<MessageData1>(body);
             content.Should().BeEquivalentTo(data);
+        }
+
+        [TestMethod, AutoData]
+        public void ConvertToEvent_sets_id_correctly(
+            string id,
+            string processId,
+            string initiator,
+            string predecessorId,
+            MessageData1 data,
+            EventConverter sut)
+        {
+            var message = new Message(id, processId, initiator, predecessorId, data);
+            EventData actual = sut.ConvertToEvent(message);
+            actual.MessageId.Should().Be(id);
         }
 
         [TestMethod, AutoData]
@@ -52,7 +66,6 @@ namespace Loom.Messaging.Azure
             EventData actual = sut.ConvertToEvent(message);
 
             IDictionary<string, object> properties = actual.Properties;
-            properties.Should().Contain("Id", id);
             properties.Should().Contain("Type", typeResolver.TryResolveTypeName<MessageData1>());
             properties.Should().Contain("ProcessId", processId);
             properties.Should().Contain("Initiator", initiator);
@@ -141,23 +154,7 @@ namespace Loom.Messaging.Azure
             Message message, EventConverter sut)
         {
             EventData eventData = sut.ConvertToEvent(message);
-            eventData.Properties.Remove("Id");
-
-            Message actual = sut.TryConvertToMessage(eventData);
-
-            actual.Id.Should().NotBeNull();
-            Guid.TryParse(actual.Id, out Guid id).Should().BeTrue();
-            id.Should().NotBeEmpty();
-        }
-
-        [TestMethod]
-        [InlineAutoData(true)]
-        [InlineAutoData(1)]
-        public void given_non_string_id_property_then_TryConvertToMessage_sets_id_arbitrarily(
-            object value, Message message, EventConverter sut)
-        {
-            EventData eventData = sut.ConvertToEvent(message);
-            eventData.Properties["Id"] = value;
+            eventData.MessageId = null;
 
             Message actual = sut.TryConvertToMessage(eventData);
 

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text;
+using Azure.Messaging.EventHubs;
 using Loom.Json;
-using Microsoft.Azure.EventHubs;
 
 namespace Loom.Messaging.Azure
 {
@@ -28,9 +28,9 @@ namespace Loom.Messaging.Azure
             byte[] array = Encoding.UTF8.GetBytes(_jsonProcessor.ToJson(data));
             return new EventData(array)
             {
+                MessageId = message.Id,
                 Properties =
                 {
-                    ["Id"] = message.Id,
                     ["Type"] = _typeResolver.TryResolveTypeName(data.GetType()),
                     ["ProcessId"] = message.ProcessId,
                     ["Initiator"] = message.Initiator,
@@ -69,18 +69,13 @@ namespace Loom.Messaging.Azure
 
         private static string GetId(EventData eventData)
         {
-            eventData.Properties.TryGetValue("Id", out object? value);
-            return value is string id ? id : $"{Guid.NewGuid()}";
+            return eventData.MessageId ?? $"{Guid.NewGuid()}";
         }
 
         private object? GetData(EventData eventData, Type dataType)
         {
-            if (eventData.Body.Array == null)
-            {
-                return null;
-            }
-
-            string json = Encoding.UTF8.GetString(eventData.Body.Array);
+            byte[] body = eventData.EventBody.ToArray();
+            string json = Encoding.UTF8.GetString(body);
             return _jsonProcessor.FromJson(json, dataType);
         }
 
