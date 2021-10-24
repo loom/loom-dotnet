@@ -1,14 +1,13 @@
-﻿namespace Loom.Testing
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Reflection;
-    using AutoFixture;
-    using AutoFixture.AutoMoq;
-    using AutoFixture.Kernel;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using AutoFixture;
+using AutoFixture.Kernel;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+namespace Loom.Testing
+{
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true, Inherited = false)]
     public sealed class AutoDataAttribute : Attribute, ITestDataSource
     {
@@ -56,7 +55,7 @@
             IEnumerable<string> values =
                 from t in parameters.Zip(data, (p, a) => (parameter: p, argument: a))
                 select DumpArgument(t.parameter, t.argument);
-            return string.Join(", ", values);
+            return $"{methodInfo.Name}({string.Join(", ", values)})";
         }
 
         private static string DumpArgument(ParameterInfo parameter, object argument)
