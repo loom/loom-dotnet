@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Loom.Testing;
@@ -30,13 +31,14 @@ namespace Loom.Messaging
             Message message,
             [Frozen] IDebouncer debouncer,
             [Frozen] IMessageHandler handler,
-            DebouncingMessageHandler sut)
+            DebouncingMessageHandler sut,
+            CancellationToken cancellationToken)
         {
             // Act
-            await sut.Handle(message);
+            await sut.Handle(message, cancellationToken);
 
             // Assert
-            Mock.Get(handler).Verify(x => x.Handle(message), Times.Once());
+            Mock.Get(handler).Verify(x => x.Handle(message, cancellationToken), Times.Once());
 
             Expression<Func<IDebouncer, Task<bool>>> callTryConsume = x => x.TryConsume(
                 It.IsAny<IDebouncable>(),
@@ -52,15 +54,16 @@ namespace Loom.Messaging
             string predecessorId,
             IDebouncable debouncable,
             Debouncer debouncer,
-            IMessageHandler handler)
+            IMessageHandler handler,
+            CancellationToken cancellationToken)
         {
             await debouncer.Register(debouncable);
             var sut = new DebouncingMessageHandler(debouncer, handler);
             Message message = new(id, processId, initiator, predecessorId, Data: debouncable);
 
-            await sut.Handle(message);
+            await sut.Handle(message, cancellationToken);
 
-            Mock.Get(handler).Verify(x => x.Handle(message), Times.Once());
+            Mock.Get(handler).Verify(x => x.Handle(message, cancellationToken), Times.Once());
         }
 
         [TestMethod, AutoData]
@@ -71,14 +74,15 @@ namespace Loom.Messaging
             string predecessorId,
             IDebouncable debouncable,
             Debouncer debouncer,
-            IMessageHandler handler)
+            IMessageHandler handler,
+            CancellationToken cancellationToken)
         {
             var sut = new DebouncingMessageHandler(debouncer, handler);
             Message message = new(id, processId, initiator, predecessorId, Data: debouncable);
 
-            await sut.Handle(message);
+            await sut.Handle(message, cancellationToken);
 
-            Mock.Get(handler).Verify(x => x.Handle(message), Times.Never());
+            Mock.Get(handler).Verify(x => x.Handle(message, cancellationToken), Times.Never());
         }
 
         public class Debouncer : IDebouncer

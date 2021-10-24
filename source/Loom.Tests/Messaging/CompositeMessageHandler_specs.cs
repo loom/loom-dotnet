@@ -1,12 +1,13 @@
-﻿namespace Loom.Messaging
-{
-    using System.Linq;
-    using System.Threading.Tasks;
-    using FluentAssertions;
-    using Loom.Testing;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using Moq;
+﻿using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using FluentAssertions;
+using Loom.Testing;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 
+namespace Loom.Messaging
+{
     [TestClass]
     public class CompositeMessageHandler_specs
     {
@@ -40,33 +41,40 @@
 
         [TestMethod, AutoData]
         public async Task Handle_relays_to_handlers_accepting_message(
-            IMessageHandler[] handlers, Message message)
+            IMessageHandler[] handlers,
+            Message message,
+            CancellationToken cancellationToken)
         {
             var sut = new CompositeMessageHandler(handlers);
             var some = handlers.OrderBy(x => x.GetHashCode()).Skip(1).ToList();
             some.ForEach(handler => Mock.Get(handler).Setup(x => x.Accepts(message)).Returns(true));
 
-            await sut.Handle(message);
+            await sut.Handle(message, cancellationToken);
 
             foreach (IMessageHandler handler in some)
             {
-                Mock.Get(handler).Verify(x => x.Handle(message), Times.Once());
+                Mock.Get(handler).Verify(x => x.Handle(message, cancellationToken), Times.Once());
             }
         }
 
         [TestMethod, AutoData]
         public async Task Handle_does_not_relay_to_handlers_not_accepting_message(
-            IMessageHandler[] handlers, Message message)
+            IMessageHandler[] handlers,
+            Message message,
+            CancellationToken cancellationToken)
         {
             var sut = new CompositeMessageHandler(handlers);
             var some = handlers.OrderBy(x => x.GetHashCode()).Skip(1).ToList();
-            some.ForEach(handler => Mock.Get(handler).Setup(x => x.Accepts(message)).Returns(false));
+            foreach (IMessageHandler handler in some)
+            {
+                Mock.Get(handler).Setup(x => x.Accepts(message)).Returns(false);
+            }
 
-            await sut.Handle(message);
+            await sut.Handle(message, cancellationToken);
 
             foreach (IMessageHandler handler in some)
             {
-                Mock.Get(handler).Verify(x => x.Handle(message), Times.Never());
+                Mock.Get(handler).Verify(x => x.Handle(message, cancellationToken), Times.Never());
             }
         }
     }

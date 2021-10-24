@@ -1,18 +1,19 @@
-﻿namespace Loom.Messaging
-{
-    using System.Collections.Concurrent;
-    using System.Collections.Generic;
-    using System.Threading.Tasks;
+﻿using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
+namespace Loom.Messaging
+{
     public sealed class LoggingMessageHandler : IMessageHandler
     {
-        private readonly ConcurrentQueue<Message> _log = new ConcurrentQueue<Message>();
+        private readonly ConcurrentQueue<Message> _log = new();
 
         public IEnumerable<Message> Log => _log;
 
         public bool Accepts(Message message) => true;
 
-        public Task Handle(Message message)
+        public Task Handle(Message message, CancellationToken cancellationToken)
         {
             _log.Enqueue(message);
             return Task.CompletedTask;

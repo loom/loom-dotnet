@@ -27,6 +27,7 @@ namespace Loom.EventSourcing.EntityFrameworkCore
             _eventBus = eventBus;
         }
 
+        // TODO: Add a parameter of CancellationToken.
         public async Task PublishEvents(string stateType, string streamId)
         {
             using EventStoreContext context = _contextFactory.Invoke();

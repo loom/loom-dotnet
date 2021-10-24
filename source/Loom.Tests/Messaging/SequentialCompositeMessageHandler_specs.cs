@@ -1,14 +1,15 @@
-﻿namespace Loom.Messaging
-{
-    using System;
-    using System.Collections.Concurrent;
-    using System.Linq;
-    using System.Threading.Tasks;
-    using FluentAssertions;
-    using Loom.Testing;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using Moq;
+﻿using System;
+using System.Collections.Concurrent;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using FluentAssertions;
+using Loom.Testing;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 
+namespace Loom.Messaging
+{
     [TestClass]
     public class SequentialCompositeMessageHandler_specs
     {
@@ -69,17 +70,19 @@
 
         [TestMethod, AutoData]
         public async Task Handle_does_not_relay_to_handlers_not_accepting_message(
-            IMessageHandler[] handlers, Message message)
+            IMessageHandler[] handlers,
+            Message message,
+            CancellationToken cancellationToken)
         {
             var sut = new SequentialCompositeMessageHandler(handlers);
             var some = handlers.OrderBy(x => x.GetHashCode()).Skip(1).ToList();
             some.ForEach(handler => Mock.Get(handler).Setup(x => x.Accepts(message)).Returns(false));
 
-            await sut.Handle(message);
+            await sut.Handle(message, cancellationToken);
 
             foreach (IMessageHandler handler in some)
             {
-                Mock.Get(handler).Verify(x => x.Handle(message), Times.Never());
+                Mock.Get(handler).Verify(x => x.Handle(message, cancellationToken), Times.Never());
             }
         }
     }
