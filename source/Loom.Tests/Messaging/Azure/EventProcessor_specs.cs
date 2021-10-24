@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Azure.Messaging.EventHubs;
 using FluentAssertions;
@@ -61,7 +63,9 @@ namespace Loom.Messaging.Azure
 
             await sut.Process(new[] { eventData });
 
-            Mock.Get(handler).Verify(x => x.Handle(It.IsAny<Message>()), Times.Never());
+            Mock.Get(handler).Verify(
+                x => x.Handle(It.IsAny<Message>(), It.IsAny<CancellationToken>()),
+                Times.Never());
         }
 
         [TestMethod, AutoData]
@@ -77,7 +81,11 @@ namespace Loom.Messaging.Azure
             foreach ((Message message, Exception exception) in tuples)
             {
                 mock.Setup(x => x.Accepts(It.Is<Message>(m => m.Id == message.Id))).Returns(true);
-                mock.Setup(x => x.Handle(It.Is<Message>(m => m.Id == message.Id))).ThrowsAsync(exception);
+
+                Expression<Func<IMessageHandler, Task>> call = x => x.Handle(
+                    It.Is<Message>(m => m.Id == message.Id),
+                    It.IsAny<CancellationToken>());
+                mock.Setup(call).ThrowsAsync(exception);
             }
 
             IEnumerable<EventData> events = tuples

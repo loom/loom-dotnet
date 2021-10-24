@@ -26,6 +26,7 @@ namespace Loom.EventSourcing.Azure
             _eventBus = eventBus;
         }
 
+        // TODO: Add a parameter of CancellationToken.
         public async Task PublishEvents(string stateType, string streamId)
         {
             IQueryable<QueueTicket> query = _table.BuildQueueTicketsQuery(stateType, streamId);

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Loom.Json;
 using Loom.Messaging;
@@ -22,11 +23,14 @@ namespace Loom.EventSourcing.Azure
         public bool Accepts(Message message)
             => message?.Data is FlushEvents;
 
-        public Task Handle(Message message) => message switch
+        public Task Handle(Message message, CancellationToken cancellationToken = default)
         {
-            null => throw new ArgumentNullException(nameof(message)),
-            _ => Execute(command: (FlushEvents)message.Data),
-        };
+            return message switch
+            {
+                null => throw new ArgumentNullException(nameof(message)),
+                _ => Execute(command: (FlushEvents)message.Data),
+            };
+        }
 
         private Task Execute(FlushEvents command)
             => _publisher.PublishEvents(command.StateType, command.StreamId);

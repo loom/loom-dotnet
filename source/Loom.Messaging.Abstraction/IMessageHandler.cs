@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 
 namespace Loom.Messaging
 {
@@ -6,7 +7,7 @@ namespace Loom.Messaging
     {
         bool Accepts(Message message);
 
-        // TODO: Add a parameter of CancellationToken.
-        Task Handle(Message message);
+        // TODO: Remove default argument of parameter cancellationToken.
+        Task Handle(Message message, CancellationToken cancellationToken = default);
     }
 }

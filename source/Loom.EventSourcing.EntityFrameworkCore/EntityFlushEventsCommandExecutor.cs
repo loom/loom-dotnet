@@ -1,10 +1,11 @@
-﻿namespace Loom.EventSourcing.EntityFrameworkCore
-{
-    using System;
-    using System.Threading.Tasks;
-    using Loom.Json;
-    using Loom.Messaging;
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
+using Loom.Json;
+using Loom.Messaging;
 
+namespace Loom.EventSourcing.EntityFrameworkCore
+{
     public sealed class EntityFlushEventsCommandExecutor : IMessageHandler
     {
         private readonly EventPublisher _publisher;
@@ -21,7 +22,7 @@
         public bool Accepts(Message message)
             => message?.Data is FlushEvents;
 
-        public Task Handle(Message message)
+        public Task Handle(Message message, CancellationToken cancellationToken = default)
             => Execute(command: (FlushEvents)message?.Data);
 
         private Task Execute(FlushEvents command)
