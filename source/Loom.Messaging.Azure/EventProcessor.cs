@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Azure.Messaging.EventHubs;
 
@@ -16,12 +17,15 @@ namespace Loom.Messaging.Azure
             _handler = handler;
         }
 
+        // TODO: Add a parameter of CancellationToken.
         public async Task Process(IEnumerable<EventData> events)
         {
             if (events is null)
             {
                 throw new ArgumentNullException(nameof(events));
             }
+
+            CancellationToken cancellationToken = default;
 
             List<Exception>? exceptions = default;
 
@@ -33,7 +37,8 @@ namespace Loom.Messaging.Azure
                     {
                         if (_handler.Accepts(message))
                         {
-                            await _handler.Handle(message).ConfigureAwait(continueOnCapturedContext: false);
+                            await _handler.Handle(message, cancellationToken)
+                                          .ConfigureAwait(continueOnCapturedContext: false);
                         }
                     }
                 }
