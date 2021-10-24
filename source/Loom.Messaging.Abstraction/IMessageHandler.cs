@@ -7,7 +7,6 @@ namespace Loom.Messaging
     {
         bool Accepts(Message message);
 
-        // TODO: Remove default argument of parameter cancellationToken.
-        Task Handle(Message message, CancellationToken cancellationToken = default);
+        Task Handle(Message message, CancellationToken cancellationToken);
     }
 }

@@ -1,9 +1,10 @@
-﻿namespace Loom.Messaging
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Threading.Tasks;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
+namespace Loom.Messaging
+{
     public sealed class ImmediateMessageBus : IMessageBus
     {
         private readonly IMessageHandler _handler;
@@ -17,11 +18,14 @@
                 throw new ArgumentNullException(nameof(messages));
             }
 
+            CancellationToken cancellationToken = default;
+
             foreach (Message message in messages)
             {
                 if (_handler.Accepts(message))
                 {
-                    await _handler.Handle(message).ConfigureAwait(continueOnCapturedContext: false);
+                    await _handler.Handle(message, cancellationToken)
+                                  .ConfigureAwait(continueOnCapturedContext: false);
                 }
             }
         }
