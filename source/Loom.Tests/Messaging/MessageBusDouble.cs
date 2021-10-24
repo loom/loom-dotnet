@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Loom.Messaging
@@ -30,10 +31,13 @@ namespace Loom.Messaging
 
         public IEnumerable<(ImmutableArray<Message> Messages, string PartitionKey)> Calls => _calls;
 
-        public async Task Send(IEnumerable<Message> messages, string partitionKey)
+        public async Task Send(
+            IEnumerable<Message> messages,
+            string partitionKey,
+            CancellationToken cancellationToken)
         {
             _calls.Enqueue((messages.ToImmutableArray(), partitionKey));
-            await Task.Delay(millisecondsDelay: 1);
+            await Task.Delay(millisecondsDelay: 1, cancellationToken);
             if (_errors.TryDequeue(out Exception error))
             {
                 throw error;

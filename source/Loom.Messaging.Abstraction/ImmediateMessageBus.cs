@@ -11,14 +11,15 @@ namespace Loom.Messaging
 
         public ImmediateMessageBus(IMessageHandler handler) => _handler = handler;
 
-        public async Task Send(IEnumerable<Message> messages, string partitionKey)
+        public async Task Send(
+            IEnumerable<Message> messages,
+            string partitionKey,
+            CancellationToken cancellationToken)
         {
             if (messages is null)
             {
                 throw new ArgumentNullException(nameof(messages));
             }
-
-            CancellationToken cancellationToken = default;
 
             foreach (Message message in messages)
             {

@@ -47,7 +47,7 @@ namespace Loom.EventSourcing.InMemory
                 startVersion,
                 events);
 
-            return _eventBus.Send(messages, partitionKey: $"{streamId}");
+            return _eventBus.Send(messages, partitionKey: $"{streamId}", cancellationToken);
         }
 
         public Task<IEnumerable<object>> QueryEvents(
