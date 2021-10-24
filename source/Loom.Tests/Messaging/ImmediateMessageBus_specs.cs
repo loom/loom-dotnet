@@ -19,7 +19,10 @@ namespace Loom.Messaging
 
         [TestMethod, AutoData]
         public async Task Send_handles_messages_immediately(
-            IMessageHandler handler, Message[] messages, string partitionKey)
+            IMessageHandler handler,
+            Message[] messages,
+            string partitionKey,
+            CancellationToken cancellationToken)
         {
             // Arrange
             Message[] sample = messages.Sample(2).ToArray();
@@ -28,16 +31,16 @@ namespace Loom.Messaging
             var sut = new ImmediateMessageBus(handler);
 
             // Act
-            await sut.Send(messages, partitionKey);
+            await sut.Send(messages, partitionKey, cancellationToken);
 
             // Assert
             mock.Verify(
-                x => x.Handle(It.IsAny<Message>(), It.IsAny<CancellationToken>()),
+                x => x.Handle(It.IsAny<Message>(), cancellationToken),
                 Times.Exactly(sample.Length));
 
             foreach (Message message in sample)
             {
-                mock.Verify(x => x.Handle(message, It.IsAny<CancellationToken>()));
+                mock.Verify(x => x.Handle(message, cancellationToken));
             }
         }
     }

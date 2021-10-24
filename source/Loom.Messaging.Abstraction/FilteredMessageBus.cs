@@ -1,10 +1,11 @@
-﻿namespace Loom.Messaging
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading.Tasks;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
+namespace Loom.Messaging
+{
     public sealed class FilteredMessageBus : IMessageBus
     {
         private readonly Func<Message, bool> _predicate;
@@ -16,9 +17,15 @@
             _bus = bus;
         }
 
-        public Task Send(IEnumerable<Message> messages, string partitionKey)
+        public Task Send(
+            IEnumerable<Message> messages,
+            string partitionKey,
+            CancellationToken cancellationToken = default)
         {
-            return _bus.Send(messages.Where(_predicate).ToList().AsReadOnly(), partitionKey);
+            return _bus.Send(Filter(messages), partitionKey, cancellationToken);
         }
+
+        private IReadOnlyList<Message> Filter(IEnumerable<Message> messages)
+            => messages.Where(_predicate).ToList().AsReadOnly();
     }
 }

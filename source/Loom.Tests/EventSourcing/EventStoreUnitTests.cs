@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -180,9 +179,9 @@ namespace Loom.EventSourcing
             // Assert
             spy.Calls.Should().ContainSingle();
 
-            (ImmutableArray<Message> msgs, string pk) = spy.Calls.Single();
+            (ImmutableArray<Message> messages, string partitionKey) = spy.Calls.Single();
 
-            msgs.Should()
+            messages.Should()
                 .HaveCount(events.Length)
                 .And.OnlyContain(
                     x =>
@@ -190,10 +189,10 @@ namespace Loom.EventSourcing
                     x.Initiator == initiator &&
                     x.PredecessorId == predecessorId);
 
-            VerifyData(msgs[0].Data, startVersion + 0, evt1);
-            VerifyData(msgs[1].Data, startVersion + 1, evt2);
-            VerifyData(msgs[2].Data, startVersion + 2, evt3);
-            VerifyData(msgs[3].Data, startVersion + 3, evt4);
+            VerifyData(messages[0].Data, startVersion + 0, evt1);
+            VerifyData(messages[1].Data, startVersion + 1, evt2);
+            VerifyData(messages[2].Data, startVersion + 2, evt3);
+            VerifyData(messages[3].Data, startVersion + 3, evt4);
 
             void VerifyData<TPayload>(object source,
                                       long expectedVersion,
@@ -206,7 +205,7 @@ namespace Loom.EventSourcing
                 data.Payload.Should().BeEquivalentTo(expectedPayload);
             }
 
-            pk.Should().Be($"{streamId}");
+            partitionKey.Should().Be($"{streamId}");
         }
 
         [TestMethod, AutoData]
@@ -228,7 +227,6 @@ namespace Loom.EventSourcing
 
         [TestMethod, AutoData]
         public async Task if_CollectEvents_failed_to_send_messages_it_sends_them_next_time(
-            IMessageBus stub,
             string streamId,
             int startVersion,
             Event1 evt1,
@@ -237,12 +235,10 @@ namespace Loom.EventSourcing
             Event4 evt4)
         {
             // Arrange
-            T sut = GenerateEventStore(eventBus: stub);
+            MessageBusDouble spy = new(errors: 1);
+            T sut = GenerateEventStore(eventBus: spy);
 
-            Mock.Get(stub)
-                .Setup(x => x.Send(It.IsAny<IEnumerable<Message>>(), It.IsAny<string>()))
-                .ThrowsAsync(new InvalidOperationException());
-
+            // Act
             try
             {
                 await sut.CollectEvents(streamId, startVersion, new object[] { evt1, evt2 });
@@ -251,34 +247,28 @@ namespace Loom.EventSourcing
             {
             }
 
-            var log = new List<(IEnumerable<Message> Messages, string PartitionKey)>();
-
-            Mock.Get(stub)
-                .Setup(x => x.Send(It.IsAny<IEnumerable<Message>>(), It.IsAny<string>()))
-                .Callback<IEnumerable<Message>, string>((msgs, pk) => log.Add((msgs, pk)))
-                .Returns(Task.CompletedTask);
-
-            // Act
             await sut.CollectEvents(streamId, startVersion + 2, new object[] { evt3, evt4 });
 
             // Assert
-            log.Should().HaveCount(2);
+            (ImmutableArray<Message> Messages, string PartitionKey)[] calls = spy.Calls.ToArray();
 
-            log[0].Messages.Select(x => x.Data).Should().BeEquivalentTo(new object[]
+            calls.Should().HaveCount(3);
+
+            calls[1].Messages.Select(x => x.Data).Should().BeEquivalentTo(new object[]
             {
                 new StreamEvent<Event1>(streamId, startVersion + 0, default, evt1),
                 new StreamEvent<Event2>(streamId, startVersion + 1, default, evt2),
             },
             c => c.WithStrictOrdering().Excluding((IMemberInfo m) => m.Name == "RaisedTimeUtc"));
-            log[0].PartitionKey.Should().Be($"{streamId}");
+            calls[1].PartitionKey.Should().Be($"{streamId}");
 
-            log[1].Messages.Select(x => x.Data).Should().BeEquivalentTo(new object[]
+            calls[2].Messages.Select(x => x.Data).Should().BeEquivalentTo(new object[]
             {
                 new StreamEvent<Event3>(streamId, startVersion + 2, default, evt3),
                 new StreamEvent<Event4>(streamId, startVersion + 3, default, evt4),
             },
             c => c.WithStrictOrdering().Excluding((IMemberInfo m) => m.Name == "RaisedTimeUtc"));
-            log[1].PartitionKey.Should().Be($"{streamId}");
+            calls[2].PartitionKey.Should().Be($"{streamId}");
         }
 
         [TestMethod, AutoData]
@@ -299,7 +289,7 @@ namespace Loom.EventSourcing
             await sut.CollectEvents(streamId, startVersion + 2, new object[] { evt3, evt4 });
 
             // Assert
-            var calls = spy.Calls.ToImmutableArray();
+            (ImmutableArray<Message> Messages, string PartitionKey)[] calls = spy.Calls.ToArray();
 
             calls.Should().HaveCount(2);
 
@@ -343,22 +333,16 @@ namespace Loom.EventSourcing
 
         [TestMethod, AutoData]
         public async Task CollectEvents_preserves_message_id(
-            ConcurrentQueue<Message> messages,
-            IMessageBus stub,
             string streamId,
             int startVersion,
             Event1 evt1,
             Event2 evt2)
         {
             // Arrange
-            T sut = GenerateEventStore(eventBus: stub);
+            MessageBusDouble spy = new(errors: 1);
+            T sut = GenerateEventStore(eventBus: spy);
 
             // Act
-            Mock.Get(stub)
-                .Setup(x => x.Send(It.IsAny<IEnumerable<Message>>(), It.IsAny<string>()))
-                .Callback<IEnumerable<Message>, string>((x, _) => x.ForEach(messages.Enqueue))
-                .ThrowsAsync(new InvalidOperationException());
-
             try
             {
                 await sut.CollectEvents(streamId, startVersion, new[] { evt1 });
@@ -367,16 +351,15 @@ namespace Loom.EventSourcing
             {
             }
 
-            Mock.Get(stub)
-                .Setup(x => x.Send(It.IsAny<IEnumerable<Message>>(), It.IsAny<string>()))
-                .Callback<IEnumerable<Message>, string>((x, _) => x.ForEach(messages.Enqueue))
-                .Returns(Task.CompletedTask);
-
             await sut.CollectEvents(streamId, startVersion + 1, new[] { evt2 });
 
             // Assert
-            messages.Should().HaveCount(3);
-            messages.Take(2).Select(x => x.Id).Distinct().Should().ContainSingle();
+            spy.Calls.SelectMany(x => x.Messages)
+                     .Select(x => x.Id)
+                     .Take(2)
+                     .Distinct()
+                     .Should()
+                     .ContainSingle();
         }
 
         [TestMethod, AutoData]
@@ -400,22 +383,16 @@ namespace Loom.EventSourcing
 
         [TestMethod, AutoData]
         public async Task CollectEvents_preserves_RaisedTimeUtc_property(
-            ConcurrentQueue<Message> messages,
-            IMessageBus stub,
             string streamId,
             int startVersion,
             Event1 evt1,
             Event2 evt2)
         {
             // Arrange
-            T sut = GenerateEventStore(eventBus: stub);
+            MessageBusDouble spy = new(errors: 1);
+            T sut = GenerateEventStore(eventBus: spy);
 
             // Act
-            Mock.Get(stub)
-                .Setup(x => x.Send(It.IsAny<IEnumerable<Message>>(), It.IsAny<string>()))
-                .Callback<IEnumerable<Message>, string>((x, _) => x.ForEach(messages.Enqueue))
-                .ThrowsAsync(new InvalidOperationException());
-
             try
             {
                 await sut.CollectEvents(streamId, startVersion, new[] { evt1 });
@@ -425,26 +402,17 @@ namespace Loom.EventSourcing
             }
 
             await Task.Delay(millisecondsDelay: 100);
-
-            Mock.Get(stub)
-                .Setup(x => x.Send(It.IsAny<IEnumerable<Message>>(), It.IsAny<string>()))
-                .Callback<IEnumerable<Message>, string>((x, _) => x.ForEach(messages.Enqueue))
-                .Returns(Task.CompletedTask);
-
             await sut.CollectEvents(streamId, startVersion + 1, new[] { evt2 });
 
             // Assert
-            messages.Should()
-                    .HaveCount(3)
-                    .And
-                    .Subject
-                    .Take(2)
-                    .Select(x => x.Data)
-                    .Cast<StreamEvent<Event1>>()
-                    .Select(x => x.RaisedTimeUtc)
-                    .Distinct()
-                    .Should()
-                    .ContainSingle();
+            spy.Calls.SelectMany(x => x.Messages)
+                     .Select(x => x.Data)
+                     .Cast<StreamEvent<Event1>>()
+                     .Select(x => x.RaisedTimeUtc)
+                     .Take(2)
+                     .Distinct()
+                     .Should()
+                     .ContainSingle();
         }
 
         [TestMethod, AutoData]
