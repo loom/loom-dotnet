@@ -30,36 +30,22 @@ namespace Loom.EventSourcing.Azure
             _publisher = new EventPublisher(table, typeResolver, jsonProcessor, eventBus);
         }
 
-        public Task CollectEvents(string processId,
-                                  string? initiator,
-                                  string? predecessorId,
-                                  string streamId,
-                                  long startVersion,
-                                  IEnumerable<object> events)
+        public async Task CollectEvents(string processId,
+                                        string? initiator,
+                                        string? predecessorId,
+                                        string streamId,
+                                        long startVersion,
+                                        IEnumerable<object> events,
+                                        CancellationToken cancellationToken)
         {
-            return SaveAndPublish(stateType: ResolveName(typeof(T)),
-                                  processId,
-                                  initiator,
-                                  predecessorId,
-                                  transaction: Guid.NewGuid(),
-                                  streamId,
-                                  startVersion,
-                                  events.ToList().AsReadOnly());
-        }
-
-        private async Task SaveAndPublish(string stateType,
-                                          string processId,
-                                          string? initiator,
-                                          string? predecessorId,
-                                          Guid transaction,
-                                          string streamId,
-                                          long startVersion,
-                                          IReadOnlyList<object> events)
-        {
-            if (events.Count == 0)
+            IReadOnlyList<object> eventList = events.ToList().AsReadOnly();
+            if (eventList.Count == 0)
             {
                 return;
             }
+
+            string stateType = ResolveName(typeof(T));
+            var transaction = Guid.NewGuid();
 
             await SaveQueueTicket().ConfigureAwait(continueOnCapturedContext: false);
             await SaveEvents().ConfigureAwait(continueOnCapturedContext: false);
@@ -67,17 +53,23 @@ namespace Loom.EventSourcing.Azure
 
             Task SaveQueueTicket()
             {
-                var queueTicket = new QueueTicket(stateType, streamId, startVersion, events.Count, transaction);
-                return _table.ExecuteAsync(TableOperation.Insert(queueTicket));
+                var queueTicket = new QueueTicket(
+                    stateType,
+                    streamId,
+                    startVersion,
+                    eventList.Count,
+                    transaction);
+
+                return _table.ExecuteAsync(TableOperation.Insert(queueTicket), cancellationToken);
             }
 
             Task SaveEvents()
             {
                 var batch = new TableBatchOperation();
 
-                for (int i = 0; i < events.Count; i++)
+                for (int i = 0; i < eventList.Count; i++)
                 {
-                    object source = events[i];
+                    object source = eventList[i];
 
                     var streamEvent = new StreamEvent(
                         stateType,
@@ -90,12 +82,12 @@ namespace Loom.EventSourcing.Azure
                         raisedTimeUtc: DateTime.UtcNow,
                         eventType: ResolveName(source.GetType()),
                         payload: _jsonProcessor.ToJson(source),
-                        transaction: transaction);
+                        transaction);
 
                     batch.Insert(streamEvent);
                 }
 
-                return _table.ExecuteBatchAsync(batch);
+                return _table.ExecuteBatchAsync(batch, cancellationToken);
             }
 
             Task PublishPendingEvents() => _publisher.PublishEvents(stateType, streamId);

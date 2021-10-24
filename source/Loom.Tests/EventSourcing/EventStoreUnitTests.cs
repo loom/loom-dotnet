@@ -174,7 +174,8 @@ namespace Loom.EventSourcing
                                     predecessorId,
                                     streamId,
                                     startVersion,
-                                    events);
+                                    events,
+                                    cancellationToken: default);
 
             // Assert
             spy.Calls.Should().ContainSingle();
@@ -466,7 +467,8 @@ namespace Loom.EventSourcing
                                     predecessorId,
                                     streamId,
                                     startVersion: 1,
-                                    events);
+                                    events,
+                                    cancellationToken: default);
 
             // Act
             IEnumerable<Message> actual = await sut.QueryEventMessages(streamId);

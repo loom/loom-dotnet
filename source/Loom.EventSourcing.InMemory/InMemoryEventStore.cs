@@ -31,7 +31,8 @@ namespace Loom.EventSourcing.InMemory
                                   string predecessorId,
                                   string streamId,
                                   long startVersion,
-                                  IEnumerable<object> events)
+                                  IEnumerable<object> events,
+                                  CancellationToken cancellationToken)
         {
             if (events is null)
             {
