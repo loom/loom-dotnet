@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoFixture;
+using Azure.Messaging.EventHubs;
+using Azure.Messaging.EventHubs.Consumer;
+using Azure.Messaging.EventHubs.Producer;
 using FluentAssertions;
 using Loom.Testing;
-using Microsoft.Azure.EventHubs;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Loom.Messaging.Azure
@@ -13,23 +15,24 @@ namespace Loom.Messaging.Azure
     [TestClass]
     public class EventHubMessageBus_specs
     {
-        public static EventHubClient EventHub { get; set; }
+        public static string ConnectionString { get; set; }
 
-        public static EventHubRuntimeInformation EventHubInformation { get; set; }
+        public static string EventHubName { get; set; }
 
-        public PartitionReceiver[] Receivers { get; set; }
+        public EventHubProducerClient Producer { get; set; }
+
+        public EventHubConsumerClient Consumer { get; set; }
 
         [ClassInitialize]
-        public static async Task ClassInitialize(TestContext context)
+        public static void ClassInitialize(TestContext context)
         {
             if (context.Properties.TryGetValue("EventHubNamespaceConnectionString", out object connectionStringValue) &&
                 connectionStringValue is string connectionString &&
                 context.Properties.TryGetValue("EventHubName", out object eventHubNameValue) &&
                 eventHubNameValue is string eventHubName)
             {
-                var connectionStringBuilder = new EventHubsConnectionStringBuilder(connectionString) { EntityPath = eventHubName };
-                EventHub = EventHubClient.CreateFromConnectionString(connectionStringBuilder.ToString());
-                EventHubInformation = await EventHub.GetRuntimeInformationAsync();
+                ConnectionString = connectionString;
+                EventHubName = eventHubName;
             }
             else
             {
@@ -46,52 +49,32 @@ namespace Loom.Messaging.Azure
         }
 
         [TestInitialize]
-        public async Task TestInitialize()
+        public void TestInitialize()
         {
-            string consumerGroupName = "$Default";
-            Task<PartitionReceiver> Create(string partitionId) => CreateReceiver(consumerGroupName, partitionId);
-            Receivers = await Task.WhenAll(EventHubInformation.PartitionIds.Select(Create));
-        }
-
-        private static async Task<PartitionReceiver> CreateReceiver(string consumerGroup, string partitionId)
-        {
-            EventHubPartitionRuntimeInformation partition = await EventHub.GetPartitionRuntimeInformationAsync(partitionId);
-            var position = EventPosition.FromSequenceNumber(partition.LastEnqueuedSequenceNumber, inclusive: false);
-            return EventHub.CreateReceiver(consumerGroup, partitionId, position);
+            Producer = new(ConnectionString, EventHubName);
+            Consumer = new(consumerGroup: "$Default", ConnectionString, EventHubName);
         }
 
         [TestCleanup]
         public async Task TestCleanup()
         {
-            await Task.WhenAll(Receivers.Select(r => r.CloseAsync()));
+            await Producer.CloseAsync();
+            await Consumer.CloseAsync();
         }
 
-        private async Task<EventData[]> ReceiveEvents(int maxCountPerPartition)
+        private async Task<EventData[]> ReceiveEvents(TimeSpan maximumWaitTime)
         {
-            Task<EventData[]> Receive(PartitionReceiver receiver) => ReceiveEvents(receiver, maxCountPerPartition);
-            IEnumerable<EventData>[] results = await Task.WhenAll(Receivers.Select(Receive));
-            return results.SelectMany(_ => _).ToArray();
-        }
-
-        private static async Task<EventData[]> ReceiveEvents(
-            PartitionReceiver receiver, int maxCountPerPartition)
-        {
-            var events = new List<EventData>();
-
-            while (true)
+            List<EventData> events = new();
+            var readOptions = new ReadEventOptions { MaximumWaitTime = maximumWaitTime };
+            await foreach (PartitionEvent partitionEvent in
+                Consumer.ReadEventsAsync(startReadingAtEarliestEvent: false, readOptions))
             {
-                IEnumerable<EventData> result = await receiver.ReceiveAsync(maxCountPerPartition);
-                if (result == null)
+                if (partitionEvent.Data == null)
                 {
                     break;
                 }
 
-                events.AddRange(result);
-
-                if (events.Count >= maxCountPerPartition)
-                {
-                    break;
-                }
+                events.Add(partitionEvent.Data);
             }
 
             return events.ToArray();
@@ -107,12 +90,13 @@ namespace Loom.Messaging.Azure
             MessageData1 data,
             string partitionKey)
         {
-            var sut = new EventHubMessageBus(EventHub, converter);
+            var sut = new EventHubMessageBus(Producer, converter);
             Message message = new(id, processId, initiator, predecessorId, data);
+            Task<EventData[]> receiveTask = ReceiveEvents(maximumWaitTime: TimeSpan.FromSeconds(1));
 
             await sut.Send(new[] { message }, partitionKey);
 
-            EventData[] events = await ReceiveEvents(maxCountPerPartition: 1);
+            EventData[] events = await receiveTask;
             events.Should().ContainSingle();
             Message actual = converter.TryConvertToMessage(events[0]);
             actual.Should().BeEquivalentTo(message);
@@ -122,12 +106,13 @@ namespace Loom.Messaging.Azure
         public async Task Send_sets_partition_key_correctly(
             IEventConverter converter, Message message, string partitionKey)
         {
-            var sut = new EventHubMessageBus(EventHub, converter);
+            var sut = new EventHubMessageBus(Producer, converter);
+            Task<EventData[]> receiveTask = ReceiveEvents(maximumWaitTime: TimeSpan.FromSeconds(1));
 
             await sut.Send(new[] { message }, partitionKey);
 
-            EventData[] events = await ReceiveEvents(maxCountPerPartition: 1);
-            string actual = events[0].SystemProperties.PartitionKey;
+            EventData[] events = await receiveTask;
+            string actual = events[0].PartitionKey;
             actual.Should().Be(partitionKey);
         }
 
@@ -140,19 +125,20 @@ namespace Loom.Messaging.Azure
             string predecessorId,
             string partitionKey)
         {
-            var sut = new EventHubMessageBus(EventHub, converter);
-            int count = 10000;
+            var sut = new EventHubMessageBus(Producer, converter);
+            int count = 1000;
             Message[] messages = Enumerable
                 .Range(0, count)
                 .Select(_ => new string(generator.First(), 1000))
                 .Select(value => new MessageData1(1, value))
                 .Select(data => new Message(Id: $"{Guid.NewGuid()}", processId, initiator, predecessorId, data))
                 .ToArray();
+            Task<EventData[]> receiveTask = ReceiveEvents(maximumWaitTime: TimeSpan.FromSeconds(3));
 
             await sut.Send(messages, partitionKey);
 
-            EventData[] events = await ReceiveEvents(maxCountPerPartition: count);
-            events.Should().HaveCount(count);
+            EventData[] events = await receiveTask;
+            events.Length.Should().Be(count);
             IEnumerable<Message> actual = events.Select(converter.TryConvertToMessage).ToArray();
             actual.Should().BeEquivalentTo(
                 messages,
@@ -164,10 +150,10 @@ namespace Loom.Messaging.Azure
         }
 
         [TestMethod, AutoData]
-        public async Task given_no_message_then_Send_does_not_fail(
+        public async Task even_if_no_message_then_Send_does_not_fail(
             IEventConverter converter, string partitionKey)
         {
-            var sut = new EventHubMessageBus(EventHub, converter);
+            var sut = new EventHubMessageBus(Producer, converter);
             Func<Task> action = () => sut.Send(Array.Empty<Message>(), partitionKey);
             await action.Should().NotThrowAsync();
         }

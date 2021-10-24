@@ -1,7 +1,7 @@
-﻿namespace Loom.Messaging.Azure
-{
-    using Microsoft.Azure.EventHubs;
+﻿using Azure.Messaging.EventHubs;
 
+namespace Loom.Messaging.Azure
+{
     public interface IEventConverter
     {
         EventData ConvertToEvent(Message message);

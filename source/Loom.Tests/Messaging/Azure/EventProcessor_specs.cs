@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Azure.Messaging.EventHubs;
 using FluentAssertions;
 using Loom.Testing;
-using Microsoft.Azure.EventHubs;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
