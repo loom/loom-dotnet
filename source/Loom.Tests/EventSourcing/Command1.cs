@@ -1,6 +1,4 @@
 ﻿namespace Loom.EventSourcing
 {
-    public class Command1
-    {
-    }
+    public sealed record Command1(int Value);
 }
