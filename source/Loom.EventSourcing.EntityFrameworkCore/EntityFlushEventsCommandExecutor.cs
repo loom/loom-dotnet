@@ -19,7 +19,7 @@ namespace Loom.EventSourcing.EntityFrameworkCore
             _publisher = new EventPublisher(contextFactory, typeResolver, jsonProcessor, eventBus);
         }
 
-        public bool Accepts(Message message)
+        public bool CanHandle(Message message)
             => message?.Data is FlushEvents;
 
         public Task Handle(Message message, CancellationToken cancellationToken = default)

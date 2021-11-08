@@ -21,8 +21,8 @@ namespace Loom.Messaging
             Message message,
             DebouncingMessageHandler sut)
         {
-            Mock.Get(handler).Setup(x => x.Accepts(message)).Returns(canHandle);
-            bool actual = sut.Accepts(message);
+            Mock.Get(handler).Setup(x => x.CanHandle(message)).Returns(canHandle);
+            bool actual = sut.CanHandle(message);
             actual.Should().Be(canHandle);
         }
 

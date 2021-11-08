@@ -34,7 +34,7 @@ namespace Loom.Messaging.Azure
                 {
                     if (_converter.TryConvertToMessage(eventData) is Message message)
                     {
-                        if (_handler.Accepts(message))
+                        if (_handler.CanHandle(message))
                         {
                             await _handler.Handle(message, cancellationToken)
                                           .ConfigureAwait(continueOnCapturedContext: false);

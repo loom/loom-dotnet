@@ -27,7 +27,7 @@ namespace Loom.Messaging
             // Arrange
             Message[] sample = messages.Sample(2).ToArray();
             var mock = Mock.Get(handler);
-            sample.ForEach(m => mock.Setup(x => x.Accepts(m)).Returns(true));
+            sample.ForEach(m => mock.Setup(x => x.CanHandle(m)).Returns(true));
             var sut = new ImmediateMessageBus(handler);
 
             // Act

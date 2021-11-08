@@ -59,7 +59,7 @@ namespace Loom.EventSourcing.EntityFrameworkCore
             Message message = new(commandId, processId, initiator, predecessorId, Data: command);
             EntityFlushEventsCommandExecutor sut = GenerateSut(eventBus);
 
-            bool actual = sut.Accepts(message);
+            bool actual = sut.CanHandle(message);
 
             actual.Should().BeTrue();
         }
@@ -70,7 +70,7 @@ namespace Loom.EventSourcing.EntityFrameworkCore
             IMessageBus eventBus)
         {
             EntityFlushEventsCommandExecutor sut = GenerateSut(eventBus);
-            bool actual = sut.Accepts(message);
+            bool actual = sut.CanHandle(message);
             actual.Should().BeFalse();
         }
 

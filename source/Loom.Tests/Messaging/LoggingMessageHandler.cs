@@ -11,7 +11,7 @@ namespace Loom.Messaging
 
         public IEnumerable<Message> Log => _log;
 
-        public bool Accepts(Message message) => true;
+        public bool CanHandle(Message message) => true;
 
         public Task Handle(Message message, CancellationToken cancellationToken)
         {

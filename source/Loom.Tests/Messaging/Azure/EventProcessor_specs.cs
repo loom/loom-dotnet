@@ -57,7 +57,7 @@ namespace Loom.Messaging.Azure
             IMessageHandler handler,
             Message message)
         {
-            Mock.Get(handler).Setup(x => x.Accepts(It.IsAny<Message>())).Returns(false);
+            Mock.Get(handler).Setup(x => x.CanHandle(It.IsAny<Message>())).Returns(false);
             EventProcessor sut = new EventProcessorBuilder(converter, handler).Build();
             EventData eventData = converter.ConvertToEvent(message);
 
@@ -80,7 +80,7 @@ namespace Loom.Messaging.Azure
             var mock = Mock.Get(handler);
             foreach ((Message message, Exception exception) in tuples)
             {
-                mock.Setup(x => x.Accepts(It.Is<Message>(m => m.Id == message.Id))).Returns(true);
+                mock.Setup(x => x.CanHandle(It.Is<Message>(m => m.Id == message.Id))).Returns(true);
 
                 Expression<Func<IMessageHandler, Task>> call = x => x.Handle(
                     It.Is<Message>(m => m.Id == message.Id),

@@ -22,7 +22,7 @@ namespace Loom.Messaging
             IMessageHandler[] handlers, Message message)
         {
             var sut = new CompositeMessageHandler(handlers);
-            bool actual = sut.Accepts(message);
+            bool actual = sut.CanHandle(message);
             actual.Should().BeFalse();
         }
 
@@ -32,9 +32,9 @@ namespace Loom.Messaging
         {
             var sut = new CompositeMessageHandler(handlers);
             IMessageHandler some = handlers.OrderBy(x => x.GetHashCode()).First();
-            Mock.Get(some).Setup(x => x.Accepts(message)).Returns(true);
+            Mock.Get(some).Setup(x => x.CanHandle(message)).Returns(true);
 
-            bool actual = sut.Accepts(message);
+            bool actual = sut.CanHandle(message);
 
             actual.Should().BeTrue();
         }
@@ -47,7 +47,7 @@ namespace Loom.Messaging
         {
             var sut = new CompositeMessageHandler(handlers);
             var some = handlers.OrderBy(x => x.GetHashCode()).Skip(1).ToList();
-            some.ForEach(handler => Mock.Get(handler).Setup(x => x.Accepts(message)).Returns(true));
+            some.ForEach(handler => Mock.Get(handler).Setup(x => x.CanHandle(message)).Returns(true));
 
             await sut.Handle(message, cancellationToken);
 
@@ -67,7 +67,7 @@ namespace Loom.Messaging
             var some = handlers.OrderBy(x => x.GetHashCode()).Skip(1).ToList();
             foreach (IMessageHandler handler in some)
             {
-                Mock.Get(handler).Setup(x => x.Accepts(message)).Returns(false);
+                Mock.Get(handler).Setup(x => x.CanHandle(message)).Returns(false);
             }
 
             await sut.Handle(message, cancellationToken);
