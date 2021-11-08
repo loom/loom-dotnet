@@ -5,7 +5,7 @@ namespace Loom.Messaging
 {
     public interface IMessageHandler
     {
-        bool Accepts(Message message);
+        bool CanHandle(Message message);
 
         Task Handle(Message message, CancellationToken cancellationToken);
     }

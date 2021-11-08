@@ -13,14 +13,14 @@ namespace Loom.Messaging
         public CompositeMessageHandler(params IMessageHandler[] handlers)
             => _handlers = handlers.ToList().AsReadOnly();
 
-        public bool Accepts(Message message)
-            => _handlers.Any(x => x.Accepts(message));
+        public bool CanHandle(Message message)
+            => _handlers.Any(x => x.CanHandle(message));
 
         public Task Handle(Message message, CancellationToken cancellationToken = default)
         {
             IEnumerable<Task> tasks =
                 from handler in _handlers
-                where handler.Accepts(message)
+                where handler.CanHandle(message)
                 select handler.Handle(message, cancellationToken);
 
             return Task.WhenAll(tasks);

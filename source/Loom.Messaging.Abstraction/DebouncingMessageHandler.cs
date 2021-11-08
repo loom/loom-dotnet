@@ -16,7 +16,7 @@ namespace Loom.Messaging
             _handler = handler;
         }
 
-        public bool Accepts(Message message) => _handler.Accepts(message);
+        public bool CanHandle(Message message) => _handler.CanHandle(message);
 
         public Task Handle(Message message, CancellationToken cancellationToken = default)
         {

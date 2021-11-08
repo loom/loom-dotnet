@@ -45,7 +45,7 @@ namespace Loom.EventSourcing.Azure
             Message message = new(commandId, processId, initiator, predecessorId, Data: command);
             TableFlushEventsCommandExecutor sut = GenerateSut(eventBus);
 
-            bool actual = sut.Accepts(message);
+            bool actual = sut.CanHandle(message);
 
             actual.Should().BeTrue();
         }
@@ -56,7 +56,7 @@ namespace Loom.EventSourcing.Azure
             IMessageBus eventBus)
         {
             TableFlushEventsCommandExecutor sut = GenerateSut(eventBus);
-            bool actual = sut.Accepts(message);
+            bool actual = sut.CanHandle(message);
             actual.Should().BeFalse();
         }
 

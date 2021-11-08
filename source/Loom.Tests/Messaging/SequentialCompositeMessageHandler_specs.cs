@@ -24,7 +24,7 @@ namespace Loom.Messaging
             IMessageHandler[] handlers, Message message)
         {
             var sut = new SequentialCompositeMessageHandler(handlers);
-            bool actual = sut.Accepts(message);
+            bool actual = sut.CanHandle(message);
             actual.Should().BeFalse();
         }
 
@@ -34,9 +34,9 @@ namespace Loom.Messaging
         {
             var sut = new SequentialCompositeMessageHandler(handlers);
             IMessageHandler some = handlers.OrderBy(x => x.GetHashCode()).First();
-            Mock.Get(some).Setup(x => x.Accepts(message)).Returns(true);
+            Mock.Get(some).Setup(x => x.CanHandle(message)).Returns(true);
 
-            bool actual = sut.Accepts(message);
+            bool actual = sut.CanHandle(message);
 
             actual.Should().BeTrue();
         }
@@ -76,7 +76,7 @@ namespace Loom.Messaging
         {
             var sut = new SequentialCompositeMessageHandler(handlers);
             var some = handlers.OrderBy(x => x.GetHashCode()).Skip(1).ToList();
-            some.ForEach(handler => Mock.Get(handler).Setup(x => x.Accepts(message)).Returns(false));
+            some.ForEach(handler => Mock.Get(handler).Setup(x => x.CanHandle(message)).Returns(false));
 
             await sut.Handle(message, cancellationToken);
 
