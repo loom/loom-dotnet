@@ -11,6 +11,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Loom.EventSourcing
 {
+    [Obsolete("SnapshottedStateRehydrator is deprecated.")]
     [TestClass]
     public class SnapshottedStateRehydrator_specs
     {

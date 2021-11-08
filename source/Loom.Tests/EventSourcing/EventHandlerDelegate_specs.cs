@@ -1,11 +1,12 @@
-﻿namespace Loom.EventSourcing
-{
-    using System;
-    using System.Linq;
-    using FluentAssertions;
-    using Loom.Testing;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System;
+using System.Linq;
+using FluentAssertions;
+using Loom.Testing;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+namespace Loom.EventSourcing
+{
+    [Obsolete("EventHandlerDelegate is deprecated.")]
     [TestClass]
     public class EventHandlerDelegate_specs
     {

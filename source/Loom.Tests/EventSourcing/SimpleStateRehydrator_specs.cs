@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoFixture;
@@ -8,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Loom.EventSourcing
 {
+    [Obsolete("SimpleStateRehydrator is deprecated.")]
     [TestClass]
     public class SimpleStateRehydrator_specs
     {
