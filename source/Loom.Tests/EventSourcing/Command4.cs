@@ -2,5 +2,5 @@
 
 namespace Loom.EventSourcing
 {
-    public sealed record Event4(Guid Value);
+    public sealed record Command4(Guid Value);
 }

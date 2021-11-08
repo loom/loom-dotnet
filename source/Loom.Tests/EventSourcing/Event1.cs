@@ -1,9 +1,4 @@
 ﻿namespace Loom.EventSourcing
 {
-    public class Event1
-    {
-        public Event1(int value) => Value = value;
-
-        public int Value { get; }
-    }
+    public sealed record Event1(int Value);
 }
