@@ -6,6 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Loom.EventSourcing
 {
+    [Obsolete("EventProducerDelegate is deprecated.")]
     [TestClass]
     public class EventProducerDelegate_specs
     {
