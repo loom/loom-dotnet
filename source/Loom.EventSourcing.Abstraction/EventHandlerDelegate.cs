@@ -5,6 +5,7 @@ using System.Reflection;
 
 namespace Loom.EventSourcing
 {
+    [Obsolete("This class will be replaced with new framework.")]
     public sealed class EventHandlerDelegate<T> : IEventHandler<T>
     {
         private readonly object _handler;

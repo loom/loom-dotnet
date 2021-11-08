@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 
 namespace Loom.EventSourcing
 {
+    [Obsolete("This class will be replaced with new framework.")]
     public class SnapshottedStateRehydrator<T> : IStateRehydrator<T>
         where T : class, IVersioned
     {
