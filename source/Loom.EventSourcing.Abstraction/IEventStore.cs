@@ -1,7 +1,11 @@
 ﻿namespace Loom.EventSourcing
 {
+    public interface IEventStore : IEventCollector, IEventReader
+    {
+    }
+
     public interface IEventStore<T> :
-        IEventCollector<T>, IEventCollector, IEventReader<T>, IEventReader
+        IEventStore, IEventCollector<T>, IEventReader<T>
     {
     }
 }
