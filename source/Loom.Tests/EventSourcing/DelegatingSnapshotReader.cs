@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Loom.EventSourcing
@@ -13,7 +14,9 @@ namespace Loom.EventSourcing
             _function = function;
         }
 
-        public Task<T> TryRestoreSnapshot(string streamId)
+        public Task<T> TryRestoreSnapshot(
+            string streamId,
+            CancellationToken cancellationToken = default)
         {
             return _function.Invoke(streamId);
         }

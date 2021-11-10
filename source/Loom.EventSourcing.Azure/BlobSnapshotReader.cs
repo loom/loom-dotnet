@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Azure;
 using Azure.Storage.Blobs;
@@ -20,11 +21,13 @@ namespace Loom.EventSourcing.Azure
             _jsonProcessor = jsonProcessor;
         }
 
-        public async Task<T?> TryRestoreSnapshot(string streamId)
+        public async Task<T?> TryRestoreSnapshot(
+            string streamId,
+            CancellationToken cancellationToken = default)
         {
             BlobClient blob = GetBlob(streamId);
-            return await blob.ExistsAsync().ConfigureAwait(continueOnCapturedContext: false)
-                 ? await RestoreSnapshot(blob).ConfigureAwait(continueOnCapturedContext: false)
+            return await blob.ExistsAsync(cancellationToken).ConfigureAwait(continueOnCapturedContext: false)
+                 ? await RestoreSnapshot(blob, cancellationToken).ConfigureAwait(continueOnCapturedContext: false)
                  : default;
         }
 
@@ -33,17 +36,17 @@ namespace Loom.EventSourcing.Azure
             return _container.GetBlobClient(blobName: $"{streamId}.json");
         }
 
-        private async Task<T> RestoreSnapshot(BlobClient blob)
+        private async Task<T> RestoreSnapshot(BlobClient blob, CancellationToken cancellationToken)
         {
-            byte[] bytes = await GetBytes(blob).ConfigureAwait(continueOnCapturedContext: false);
+            byte[] bytes = await GetBytes(blob, cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
             string content = Encoding.UTF8.GetString(bytes);
             return (T)_jsonProcessor.FromJson(content, dataType: typeof(T));
         }
 
-        private static async Task<byte[]> GetBytes(BlobClient blob)
+        private static async Task<byte[]> GetBytes(BlobClient blob, CancellationToken cancellationToken)
         {
             Response<BlobDownloadResult> response = await blob
-                .DownloadContentAsync()
+                .DownloadContentAsync(cancellationToken)
                 .ConfigureAwait(continueOnCapturedContext: false);
 
             return response.Value.Content.ToArray();
