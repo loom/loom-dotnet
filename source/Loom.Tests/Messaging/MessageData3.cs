@@ -1,6 +1,4 @@
 ﻿namespace Loom.Messaging
 {
-    public class MessageData3 : MessageData2
-    {
-    }
+    public record MessageData3 : MessageData2;
 }
