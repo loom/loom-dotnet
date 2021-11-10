@@ -43,7 +43,7 @@ namespace Loom.EventSourcing
         {
             T seed = _seedFactory.Invoke(streamId);
             T state = events.Aggregate(seed, HandleEvent);
-            return new(Version: events.Count, state);
+            return new(streamId, Version: events.Count, state);
         }
 
         private T HandleEvent(T state, object pastEvent)

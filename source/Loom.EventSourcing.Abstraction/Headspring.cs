@@ -14,12 +14,14 @@ namespace Loom.EventSourcing
     {
         private readonly Func<string, T> _seedFactory;
         private readonly IEventCollector _eventCollector;
+        private readonly Lazy<Type[]> _interfaces;
 
         protected Headspring(Func<string, T> seedFactory, IEventStore eventStore)
             : base(seedFactory, eventStore)
         {
             _seedFactory = seedFactory;
             _eventCollector = eventStore;
+            _interfaces = new(() => GetType().GetInterfaces());
         }
 
         public bool CanHandle(Message message)
@@ -46,28 +48,37 @@ namespace Loom.EventSourcing
                 throw new InvalidOperationException($"Cannot handle message of {message.Data.GetType()}");
             }
 
-            dynamic data = message.Data;
-            string streamId = data.StreamId;
+            string streamId = (message.Data as dynamic).StreamId;
+            Snapshot<T> snapshot = await RehydrateState(streamId, cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
+            await StreamEvents(message, snapshot, cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
+        }
 
-            (long version, T state) = await
-                RehydrateState(streamId, cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
+        private Task StreamEvents(
+            Message message,
+            Snapshot<T> snapshot,
+            CancellationToken cancellationToken)
+        {
+            object command = (object)(message.Data as dynamic).Payload;
 
-            await _eventCollector.CollectEvents(
+            ImmutableArray<object> events = ProduceEvents(snapshot.State, command);
+
+            ValidateEvents(events);
+
+            return _eventCollector.CollectEvents(
                 message.ProcessId,
                 message.Initiator,
                 predecessorId: message.Id,
-                streamId,
-                startVersion: version + 1,
-                events: ProduceEvents(state, command: (object)data.Payload),
-                cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
+                snapshot.StreamId,
+                startVersion: snapshot.Version + 1,
+                events,
+                cancellationToken);
         }
 
         private ImmutableArray<object> ProduceEvents(T state, object command)
         {
             MethodInfo producer = GetEventProducer(command);
-            ImmutableArray<object> events = ProduceEvents(producer, state, command);
-            ValidateEvents(events);
-            return events;
+            var events = (IEnumerable<object>)producer.Invoke(this, new[] { state, command })!;
+            return events.ToImmutableArray();
         }
 
         private static MethodInfo GetEventProducer(object payload)
@@ -77,23 +88,22 @@ namespace Loom.EventSourcing
                 .GetMethod("ProduceEvents")!;
         }
 
-        private ImmutableArray<object> ProduceEvents(MethodInfo producer, T state, object command)
-        {
-            var events = (IEnumerable<object>)producer.Invoke(this, new[] { state, command })!;
-            return events.ToImmutableArray();
-        }
-
         private void ValidateEvents(ImmutableArray<object> events)
         {
-            Type[] interfaces = GetType().GetInterfaces();
             foreach (Type eventType in events.Select(e => e.GetType()))
             {
-                Type handlerType = typeof(IEventHandler<,>).MakeGenericType(typeof(T), eventType);
-                if (interfaces.Contains(handlerType) == false)
+                if (IsEventAcceptable(eventType) == false)
                 {
                     throw new InvalidOperationException($"Cannot handle the event of {eventType}.");
                 }
             }
+        }
+
+        private bool IsEventAcceptable(Type eventType)
+        {
+            Type template = typeof(IEventHandler<,>);
+            Type handlerType = template.MakeGenericType(typeof(T), eventType);
+            return _interfaces.Value.Contains(handlerType);
         }
     }
 }

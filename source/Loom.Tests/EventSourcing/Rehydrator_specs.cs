@@ -33,8 +33,8 @@ namespace Loom.EventSourcing
                 Func<State1, Event2, State1> handler2 = null)
                 : base(seedFactory, eventReader)
             {
-                _handler1 = handler1;
-                _handler2 = handler2;
+                _handler1 = handler1 ?? ((state, pastEvent) => state);
+                _handler2 = handler2 ?? ((state, pastEvent) => state);
             }
 
             public State1 HandleEvent(State1 state, Event1 pastEvent)
@@ -62,11 +62,11 @@ namespace Loom.EventSourcing
                 handler2: (s, e) => new State1(s.Value + e.Value));
 
             // Act
-            (long version, State1 state) = await sut.RehydrateState(streamId);
+            Snapshot<State1> actual = await sut.RehydrateState(streamId);
 
             // Assert
             int expected = Hash(streamId) + event1.Value + event2.Value;
-            state.Value.Should().Be(expected);
+            actual.State.Value.Should().Be(expected);
         }
 
         [TestMethod]
@@ -90,10 +90,26 @@ namespace Loom.EventSourcing
                 handler2: (s, e) => new State1(s.Value + e.Value));
 
             // Act
-            (long version, State1 state) = await sut.RehydrateState(streamId);
+            Snapshot<State1> actual = await sut.RehydrateState(streamId);
 
             // Assert
-            version.Should().Be(count);
+            actual.Version.Should().Be(count);
+        }
+
+        [TestMethod, AutoData]
+        public async Task sut_correctly_sets_stream_id(
+            string streamId,
+            Event1 event1,
+            Event2 event2,
+            InMemoryEventStore<State1> eventStore)
+        {
+            object[] events = new object[] { event1, event2 };
+            await eventStore.CollectEvents(streamId, startVersion: 1, events);
+            Sut sut = new(seedFactory: x => new(Hash(x)), eventStore);
+
+            Snapshot<State1> actual = await sut.RehydrateState(streamId);
+
+            actual.StreamId.Should().Be(streamId);
         }
 
         private static int Hash(object x) => x.GetHashCode();

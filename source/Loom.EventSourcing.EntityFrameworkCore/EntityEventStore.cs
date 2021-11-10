@@ -68,15 +68,15 @@ namespace Loom.EventSourcing.EntityFrameworkCore
                     var streamEvent = new StreamEvent(
                         stateType,
                         messageId: $"{Guid.NewGuid()}",
-                        processId: processId,
-                        initiator: initiator,
-                        predecessorId: predecessorId,
-                        streamId: streamId,
+                        processId,
+                        initiator,
+                        predecessorId,
+                        streamId,
                         version: startVersion + i,
                         raisedTimeUtc: DateTime.UtcNow,
                         eventType: ResolveName(source),
                         payload: _jsonProcessor.ToJson(source),
-                        transaction: transaction);
+                        transaction);
 
                     context.Add(streamEvent);
                     context.Add(PendingEvent.Create(streamEvent));
