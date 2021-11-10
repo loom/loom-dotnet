@@ -1,7 +1,7 @@
-﻿namespace Loom.Json
-{
-    using System;
+﻿using System;
 
+namespace Loom.Json
+{
     public interface IJsonProcessor
     {
         string ToJson(object data);

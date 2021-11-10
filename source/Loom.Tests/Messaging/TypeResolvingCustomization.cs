@@ -1,7 +1,7 @@
-﻿namespace Loom.Messaging
-{
-    using AutoFixture;
+﻿using AutoFixture;
 
+namespace Loom.Messaging
+{
     public class TypeResolvingCustomization : ICustomization
     {
         public void Customize(IFixture fixture)

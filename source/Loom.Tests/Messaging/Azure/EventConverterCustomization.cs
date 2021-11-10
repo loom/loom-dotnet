@@ -1,9 +1,9 @@
-﻿namespace Loom.Messaging.Azure
-{
-    using AutoFixture;
-    using Loom.Json;
-    using Newtonsoft.Json;
+﻿using AutoFixture;
+using Loom.Json;
+using Newtonsoft.Json;
 
+namespace Loom.Messaging.Azure
+{
     public class EventConverterCustomization : ICustomization
     {
         public void Customize(IFixture fixture)

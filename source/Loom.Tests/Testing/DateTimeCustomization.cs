@@ -1,11 +1,11 @@
-﻿namespace Loom.Testing
-{
-    using System;
-    using System.Linq;
-    using System.Reflection;
-    using AutoFixture;
-    using AutoFixture.Kernel;
+﻿using System;
+using System.Linq;
+using System.Reflection;
+using AutoFixture;
+using AutoFixture.Kernel;
 
+namespace Loom.Testing
+{
     public class DateTimeCustomization : ICustomization
     {
         private static readonly Type[] DateTimeTypes = new[]

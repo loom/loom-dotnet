@@ -1,8 +1,8 @@
-﻿namespace Loom.Messaging
-{
-    using System;
-    using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 
+namespace Loom.Messaging
+{
     public sealed class CachingTypeResolvingStrategy : ITypeResolvingStrategy
     {
         private readonly ITypeResolvingStrategy _strategy;

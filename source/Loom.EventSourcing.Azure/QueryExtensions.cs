@@ -1,13 +1,13 @@
-﻿namespace Loom.EventSourcing.Azure
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading;
-    using System.Threading.Tasks;
-    using Microsoft.Azure.Cosmos.Table;
-    using Microsoft.Azure.Cosmos.Table.Queryable;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Azure.Cosmos.Table;
+using Microsoft.Azure.Cosmos.Table.Queryable;
 
+namespace Loom.EventSourcing.Azure
+{
     internal static class QueryExtensions
     {
         public static async Task<IEnumerable<TElement>> ExecuteAsync<TElement>(

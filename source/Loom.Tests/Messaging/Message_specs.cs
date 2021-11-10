@@ -1,8 +1,8 @@
-﻿namespace Loom.Messaging
-{
-    using FluentAssertions;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using FluentAssertions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+namespace Loom.Messaging
+{
     [TestClass]
     public class Message_specs
     {

@@ -1,8 +1,8 @@
-﻿namespace Loom.EventSourcing
-{
-    using System;
-    using Loom.Messaging;
+﻿using System;
+using Loom.Messaging;
 
+namespace Loom.EventSourcing
+{
     public static class InvariantViolated
     {
         public static InvariantViolated<T> Create<T>(

@@ -1,11 +1,11 @@
-﻿namespace Loom.DataAnnotations
-{
-    using System.Collections.Generic;
-    using System.ComponentModel.DataAnnotations;
-    using System.Linq;
-    using FluentAssertions;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using FluentAssertions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+namespace Loom.DataAnnotations
+{
     [TestClass]
     public class ObjectValidationError_specs
     {

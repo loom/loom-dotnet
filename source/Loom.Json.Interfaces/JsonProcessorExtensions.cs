@@ -1,7 +1,7 @@
-﻿namespace Loom.Json
-{
-    using System;
+﻿using System;
 
+namespace Loom.Json
+{
     public static class JsonProcessorExtensions
     {
         public static T FromJson<T>(this IJsonProcessor jsonProcessor, string json)

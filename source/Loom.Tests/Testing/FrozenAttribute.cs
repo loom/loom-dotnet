@@ -1,9 +1,9 @@
-﻿namespace Loom.Testing
-{
-    using System;
-    using System.Reflection;
-    using AutoFixture;
+﻿using System;
+using System.Reflection;
+using AutoFixture;
 
+namespace Loom.Testing
+{
     [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = true, Inherited = false)]
     public sealed class FrozenAttribute : Attribute, IParameterCustomizationSource
     {

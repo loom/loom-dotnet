@@ -1,11 +1,11 @@
-﻿namespace Loom.Testing
-{
-    using AutoFixture;
-    using AutoFixture.AutoMoq;
-    using Loom.Json;
-    using Loom.Messaging;
-    using Loom.Messaging.Azure;
+﻿using AutoFixture;
+using AutoFixture.AutoMoq;
+using Loom.Json;
+using Loom.Messaging;
+using Loom.Messaging.Azure;
 
+namespace Loom.Testing
+{
     public class DomainCustomization : CompositeCustomization
     {
         public DomainCustomization()

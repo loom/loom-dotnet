@@ -1,7 +1,7 @@
-﻿namespace Loom.Messaging
-{
-    using System;
+﻿using System;
 
+namespace Loom.Messaging
+{
     internal class DelegatingTypeResolvingStrategy : ITypeResolvingStrategy
     {
         private readonly Func<string, Type> _function;

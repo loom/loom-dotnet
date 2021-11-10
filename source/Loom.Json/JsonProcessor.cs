@@ -1,9 +1,9 @@
-﻿namespace Loom.Json
-{
-    using System;
-    using System.IO;
-    using Newtonsoft.Json;
+﻿using System;
+using System.IO;
+using Newtonsoft.Json;
 
+namespace Loom.Json
+{
     public sealed class JsonProcessor : IJsonProcessor
     {
         private readonly JsonSerializer _serializer;

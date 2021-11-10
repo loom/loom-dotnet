@@ -1,7 +1,7 @@
-﻿namespace Loom.EventSourcing
-{
-    using Loom.Messaging;
+﻿using Loom.Messaging;
 
+namespace Loom.EventSourcing
+{
     public sealed class InvariantViolated<T>
     {
         public InvariantViolated(StreamCommand<T> command, ActivityError error)

@@ -1,11 +1,11 @@
-﻿namespace Loom.EventSourcing
-{
-    using System;
-    using FluentAssertions;
-    using Loom.Messaging;
-    using Loom.Testing;
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System;
+using FluentAssertions;
+using Loom.Messaging;
+using Loom.Testing;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+namespace Loom.EventSourcing
+{
     [TestClass]
     public class InvariantViolated_specs
     {

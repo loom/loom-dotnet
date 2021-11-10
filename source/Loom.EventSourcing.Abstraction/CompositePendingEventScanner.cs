@@ -1,9 +1,9 @@
-﻿namespace Loom.EventSourcing
-{
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
+namespace Loom.EventSourcing
+{
     public class CompositePendingEventScanner : IPendingEventScanner
     {
         private readonly IEnumerable<IPendingEventScanner> _scanners;
