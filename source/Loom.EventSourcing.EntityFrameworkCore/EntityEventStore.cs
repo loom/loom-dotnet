@@ -150,9 +150,10 @@ namespace Loom.EventSourcing.EntityFrameworkCore
         }
 
         public async Task<IEnumerable<object>> QueryEvents(
-            string streamId, long fromVersion)
+            string streamId,
+            long fromVersion,
+            CancellationToken cancellationToken = default)
         {
-            CancellationToken cancellationToken = CancellationToken.None;
             List<StreamEvent> source = await GetEntities(streamId, fromVersion, cancellationToken)
                                             .ConfigureAwait(continueOnCapturedContext: false);
             return source.Select(RestorePayload).ToImmutableArray();

@@ -93,9 +93,11 @@ namespace Loom.EventSourcing.Azure
             Task PublishPendingEvents() => _publisher.PublishEvents(stateType, streamId);
         }
 
-        public async Task<IEnumerable<object>> QueryEvents(string streamId, long fromVersion)
+        public async Task<IEnumerable<object>> QueryEvents(
+            string streamId,
+            long fromVersion,
+            CancellationToken cancellationToken = default)
         {
-            CancellationToken cancellationToken = CancellationToken.None;
             IEnumerable<StreamEvent> source = await GetEntities(streamId, fromVersion, cancellationToken)
                                                    .ConfigureAwait(continueOnCapturedContext: false);
             return source.Select(RestorePayload).ToList().AsReadOnly();

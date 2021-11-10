@@ -21,7 +21,8 @@ namespace Loom.EventSourcing.InMemory
 
         public Task<IEnumerable<object>> QueryEvents(
             string streamId,
-            long fromVersion)
+            long fromVersion,
+            CancellationToken cancellationToken = default)
         {
             return Task.FromResult(_engine.QueryEvents(streamId, fromVersion));
         }

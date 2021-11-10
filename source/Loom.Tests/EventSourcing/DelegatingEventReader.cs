@@ -17,13 +17,16 @@ namespace Loom.EventSourcing
         }
 
         public Task<IEnumerable<object>> QueryEvents(
-            string streamId, long fromVersion)
+            string streamId,
+            long fromVersion,
+            CancellationToken cancellationToken = default)
         {
             return _function.Invoke(streamId, fromVersion);
         }
 
         public Task<IEnumerable<Message>> QueryEventMessages(
-            string streamId, CancellationToken cancellationToken = default)
+            string streamId,
+            CancellationToken cancellationToken = default)
         {
             throw new NotImplementedException();
         }

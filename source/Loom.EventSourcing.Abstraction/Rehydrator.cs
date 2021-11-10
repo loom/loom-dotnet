@@ -22,7 +22,25 @@ namespace Loom.EventSourcing
             string streamId,
             CancellationToken cancellationToken = default)
         {
-            var events = new List<object>(await _eventReader.QueryEvents(streamId).ConfigureAwait(continueOnCapturedContext: false));
+            IReadOnlyCollection<object> events = await QueryEvents(streamId, cancellationToken).ConfigureAwait(false);
+            return FoldEvents(streamId, events);
+        }
+
+        private async Task<IReadOnlyCollection<object>> QueryEvents(
+            string streamId,
+            CancellationToken cancellationToken)
+        {
+            IEnumerable<object> events = await _eventReader
+                .QueryEvents(streamId, cancellationToken)
+                .ConfigureAwait(continueOnCapturedContext: false);
+
+            return events.ToList();
+        }
+
+        private Snapshot<T> FoldEvents(
+            string streamId,
+            IReadOnlyCollection<object> events)
+        {
             T seed = _seedFactory.Invoke(streamId);
             T state = events.Aggregate(seed, HandleEvent);
             return new(Version: events.Count, state);
