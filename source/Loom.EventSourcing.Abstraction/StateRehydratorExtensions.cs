@@ -3,9 +3,9 @@ using System.Threading.Tasks;
 
 namespace Loom.EventSourcing
 {
+    [Obsolete("This class will be replaced with new framework.")]
     public static class StateRehydratorExtensions
     {
-        // TODO: Add a parameter of CancellationToken.
         public static async Task<T> RehydrateState<T>(
             this IStateRehydrator<T> rehydrator, string streamId)
             where T : class
