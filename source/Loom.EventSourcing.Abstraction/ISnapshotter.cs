@@ -1,10 +1,12 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 
 namespace Loom.EventSourcing
 {
     public interface ISnapshotter
     {
-        // TODO: Add a parameter of CancellationToken.
-        Task TakeSnapshot(string streamId);
+        Task TakeSnapshot(
+            string streamId,
+            CancellationToken cancellationToken = default);
     }
 }

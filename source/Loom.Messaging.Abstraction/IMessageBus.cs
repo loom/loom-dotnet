@@ -6,7 +6,6 @@ namespace Loom.Messaging
 {
     public interface IMessageBus
     {
-        // TODO: Remove default argument of parameter cancellationToken.
         Task Send(
             IEnumerable<Message> messages,
             string partitionKey,
