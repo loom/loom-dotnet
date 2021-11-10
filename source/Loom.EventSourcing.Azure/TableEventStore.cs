@@ -36,7 +36,7 @@ namespace Loom.EventSourcing.Azure
                                         string streamId,
                                         long startVersion,
                                         IEnumerable<object> events,
-                                        CancellationToken cancellationToken)
+                                        CancellationToken cancellationToken = default)
         {
             IReadOnlyList<object> eventList = events.ToList().AsReadOnly();
             if (eventList.Count == 0)
@@ -90,7 +90,7 @@ namespace Loom.EventSourcing.Azure
                 return _table.ExecuteBatchAsync(batch, cancellationToken);
             }
 
-            Task PublishPendingEvents() => _publisher.PublishEvents(stateType, streamId);
+            Task PublishPendingEvents() => _publisher.PublishEvents(stateType, streamId, cancellationToken);
         }
 
         public async Task<IEnumerable<object>> QueryEvents(

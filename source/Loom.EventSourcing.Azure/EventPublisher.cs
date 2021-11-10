@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -26,25 +27,31 @@ namespace Loom.EventSourcing.Azure
             _eventBus = eventBus;
         }
 
-        // TODO: Add a parameter of CancellationToken.
-        public async Task PublishEvents(string stateType, string streamId)
+        public async Task PublishEvents(
+            string stateType,
+            string streamId,
+            CancellationToken cancellationToken = default)
         {
             IQueryable<QueueTicket> query = _table.BuildQueueTicketsQuery(stateType, streamId);
-            CancellationToken cancellationToken = CancellationToken.None;
             foreach (QueueTicket queueTicket in from t in await query.ExecuteAsync(cancellationToken)
                                                                      .ConfigureAwait(continueOnCapturedContext: false)
                                                 orderby t.RowKey
                                                 select t)
             {
-                await FlushEvents(queueTicket).ConfigureAwait(continueOnCapturedContext: false);
+                await FlushEvents(queueTicket, cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
             }
         }
 
-        private async Task FlushEvents(QueueTicket queueTicket)
+        internal Task PublishEvents(string stateType, string streamId)
+        {
+            throw new NotImplementedException();
+        }
+
+        private async Task FlushEvents(QueueTicket queueTicket, CancellationToken cancellationToken)
         {
             IQueryable<StreamEvent> query = BuildStreamEventsQuery(queueTicket);
-            await PublishStreamEvents(query, partitionKey: $"{queueTicket.StreamId}").ConfigureAwait(continueOnCapturedContext: false);
-            await DeleteQueueTicket(queueTicket).ConfigureAwait(continueOnCapturedContext: false);
+            await PublishStreamEvents(query, partitionKey: $"{queueTicket.StreamId}", cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
+            await DeleteQueueTicket(queueTicket, cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
         }
 
         private IQueryable<StreamEvent> BuildStreamEventsQuery(QueueTicket queueTicket)
@@ -52,9 +59,11 @@ namespace Loom.EventSourcing.Azure
             return _table.BuildStreamEventQuery(queueTicket);
         }
 
-        private async Task PublishStreamEvents(IQueryable<StreamEvent> query, string partitionKey)
+        private async Task PublishStreamEvents(
+            IQueryable<StreamEvent> query,
+            string partitionKey,
+            CancellationToken cancellationToken)
         {
-            CancellationToken cancellationToken = CancellationToken.None;
             IEnumerable<StreamEvent> source = await query.ExecuteAsync(cancellationToken)
                                                          .ConfigureAwait(continueOnCapturedContext: false);
             await _eventBus.Send(source.Select(GenerateMessage), partitionKey).ConfigureAwait(continueOnCapturedContext: false);
@@ -65,9 +74,9 @@ namespace Loom.EventSourcing.Azure
             return entity.GenerateMessage(_typeResolver, _jsonProcessor);
         }
 
-        private Task DeleteQueueTicket(QueueTicket queueTicket)
+        private Task DeleteQueueTicket(QueueTicket queueTicket, CancellationToken cancellationToken)
         {
-            return _table.ExecuteAsync(TableOperation.Delete(queueTicket));
+            return _table.ExecuteAsync(TableOperation.Delete(queueTicket), cancellationToken);
         }
     }
 }

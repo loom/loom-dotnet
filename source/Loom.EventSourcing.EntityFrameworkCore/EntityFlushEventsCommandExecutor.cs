@@ -23,9 +23,9 @@ namespace Loom.EventSourcing.EntityFrameworkCore
             => message?.Data is FlushEvents;
 
         public Task Handle(Message message, CancellationToken cancellationToken = default)
-            => Execute(command: (FlushEvents)message?.Data);
+            => Execute(command: (FlushEvents)message?.Data, cancellationToken);
 
-        private Task Execute(FlushEvents command)
-            => _publisher.PublishEvents(command.StateType, command.StreamId);
+        private Task Execute(FlushEvents command, CancellationToken cancellationToken)
+            => _publisher.PublishEvents(command.StateType, command.StreamId, cancellationToken);
     }
 }

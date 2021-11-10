@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Loom.Json;
 using Loom.Messaging;
@@ -27,25 +28,28 @@ namespace Loom.EventSourcing.EntityFrameworkCore
             _eventBus = eventBus;
         }
 
-        // TODO: Add a parameter of CancellationToken.
-        public async Task PublishEvents(string stateType, string streamId)
+        public async Task PublishEvents(
+            string stateType,
+            string streamId,
+            CancellationToken cancellationToken = default)
         {
             using EventStoreContext context = _contextFactory.Invoke();
-            await FlushEvents(context, stateType, streamId).ConfigureAwait(continueOnCapturedContext: false);
+            await FlushEvents(context, stateType, streamId, cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
         }
 
         private async Task FlushEvents(EventStoreContext context,
                                        string stateType,
-                                       string streamId)
+                                       string streamId,
+                                       CancellationToken cancellationToken)
         {
             IQueryable<PendingEvent> query = context.GetPendingEventsQuery(stateType, streamId);
-            List<PendingEvent> pendingEvents = await query.ToListAsync().ConfigureAwait(continueOnCapturedContext: false);
+            List<PendingEvent> pendingEvents = await query.ToListAsync(cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
             foreach (IEnumerable<PendingEvent> window in Window(pendingEvents))
             {
                 string partitionKey = $"{streamId}";
-                await _eventBus.Send(window.Select(GenerateMessage), partitionKey).ConfigureAwait(continueOnCapturedContext: false);
+                await _eventBus.Send(window.Select(GenerateMessage), partitionKey, cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
                 context.PendingEvents.RemoveRange(window);
-                await context.SaveChangesAsync().ConfigureAwait(continueOnCapturedContext: false);
+                await context.SaveChangesAsync(cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
             }
         }
 

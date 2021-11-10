@@ -48,7 +48,7 @@ namespace Loom.EventSourcing.EntityFrameworkCore
                                         string streamId,
                                         long startVersion,
                                         IEnumerable<object> events,
-                                        CancellationToken cancellationToken)
+                                        CancellationToken cancellationToken = default)
         {
             var eventList = events.ToImmutableArray();
             string stateType = ResolveName(typeof(T));
@@ -117,7 +117,7 @@ namespace Loom.EventSourcing.EntityFrameworkCore
                 await context.SaveChangesAsync(cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
             }
 
-            Task PublishPendingEvents() => _publisher.PublishEvents(stateType, streamId);
+            Task PublishPendingEvents() => _publisher.PublishEvents(stateType, streamId, cancellationToken);
         }
 
         private string ResolveName(object source) => ResolveName(source.GetType());

@@ -28,11 +28,11 @@ namespace Loom.EventSourcing.Azure
             return message switch
             {
                 null => throw new ArgumentNullException(nameof(message)),
-                _ => Execute(command: (FlushEvents)message.Data),
+                _ => Execute(command: (FlushEvents)message.Data, cancellationToken),
             };
         }
 
-        private Task Execute(FlushEvents command)
-            => _publisher.PublishEvents(command.StateType, command.StreamId);
+        private Task Execute(FlushEvents command, CancellationToken cancellationToken)
+            => _publisher.PublishEvents(command.StateType, command.StreamId, cancellationToken);
     }
 }
