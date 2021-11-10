@@ -1,7 +1,7 @@
-﻿namespace Loom.Messaging
-{
-    using System;
+﻿using System;
 
+namespace Loom.Messaging
+{
     public interface ITypeResolvingStrategy
     {
         Type? TryResolveType(string typeName);
