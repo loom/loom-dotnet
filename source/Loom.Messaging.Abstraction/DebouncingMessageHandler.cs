@@ -37,7 +37,8 @@ namespace Loom.Messaging
         {
             return _debouncer.TryConsume(
                 debouncable,
-                _ => _handler.Handle(message, cancellationToken));
+                (debouncable, cancellationToken) => _handler.Handle(message, cancellationToken),
+                cancellationToken);
         }
 
         private Task HandleImmediately(

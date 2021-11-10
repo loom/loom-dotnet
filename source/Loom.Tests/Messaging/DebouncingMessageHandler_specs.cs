@@ -42,7 +42,8 @@ namespace Loom.Messaging
 
             Expression<Func<IDebouncer, Task<bool>>> callTryConsume = x => x.TryConsume(
                 It.IsAny<IDebouncable>(),
-                It.IsAny<Func<IDebouncable, Task>>());
+                It.IsAny<Func<IDebouncable, CancellationToken, Task>>(),
+                It.IsAny<CancellationToken>());
             Mock.Get(debouncer).Verify(callTryConsume, Times.Never());
         }
 
@@ -57,7 +58,7 @@ namespace Loom.Messaging
             IMessageHandler handler,
             CancellationToken cancellationToken)
         {
-            await debouncer.Register(debouncable);
+            await debouncer.Register(debouncable, cancellationToken);
             var sut = new DebouncingMessageHandler(debouncer, handler);
             Message message = new(id, processId, initiator, predecessorId, Data: debouncable);
 
@@ -89,18 +90,23 @@ namespace Loom.Messaging
         {
             private IDebouncable _debouncable;
 
-            public Task Register(IDebouncable debouncable)
+            public Task Register(
+                IDebouncable debouncable,
+                CancellationToken cancellationToken = default)
             {
                 _debouncable = debouncable;
                 return Task.CompletedTask;
             }
 
-            public async Task<bool> TryConsume<T>(T debouncable, Func<T, Task> consumer)
+            public async Task<bool> TryConsume<T>(
+                T debouncable,
+                Func<T, CancellationToken, Task> consumer,
+                CancellationToken cancellationToken = default)
                 where T : IDebouncable
             {
                 if (ReferenceEquals(debouncable, _debouncable))
                 {
-                    await consumer.Invoke(debouncable);
+                    await consumer.Invoke(debouncable, cancellationToken);
                     return true;
                 }
 

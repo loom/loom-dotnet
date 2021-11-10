@@ -1,15 +1,19 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Loom.Messaging
 {
     public interface IDebouncer
     {
-        // TODO: Add a parameter of CancellationToken.
-        Task Register(IDebouncable debouncable);
+        Task Register(
+            IDebouncable debouncable,
+            CancellationToken cancellationToken = default);
 
-        // TODO: Add a parameter of CancellationToken.
-        Task<bool> TryConsume<T>(T debouncable, Func<T, Task> consumer)
+        Task<bool> TryConsume<T>(
+            T debouncable,
+            Func<T, CancellationToken, Task> consumer,
+            CancellationToken cancellationToken = default)
             where T : IDebouncable;
     }
 }
