@@ -49,7 +49,7 @@ namespace Loom.EventSourcing
             dynamic data = message.Data;
             string streamId = data.StreamId;
 
-            (int version, T state) = await
+            (long version, T state) = await
                 Rehydrate(streamId, cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
 
             await _eventCollector.CollectEvents(
