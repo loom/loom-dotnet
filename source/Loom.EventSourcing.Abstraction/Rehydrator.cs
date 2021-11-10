@@ -18,7 +18,7 @@ namespace Loom.EventSourcing
             _eventReader = eventReader;
         }
 
-        public async Task<Snapshot<T>> Rehydrate(
+        public async Task<Snapshot<T>> RehydrateState(
             string streamId,
             CancellationToken cancellationToken = default)
         {

@@ -50,7 +50,7 @@ namespace Loom.EventSourcing
             string streamId = data.StreamId;
 
             (long version, T state) = await
-                Rehydrate(streamId, cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
+                RehydrateState(streamId, cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
 
             await _eventCollector.CollectEvents(
                 message.ProcessId,

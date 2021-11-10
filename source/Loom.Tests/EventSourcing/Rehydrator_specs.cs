@@ -62,7 +62,7 @@ namespace Loom.EventSourcing
                 handler2: (s, e) => new State1(s.Value + e.Value));
 
             // Act
-            (long version, State1 state) = await sut.Rehydrate(streamId);
+            (long version, State1 state) = await sut.RehydrateState(streamId);
 
             // Assert
             int expected = Hash(streamId) + event1.Value + event2.Value;
@@ -90,7 +90,7 @@ namespace Loom.EventSourcing
                 handler2: (s, e) => new State1(s.Value + e.Value));
 
             // Act
-            (long version, State1 state) = await sut.Rehydrate(streamId);
+            (long version, State1 state) = await sut.RehydrateState(streamId);
 
             // Assert
             version.Should().Be(count);
