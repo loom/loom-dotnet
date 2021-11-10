@@ -1,10 +1,11 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 
 namespace Loom.EventSourcing
 {
+    [Obsolete("This class will be replaced with new framework.")]
     public interface IPendingEventScanner
     {
-        // TODO: Add a parameter of CancellationToken.
         Task ScanPendingEvents();
     }
 }
