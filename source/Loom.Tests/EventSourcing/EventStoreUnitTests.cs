@@ -416,83 +416,6 @@ namespace Loom.EventSourcing
         }
 
         [TestMethod, AutoData]
-        public async Task QueryEventMessages_correctly_restores_event_messages(
-            string streamId,
-            Event1 evt1,
-            Event2 evt2,
-            Event3 evt3,
-            IMessageBus eventBus,
-            string processId,
-            string initiator,
-            string predecessorId)
-        {
-            // Arrange
-            T sut = GenerateEventStore(eventBus);
-            object[] events = new object[] { evt1, evt2, evt3 };
-            DateTime nowUtc = DateTime.UtcNow;
-            await sut.CollectEvents(processId,
-                                    initiator,
-                                    predecessorId,
-                                    streamId,
-                                    startVersion: 1,
-                                    events,
-                                    cancellationToken: default);
-
-            // Act
-            IEnumerable<Message> actual = await sut.QueryEventMessages(streamId);
-
-            // Assert
-            actual.Should().HaveSameCount(events);
-
-            actual.Cast<dynamic>()
-                  .Select(x => (string)x.Data.StreamId)
-                  .Should().OnlyContain(x => x == streamId);
-
-            actual.Cast<dynamic>()
-                  .Select(x => (long)x.Data.Version)
-                  .Should().BeEquivalentTo(new[] { 1, 2, 3 });
-
-            actual.Cast<dynamic>()
-                  .Select(x => (object)x.Data.Payload)
-                  .Should().BeEquivalentTo(events);
-
-            foreach (DateTime raisedTime in actual.Cast<dynamic>()
-                                                  .Select(x => x.Data.RaisedTimeUtc))
-            {
-                raisedTime.Kind.Should().Be(DateTimeKind.Utc);
-                raisedTime.Should().BeCloseTo(nowUtc, precision: TimeSpan.FromSeconds(1));
-            }
-
-            actual.ElementAt(0).Data.Should().BeOfType<StreamEvent<Event1>>();
-            actual.ElementAt(1).Data.Should().BeOfType<StreamEvent<Event2>>();
-            actual.ElementAt(2).Data.Should().BeOfType<StreamEvent<Event3>>();
-
-            actual.Select(x => x.Id).Should().OnlyHaveUniqueItems();
-            actual.Should().OnlyContain(
-                x =>
-                x.ProcessId == processId &&
-                x.Initiator == initiator &&
-                x.PredecessorId == predecessorId);
-        }
-
-        [TestMethod, AutoData]
-        public async Task QueryEventMessages_returns_same_value_for_same_source(
-            string streamId,
-            Event1 evt1,
-            Event2 evt2,
-            Event3 evt3,
-            IMessageBus eventBus)
-        {
-            T sut = GenerateEventStore(eventBus);
-            object[] events = new object[] { evt1, evt2, evt3 };
-            await sut.CollectEvents(streamId, startVersion: 1, events);
-
-            IEnumerable<Message> actual = await sut.QueryEventMessages(streamId);
-
-            actual.Should().BeEquivalentTo(await sut.QueryEventMessages(streamId));
-        }
-
-        [TestMethod, AutoData]
         public async Task QueryEvents_throws_if_cannot_resolve_event_type(
             FullNameTypeNameResolvingStrategy typeNameStrategy,
             string streamId,
@@ -511,30 +434,6 @@ namespace Loom.EventSourcing
 
             // Act
             Func<Task> action = () => sut.QueryEvents(streamId);
-
-            // Assert
-            await action.Should().ThrowAsync<InvalidOperationException>();
-        }
-
-        [TestMethod, AutoData]
-        public async Task QueryEventMessages_throws_if_cannot_resolve_event_type(
-            FullNameTypeNameResolvingStrategy typeNameStrategy,
-            string streamId,
-            Event1 evt,
-            IMessageBus eventBus)
-        {
-            // Arrange
-            string typeName = typeNameStrategy.TryResolveTypeName(typeof(Event1));
-            var typeResolver = new TypeResolver(
-                typeNameStrategy,
-                Mock.Of<ITypeResolvingStrategy>(x => x.TryResolveType(typeName) == null));
-
-            T sut = GenerateEventStore(typeResolver, eventBus);
-            object[] events = new object[] { evt };
-            await sut.CollectEvents(streamId, startVersion: 1, events);
-
-            // Act
-            Func<Task> action = () => sut.QueryEventMessages(streamId);
 
             // Assert
             await action.Should().ThrowAsync<InvalidOperationException>();

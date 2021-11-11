@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Loom.Messaging;
 
 namespace Loom.EventSourcing
 {
@@ -10,10 +9,6 @@ namespace Loom.EventSourcing
         Task<IEnumerable<object>> QueryEvents(
             string streamId,
             long fromVersion,
-            CancellationToken cancellationToken = default);
-
-        Task<IEnumerable<Message>> QueryEventMessages(
-            string streamId,
             CancellationToken cancellationToken = default);
     }
 

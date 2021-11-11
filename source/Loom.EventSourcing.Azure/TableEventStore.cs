@@ -103,16 +103,6 @@ namespace Loom.EventSourcing.Azure
             return source.Select(RestorePayload).ToList().AsReadOnly();
         }
 
-        public async Task<IEnumerable<Message>> QueryEventMessages(
-            string streamId,
-            CancellationToken cancellationToken = default)
-        {
-            long fromVersion = 1;
-            IEnumerable<StreamEvent> source = await GetEntities(streamId, fromVersion, cancellationToken)
-                                                   .ConfigureAwait(continueOnCapturedContext: false);
-            return source.Select(GenerateMessage).ToList().AsReadOnly();
-        }
-
         private Task<IEnumerable<StreamEvent>> GetEntities(
             string streamId,
             long fromVersion,
@@ -128,8 +118,5 @@ namespace Loom.EventSourcing.Azure
 
         private object RestorePayload(StreamEvent entity)
             => entity.RestorePayload(_typeResolver, _jsonProcessor);
-
-        private Message GenerateMessage(StreamEvent entity)
-            => entity.GenerateMessage(_typeResolver, _jsonProcessor);
     }
 }

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -40,11 +39,6 @@ namespace Loom.EventSourcing.Azure
             {
                 await FlushEvents(queueTicket, cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
             }
-        }
-
-        internal Task PublishEvents(string stateType, string streamId)
-        {
-            throw new NotImplementedException();
         }
 
         private async Task FlushEvents(QueueTicket queueTicket, CancellationToken cancellationToken)

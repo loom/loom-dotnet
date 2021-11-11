@@ -159,16 +159,6 @@ namespace Loom.EventSourcing.EntityFrameworkCore
             return source.Select(RestorePayload).ToImmutableArray();
         }
 
-        public async Task<IEnumerable<Message>> QueryEventMessages(
-            string streamId,
-            CancellationToken cancellationToken = default)
-        {
-            int fromVersion = 1;
-            List<StreamEvent> source = await GetEntities(streamId, fromVersion, cancellationToken)
-                                            .ConfigureAwait(continueOnCapturedContext: false);
-            return source.Select(GenerateMessage).ToImmutableArray();
-        }
-
         private async Task<List<StreamEvent>> GetEntities(
             string streamId,
             long fromVersion,
@@ -190,8 +180,5 @@ namespace Loom.EventSourcing.EntityFrameworkCore
 
         private object RestorePayload(StreamEvent entity)
             => _jsonProcessor.FromJson(entity.Payload, entity.ResolveType(_typeResolver));
-
-        private Message GenerateMessage(StreamEvent entity)
-            => entity.GenerateMessage(_typeResolver, _jsonProcessor);
     }
 }
