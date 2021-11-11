@@ -10,7 +10,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>Loom.EventSourcing.EntityFrameworkCore</PackageId>
     <Description>Entity Framework Core based event sourcing implementation.</Description>
-    <Version>1.0.0</Version>
+    <Version>1.1.0</Version>
     <Authors>Gyuwon</Authors>
     <Copyright>Copyright (c) 2019 Yi Gyuwon</Copyright>
     <PackageProjectUrl>https://github.com/loom/loom-dotnet</PackageProjectUrl>
@@ -32,8 +32,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Loom.EventSourcing.Abstraction" Version="1.0.0" Exclude="*" />
-    <PackageReference Include="Loom.Json.Interfaces" Version="1.0.0" Exclude="*" />
+    <PackageReference Include="Loom.EventSourcing.Abstraction" Version="1.1.0" Exclude="*" />
+    <PackageReference Include="Loom.Json.Interfaces" Version="1.1.0" Exclude="*" />
   </ItemGroup>
 
   <ItemGroup>

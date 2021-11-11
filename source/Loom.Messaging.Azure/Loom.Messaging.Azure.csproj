@@ -10,7 +10,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>Loom.Messaging.Azure</PackageId>
     <Description>Microsoft Azure based messaging service implementations.</Description>
-    <Version>1.0.0</Version>
+    <Version>1.1.0</Version>
     <Authors>Gyuwon</Authors>
     <Copyright>Copyright (c) 2019 Yi Gyuwon</Copyright>
     <PackageProjectUrl>https://github.com/loom/loom-dotnet</PackageProjectUrl>
@@ -32,8 +32,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Loom.Json.Interfaces" Version="1.0.0" Exclude="*" />
-    <PackageReference Include="Loom.Messaging.Abstraction" Version="1.0.0" Exclude="*" />
+    <PackageReference Include="Loom.Json.Interfaces" Version="1.1.0" Exclude="*" />
+    <PackageReference Include="Loom.Messaging.Abstraction" Version="1.1.0" Exclude="*" />
   </ItemGroup>
 
   <ItemGroup>
