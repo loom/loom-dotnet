@@ -26,7 +26,7 @@ namespace Loom
             return source.Shuffle().Take(count);
         }
 
-        public static bool TryGetValue(this IDictionary dictionary, object key, out object value)
+        public static bool TryGetValue(this IDictionary dictionary, object key, out object? value)
         {
             if (dictionary.Contains(key))
             {

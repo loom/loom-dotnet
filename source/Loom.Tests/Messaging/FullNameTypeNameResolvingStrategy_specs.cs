@@ -20,7 +20,7 @@ namespace Loom.Messaging
             Type type = typeof(ReferencedType);
             var sut = new FullNameTypeNameResolvingStrategy();
 
-            string actual = sut.TryResolveTypeName(type);
+            string? actual = sut.TryResolveTypeName(type);
 
             actual.Should().Be(type.FullName);
         }

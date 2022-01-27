@@ -88,7 +88,7 @@ namespace Loom.Messaging
 
         public class Debouncer : IDebouncer
         {
-            private IDebouncable _debouncable;
+            private IDebouncable? _debouncable;
 
             public Task Register(
                 IDebouncable debouncable,

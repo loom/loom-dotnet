@@ -17,13 +17,12 @@ namespace Loom.EventSourcing.EntityFrameworkCore
     public class EntityEventStore_specs :
         EventStoreUnitTests<EntityEventStore<State1>>
     {
-        private static SqliteConnection _connection;
-        private static DbContextOptions _options;
+        private static SqliteConnection? _connection;
+        private static DbContextOptions? _options;
 
-        public TestContext TestContext { get; set; }
+        public TestContext? TestContext { get; set; }
 
         [ClassInitialize]
-        [SuppressMessage("Usage", "CA1801:Review unused parameters", Justification = "Reviewed")]
         [SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Reviewed")]
         public static async Task ClassInitialize(TestContext context)
         {
@@ -37,7 +36,7 @@ namespace Loom.EventSourcing.EntityFrameworkCore
         [ClassCleanup]
         public static void ClassCleanup()
         {
-            _connection.Dispose();
+            _connection?.Dispose();
         }
 
         protected override EntityEventStore<State1> GenerateEventStore(
@@ -103,11 +102,11 @@ namespace Loom.EventSourcing.EntityFrameworkCore
 
         public class UniquePropertyDetector : IUniquePropertyDetector
         {
-            public IReadOnlyDictionary<string, string> GetUniqueProperties(object source) => source switch
+            public IReadOnlyDictionary<string, string?> GetUniqueProperties(object source) => source switch
             {
-                Event1 e => new Dictionary<string, string> { ["Event1.Value"] = e.Value.ToString() },
-                Event3 e => new Dictionary<string, string> { ["Event3.Value"] = e.Value },
-                _ => ImmutableDictionary<string, string>.Empty,
+                Event1 e => new Dictionary<string, string?> { ["Event1.Value"] = e.Value.ToString() },
+                Event3 e => new Dictionary<string, string?> { ["Event3.Value"] = e.Value },
+                _ => ImmutableDictionary<string, string?>.Empty,
             };
         }
 
@@ -128,7 +127,7 @@ namespace Loom.EventSourcing.EntityFrameworkCore
             }
             catch (Exception exception)
             {
-                TestContext.WriteLine(exception.ToString());
+                TestContext?.WriteLine(exception.ToString());
             }
 
             // Assert

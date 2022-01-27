@@ -14,7 +14,7 @@ namespace Loom.DataAnnotations
             [Range(1, 10)]
             public int Value { get; set; } = 1;
 
-            public Component Child { get; set; }
+            public Component? Child { get; set; }
         }
 
         [TestMethod]

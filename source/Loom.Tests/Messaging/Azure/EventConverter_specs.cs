@@ -65,7 +65,7 @@ namespace Loom.Messaging.Azure
 
             EventData actual = sut.ConvertToEvent(message);
 
-            IDictionary<string, object> properties = actual.Properties;
+            IDictionary<string, object?> properties = actual.Properties;
             properties.Should().Contain("Type", typeResolver.TryResolveTypeName<MessageData1>());
             properties.Should().Contain("ProcessId", processId);
             properties.Should().Contain("Initiator", initiator);
@@ -84,9 +84,9 @@ namespace Loom.Messaging.Azure
             var message = new Message(id, processId, initiator, predecessorId, data);
             EventData eventData = sut.ConvertToEvent(message);
 
-            Message actual = sut.TryConvertToMessage(eventData);
+            Message? actual = sut.TryConvertToMessage(eventData);
 
-            actual.Data.Should().BeEquivalentTo(data);
+            actual!.Data.Should().BeEquivalentTo(data);
         }
 
         [TestMethod, AutoData]
@@ -94,8 +94,8 @@ namespace Loom.Messaging.Azure
             Message message, EventConverter sut)
         {
             EventData eventData = sut.ConvertToEvent(message);
-            Message actual = sut.TryConvertToMessage(eventData);
-            actual.Id.Should().Be(message.Id);
+            Message? actual = sut.TryConvertToMessage(eventData);
+            actual!.Id.Should().Be(message.Id);
         }
 
         [TestMethod, AutoData]
@@ -104,9 +104,9 @@ namespace Loom.Messaging.Azure
         {
             EventData eventData = sut.ConvertToEvent(message);
 
-            Message actual = sut.TryConvertToMessage(eventData);
+            Message? actual = sut.TryConvertToMessage(eventData);
 
-            actual.ProcessId.Should().Be(message.ProcessId);
+            actual!.ProcessId.Should().Be(message.ProcessId);
             actual.Initiator.Should().Be(message.Initiator);
             actual.PredecessorId.Should().Be(message.PredecessorId);
         }
@@ -118,7 +118,7 @@ namespace Loom.Messaging.Azure
             EventData eventData = sut.ConvertToEvent(message);
             eventData.Properties.Remove("Type");
 
-            Message actual = sut.TryConvertToMessage(eventData);
+            Message? actual = sut.TryConvertToMessage(eventData);
 
             actual.Should().BeNull();
         }
@@ -132,7 +132,7 @@ namespace Loom.Messaging.Azure
             EventData eventData = sut.ConvertToEvent(message);
             eventData.Properties["Type"] = value;
 
-            Message actual = sut.TryConvertToMessage(eventData);
+            Message? actual = sut.TryConvertToMessage(eventData);
 
             actual.Should().BeNull();
         }
@@ -144,7 +144,7 @@ namespace Loom.Messaging.Azure
             EventData eventData = sut.ConvertToEvent(message);
             eventData.Properties["Type"] = "UnknownType";
 
-            Message actual = sut.TryConvertToMessage(eventData);
+            Message? actual = sut.TryConvertToMessage(eventData);
 
             actual.Should().BeNull();
         }
@@ -156,9 +156,9 @@ namespace Loom.Messaging.Azure
             EventData eventData = sut.ConvertToEvent(message);
             eventData.MessageId = null;
 
-            Message actual = sut.TryConvertToMessage(eventData);
+            Message? actual = sut.TryConvertToMessage(eventData);
 
-            actual.Id.Should().NotBeNull();
+            actual!.Id.Should().NotBeNull();
             Guid.TryParse(actual.Id, out Guid id).Should().BeTrue();
             id.Should().NotBeEmpty();
         }
@@ -170,9 +170,9 @@ namespace Loom.Messaging.Azure
             EventData eventData = sut.ConvertToEvent(message);
             eventData.Properties.Remove("ProcessId");
 
-            Message actual = sut.TryConvertToMessage(eventData);
+            Message? actual = sut.TryConvertToMessage(eventData);
 
-            actual.ProcessId.Should().NotBeNull();
+            actual!.ProcessId.Should().NotBeNull();
             Guid.TryParse(actual.ProcessId, out Guid processId).Should().BeTrue();
             processId.Should().NotBeEmpty();
         }
@@ -184,9 +184,9 @@ namespace Loom.Messaging.Azure
             EventData eventData = sut.ConvertToEvent(message);
             eventData.Properties.Remove("ProcessId");
 
-            Message actual = sut.TryConvertToMessage(eventData);
+            Message? actual = sut.TryConvertToMessage(eventData);
 
-            actual.ProcessId.Should().NotBeNull();
+            actual!.ProcessId.Should().NotBeNull();
             Guid.TryParse(actual.ProcessId, out Guid processId).Should().BeTrue();
             processId.Should().NotBeEmpty();
         }
@@ -198,9 +198,9 @@ namespace Loom.Messaging.Azure
             EventData eventData = sut.ConvertToEvent(message);
             eventData.Properties.Remove("Initiator");
 
-            Message actual = sut.TryConvertToMessage(eventData);
+            Message? actual = sut.TryConvertToMessage(eventData);
 
-            actual.Initiator.Should().BeNull();
+            actual!.Initiator.Should().BeNull();
         }
 
         [TestMethod, AutoData]
@@ -210,9 +210,9 @@ namespace Loom.Messaging.Azure
             EventData eventData = sut.ConvertToEvent(message);
             eventData.Properties.Remove("PredecessorId");
 
-            Message actual = sut.TryConvertToMessage(eventData);
+            Message? actual = sut.TryConvertToMessage(eventData);
 
-            actual.PredecessorId.Should().BeNull();
+            actual!.PredecessorId.Should().BeNull();
         }
 
         [TestMethod, AutoData]
@@ -224,7 +224,7 @@ namespace Loom.Messaging.Azure
             var eventData = new EventData(default(ArraySegment<byte>));
             eventData.Properties["Type"] = typeResolver.TryResolveTypeName(message.Data.GetType());
 
-            Message actual = sut.TryConvertToMessage(eventData);
+            Message? actual = sut.TryConvertToMessage(eventData);
 
             actual.Should().BeNull();
         }

@@ -38,7 +38,7 @@ namespace Loom.Messaging
         {
             _calls.Enqueue((messages.ToImmutableArray(), partitionKey));
             await Task.Delay(millisecondsDelay: 1, cancellationToken);
-            if (_errors.TryDequeue(out Exception error))
+            if (_errors.TryDequeue(out Exception? error))
             {
                 throw error;
             }

@@ -15,20 +15,20 @@ namespace Loom.Messaging.Azure
     [TestClass]
     public class EventHubMessageBus_specs
     {
-        public static string ConnectionString { get; set; }
+        public static string? ConnectionString { get; set; }
 
-        public static string EventHubName { get; set; }
+        public static string? EventHubName { get; set; }
 
-        public EventHubProducerClient Producer { get; set; }
+        public EventHubProducerClient? Producer { get; set; }
 
-        public EventHubConsumerClient Consumer { get; set; }
+        public EventHubConsumerClient? Consumer { get; set; }
 
         [ClassInitialize]
         public static void ClassInitialize(TestContext context)
         {
-            if (context.Properties.TryGetValue("EventHubNamespaceConnectionString", out object connectionStringValue) &&
+            if (context.Properties.TryGetValue("EventHubNamespaceConnectionString", out object? connectionStringValue) &&
                 connectionStringValue is string connectionString &&
-                context.Properties.TryGetValue("EventHubName", out object eventHubNameValue) &&
+                context.Properties.TryGetValue("EventHubName", out object? eventHubNameValue) &&
                 eventHubNameValue is string eventHubName)
             {
                 ConnectionString = connectionString;
@@ -58,8 +58,8 @@ namespace Loom.Messaging.Azure
         [TestCleanup]
         public async Task TestCleanup()
         {
-            await Producer.CloseAsync();
-            await Consumer.CloseAsync();
+            await Producer!.CloseAsync();
+            await Consumer!.CloseAsync();
         }
 
         private async Task<EventData[]> ReceiveEvents(TimeSpan maximumWaitTime)
@@ -67,7 +67,7 @@ namespace Loom.Messaging.Azure
             List<EventData> events = new();
             var readOptions = new ReadEventOptions { MaximumWaitTime = maximumWaitTime };
             await foreach (PartitionEvent partitionEvent in
-                Consumer.ReadEventsAsync(startReadingAtEarliestEvent: false, readOptions))
+                Consumer!.ReadEventsAsync(startReadingAtEarliestEvent: false, readOptions))
             {
                 if (partitionEvent.Data == null)
                 {
@@ -90,7 +90,7 @@ namespace Loom.Messaging.Azure
             MessageData1 data,
             string partitionKey)
         {
-            var sut = new EventHubMessageBus(Producer, converter);
+            var sut = new EventHubMessageBus(Producer!, converter);
             Message message = new(id, processId, initiator, predecessorId, data);
             Task<EventData[]> receiveTask = ReceiveEvents(maximumWaitTime: TimeSpan.FromSeconds(1));
 
@@ -98,7 +98,7 @@ namespace Loom.Messaging.Azure
 
             EventData[] events = await receiveTask;
             events.Should().ContainSingle();
-            Message actual = converter.TryConvertToMessage(events[0]);
+            Message? actual = converter.TryConvertToMessage(events[0]);
             actual.Should().BeEquivalentTo(message);
         }
 
@@ -106,7 +106,7 @@ namespace Loom.Messaging.Azure
         public async Task Send_sets_partition_key_correctly(
             IEventConverter converter, Message message, string partitionKey)
         {
-            var sut = new EventHubMessageBus(Producer, converter);
+            var sut = new EventHubMessageBus(Producer!, converter);
             Task<EventData[]> receiveTask = ReceiveEvents(maximumWaitTime: TimeSpan.FromSeconds(1));
 
             await sut.Send(new[] { message }, partitionKey);
@@ -125,7 +125,7 @@ namespace Loom.Messaging.Azure
             string predecessorId,
             string partitionKey)
         {
-            var sut = new EventHubMessageBus(Producer, converter);
+            var sut = new EventHubMessageBus(Producer!, converter);
             int count = 1000;
             Message[] messages = Enumerable
                 .Range(0, count)
@@ -139,7 +139,7 @@ namespace Loom.Messaging.Azure
 
             EventData[] events = await receiveTask;
             events.Length.Should().Be(count);
-            IEnumerable<Message> actual = events.Select(converter.TryConvertToMessage).ToArray();
+            IEnumerable<Message?> actual = events.Select(converter.TryConvertToMessage).ToArray();
             actual.Should().BeEquivalentTo(
                 messages,
                 opts =>
@@ -153,7 +153,7 @@ namespace Loom.Messaging.Azure
         public async Task even_if_no_message_then_Send_does_not_fail(
             IEventConverter converter, string partitionKey)
         {
-            var sut = new EventHubMessageBus(Producer, converter);
+            var sut = new EventHubMessageBus(Producer!, converter);
             Func<Task> action = () => sut.Send(Array.Empty<Message>(), partitionKey);
             await action.Should().NotThrowAsync();
         }

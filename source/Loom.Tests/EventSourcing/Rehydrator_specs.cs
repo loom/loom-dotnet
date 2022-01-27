@@ -29,8 +29,8 @@ namespace Loom.EventSourcing
             public Sut(
                 Func<string, State1> seedFactory,
                 IEventReader eventReader,
-                Func<State1, Event1, State1> handler1 = null,
-                Func<State1, Event2, State1> handler2 = null)
+                Func<State1, Event1, State1>? handler1 = null,
+                Func<State1, Event2, State1>? handler2 = null)
                 : base(seedFactory, eventReader)
             {
                 _handler1 = handler1 ?? ((state, pastEvent) => state);

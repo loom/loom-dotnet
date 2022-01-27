@@ -27,7 +27,7 @@ namespace Loom.Messaging
                 Mock.Of<ITypeResolvingStrategy>());
 
             // Act
-            string actual = sut.TryResolveTypeName(type);
+            string? actual = sut.TryResolveTypeName(type);
 
             // Assert
             actual.Should().Be(type.FullName);
@@ -46,7 +46,7 @@ namespace Loom.Messaging
                 Mock.Of<ITypeNameResolvingStrategy>(), typeResolvingStrategy);
 
             // Act
-            Type actual = sut.TryResolveType(type.FullName);
+            Type? actual = sut.TryResolveType(type.FullName!);
 
             // Assert
             actual.Should().Be(type);

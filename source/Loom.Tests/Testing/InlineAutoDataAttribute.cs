@@ -11,16 +11,16 @@ namespace Loom.Testing
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true, Inherited = false)]
     public sealed class InlineAutoDataAttribute : Attribute, ITestDataSource
     {
-        private readonly object[] _arguments;
+        private readonly object?[] _arguments;
 
-        public InlineAutoDataAttribute(params object[] arguments)
+        public InlineAutoDataAttribute(params object?[] arguments)
         {
             _arguments = arguments;
         }
 
-        public IEnumerable<object[]> GetData(MethodInfo methodInfo)
+        public IEnumerable<object?[]> GetData(MethodInfo methodInfo)
         {
-            object[] controlledValues = _arguments;
+            object?[] controlledValues = _arguments;
             ParameterInfo[] parameters = methodInfo.GetParameters();
             IEnumerable<object> generatedValues = Generate(parameters.Skip(controlledValues.Length));
             yield return controlledValues.Concat(generatedValues).ToArray();

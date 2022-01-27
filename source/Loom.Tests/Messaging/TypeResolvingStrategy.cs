@@ -18,7 +18,7 @@ namespace Loom.Messaging
             return query.ToList().AsReadOnly();
         }
 
-        public Type TryResolveType(string typeName)
+        public Type? TryResolveType(string typeName)
             => _types.Value.SingleOrDefault(t => t.FullName == typeName);
     }
 }

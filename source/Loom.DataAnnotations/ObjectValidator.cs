@@ -25,7 +25,7 @@ namespace Loom.DataAnnotations
         /// The object is not valid.
         /// </exception>
         [Obsolete("Use TryValidate(object, out IEnumerable<ObjectValidationError>) method instead.")]
-        public static void Validate(object instance)
+        public static void Validate(object? instance)
         {
             Visitor.Visit(
                 instance,
@@ -41,7 +41,7 @@ namespace Loom.DataAnnotations
         /// <returns><c>true</c> if the object is valid; otherwise, <c>false</c>.</returns>
         [Obsolete("Use TryValidate(object, out IEnumerable<ObjectValidationError>) method instead.")]
         public static bool TryValidate(
-            object instance,
+            object? instance,
             out ValidationResult? validationResult)
         {
             ValidationResult? captured = ValidationResult.Success;
@@ -63,7 +63,7 @@ namespace Loom.DataAnnotations
         /// <returns><c>true</c> if the object is valid; otherwise, <c>false</c>.</returns>
         [Obsolete("Use TryValidate(object, out IEnumerable<ObjectValidationError>) method instead.")]
         public static bool TryValidate(
-            object instance,
+            object? instance,
             Action<ValidationResult> validationResultCollector)
         {
             if (validationResultCollector == null)

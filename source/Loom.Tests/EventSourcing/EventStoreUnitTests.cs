@@ -423,7 +423,7 @@ namespace Loom.EventSourcing
             IMessageBus eventBus)
         {
             // Arrange
-            string typeName = typeNameStrategy.TryResolveTypeName(typeof(Event1));
+            string typeName = typeNameStrategy.TryResolveTypeName(typeof(Event1))!;
             var typeResolver = new TypeResolver(
                 typeNameStrategy,
                 Mock.Of<ITypeResolvingStrategy>(x => x.TryResolveType(typeName) == null));

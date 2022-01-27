@@ -5,7 +5,8 @@
         string ProcessId,
         string Initiator,
         string PredecessorId,
-        T data)
+        T Data)
+        where T : class
     {
         public static implicit operator Message(Message<T> source)
         {
@@ -13,7 +14,7 @@
                        source.ProcessId,
                        source.Initiator,
                        source.PredecessorId,
-                       source.data);
+                       source.Data);
         }
     }
 }

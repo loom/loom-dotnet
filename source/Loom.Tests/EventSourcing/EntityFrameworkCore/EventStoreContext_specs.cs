@@ -18,11 +18,10 @@ namespace Loom.EventSourcing.EntityFrameworkCore
             }
         }
 
-        private static SqliteConnection _connection;
-        private static DbContextOptions _options;
+        private static SqliteConnection? _connection;
+        private static DbContextOptions? _options;
 
         [ClassInitialize]
-        [SuppressMessage("Usage", "CA1801:Review unused parameters", Justification = "Reviewed")]
         [SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Reviewed")]
         public static async Task ClassInitialize(TestContext context)
         {
@@ -36,13 +35,13 @@ namespace Loom.EventSourcing.EntityFrameworkCore
         [ClassCleanup]
         public static void ClassCleanup()
         {
-            _connection.Dispose();
+            _connection?.Dispose();
         }
 
         [TestMethod]
         public void sut_is_inheritable()
         {
-            using var context = new EventStoreDbContext(_options);
+            using var context = new EventStoreDbContext(_options!);
             context.StreamEvents.Should().NotBeNull();
             context.PendingEvents.Should().NotBeNull();
             context.UniqueProperties.Should().NotBeNull();

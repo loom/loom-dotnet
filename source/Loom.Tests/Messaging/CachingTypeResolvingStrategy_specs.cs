@@ -16,7 +16,7 @@ namespace Loom.Messaging
         }
 
         [TestMethod]
-        [InlineAutoData(arguments: new object[] { null })]
+        [InlineAutoData(arguments: new object?[] { null })]
         [InlineAutoData(typeof(MessageData1))]
         public void sut_relays_correctly(Type type, string typeName)
         {
@@ -24,7 +24,7 @@ namespace Loom.Messaging
             Mock.Get(strategy).Setup(x => x.TryResolveType(typeName)).Returns(type);
             var sut = new CachingTypeResolvingStrategy(strategy);
 
-            Type actual = sut.TryResolveType(typeName);
+            Type? actual = sut.TryResolveType(typeName);
 
             actual.Should().Be(type);
         }
@@ -38,7 +38,7 @@ namespace Loom.Messaging
             var sut = new CachingTypeResolvingStrategy(strategy);
 
             sut.TryResolveType(typeName);
-            Type actual = sut.TryResolveType(typeName);
+            Type? actual = sut.TryResolveType(typeName);
 
             actual.Should().Be(type);
             Mock.Get(strategy).Verify(x => x.TryResolveType(It.IsAny<string>()), Times.Once());
@@ -52,7 +52,7 @@ namespace Loom.Messaging
             var sut = new CachingTypeResolvingStrategy(strategy);
 
             sut.TryResolveType(typeName);
-            Type actual = sut.TryResolveType(typeName);
+            Type? actual = sut.TryResolveType(typeName);
 
             actual.Should().BeNull();
             Mock.Get(strategy).Verify(x => x.TryResolveType(It.IsAny<string>()), Times.Once());

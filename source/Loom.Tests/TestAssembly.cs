@@ -11,7 +11,6 @@ namespace Loom
     public static class TestAssembly
     {
         [AssemblyInitialize]
-        [SuppressMessage("Usage", "CA1801:Review unused parameters", Justification = "Reviewed")]
         [SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Reviewed")]
         public static Task Initialize(TestContext context)
         {

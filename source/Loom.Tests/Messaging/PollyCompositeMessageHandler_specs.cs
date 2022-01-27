@@ -51,7 +51,7 @@ namespace Loom.Messaging
             {
                 await Task.Delay(1, cancellationToken);
 
-                if (_exceptions.TryDequeue(out Exception exception))
+                if (_exceptions.TryDequeue(out Exception? exception))
                 {
                     throw exception;
                 }

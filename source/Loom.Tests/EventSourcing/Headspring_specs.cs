@@ -49,10 +49,10 @@ namespace Loom.EventSourcing
             public Sut(
                 Func<string, State1> seedFactory,
                 IMessageBus eventBus,
-                Func<State1, Event1, State1> handler1 = null,
-                Func<State1, Event2, State1> handler2 = null,
-                Func<State1, Command1, IEnumerable<object>> producer1 = null,
-                Func<State1, Command2, IEnumerable<object>> producer2 = null)
+                Func<State1, Event1, State1>? handler1 = null,
+                Func<State1, Event2, State1>? handler2 = null,
+                Func<State1, Command1, IEnumerable<object>>? producer1 = null,
+                Func<State1, Command2, IEnumerable<object>>? producer2 = null)
                 : base(seedFactory, new InMemoryEventStore<State1>(eventBus))
             {
                 _handler1 = handler1 ?? ((state, pastEvent) => state);
@@ -142,7 +142,7 @@ namespace Loom.EventSourcing
 
             ImmutableArray<Message> actual = spy.Calls.Select(x => x.Messages).Single();
             actual.Should().HaveCount(2);
-            StreamCommand<Command1> data = message.data;
+            StreamCommand<Command1> data = message.Data;
             actual[0].Data.Should().BeOfType<StreamEvent<Event1>>().And.BeEquivalentTo(data);
             actual[1].Data.Should().BeOfType<StreamEvent<Event2>>().And.BeEquivalentTo(data);
         }

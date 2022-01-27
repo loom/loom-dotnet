@@ -29,7 +29,7 @@ namespace Loom.Testing
             {
                 if (request is ParameterInfo p &&
                     DateTimeTypes.Contains(p.ParameterType) &&
-                    p.Name.EndsWith("UTC", StringComparison.OrdinalIgnoreCase))
+                    p.Name!.EndsWith("UTC", StringComparison.OrdinalIgnoreCase))
                 {
                     DateTime source = _fixture.Create<DateTime>();
                     return new DateTime(source.Ticks, DateTimeKind.Utc);

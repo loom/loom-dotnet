@@ -4,6 +4,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <IsPackable>false</IsPackable>
     <RootNamespace>Loom</RootNamespace>
+    <Nullable>enable</Nullable>
     <CodeAnalysisRuleSet>..\RuleSets\Loom.Tests.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 

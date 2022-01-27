@@ -17,7 +17,7 @@ namespace Loom.DataAnnotations
             [Range(1, 10)]
             public int Int32Property { get; set; } = 1;
 
-            public StemObject StemObjectProperty { get; set; } = new StemObject();
+            public StemObject? StemObjectProperty { get; set; } = new StemObject();
 
             public IEnumerable CollectionProperty { get; set; } = Array.Empty<object>();
         }
@@ -31,9 +31,9 @@ namespace Loom.DataAnnotations
         public class StemObject : BaseObject
         {
             [StringLength(10)]
-            public string StringProperty { get; set; } = "foo";
+            public string? StringProperty { get; set; } = "foo";
 
-            public LeafObject LeafObjectProperty { get; set; }
+            public LeafObject? LeafObjectProperty { get; set; }
         }
 
         public class LeafObject
@@ -45,7 +45,7 @@ namespace Loom.DataAnnotations
         public class ElementObject
         {
             [Required]
-            public object ObjectProperty { get; set; } = new object();
+            public object? ObjectProperty { get; set; } = new object();
         }
 
         public class WriteOnlyObject
@@ -63,19 +63,10 @@ namespace Loom.DataAnnotations
             void Collect(ValidationResult validationResult);
         }
 
-        [Obsolete("The method under test is deprecated.")]
-        [TestMethod]
-        public void collecting_deprecated_TryValidate_has_guard_clause_against_null_validationResultCollector()
-        {
-            object instance = "foo";
-            Action action = () => ObjectValidator.TryValidate(instance, validationResultCollector: null);
-            action.Should().Throw<ArgumentNullException>().Which.ParamName.Should().Be("validationResultCollector");
-        }
-
         [TestMethod]
         public void given_null_argument_then_TryValidate_succeeds()
         {
-            object instance = null;
+            object? instance = null;
 
             bool successful = ObjectValidator.TryValidate(
                 instance,
@@ -97,9 +88,9 @@ namespace Loom.DataAnnotations
         [TestMethod]
         public void given_null_argument_then_deprecated_TryValidate_succeeds()
         {
-            object instance = null;
+            object? instance = null;
 
-            bool successful = ObjectValidator.TryValidate(instance, out ValidationResult validationResult);
+            bool successful = ObjectValidator.TryValidate(instance, out ValidationResult? validationResult);
 
             successful.Should().BeTrue();
             validationResult.Should().Be(ValidationResult.Success);
@@ -109,7 +100,7 @@ namespace Loom.DataAnnotations
         [TestMethod]
         public void given_null_argument_then_collecting_deprecated_TryValidate_succeeds()
         {
-            object instance = null;
+            object? instance = null;
             ICollector collector = Mock.Of<ICollector>();
 
             bool successful = ObjectValidator.TryValidate(instance, collector.Collect);
@@ -147,7 +138,7 @@ namespace Loom.DataAnnotations
         {
             var instance = new RootObject();
 
-            bool successful = ObjectValidator.TryValidate(instance, out ValidationResult validationResult);
+            bool successful = ObjectValidator.TryValidate(instance, out ValidationResult? validationResult);
 
             successful.Should().BeTrue();
             validationResult.Should().Be(ValidationResult.Success);
@@ -214,11 +205,11 @@ namespace Loom.DataAnnotations
                 Int32Property = -1,
             };
 
-            bool successful = ObjectValidator.TryValidate(instance, out ValidationResult validationResult);
+            bool successful = ObjectValidator.TryValidate(instance, out ValidationResult? validationResult);
 
             successful.Should().BeFalse();
             validationResult.Should().NotBe(ValidationResult.Success);
-            validationResult.MemberNames.Should().BeEquivalentTo("Int32Property");
+            validationResult!.MemberNames.Should().BeEquivalentTo("Int32Property");
         }
 
         [Obsolete("The method under test is deprecated.")]
@@ -242,7 +233,7 @@ namespace Loom.DataAnnotations
         {
             var instance = new RootObject
             {
-                StemObjectProperty =
+                StemObjectProperty = new StemObject
                 {
                     StringProperty = "f to the o to the o",
                 },
@@ -258,7 +249,7 @@ namespace Loom.DataAnnotations
             error.ObjectPath.Should().Be("StemObjectProperty");
             error.ValidationAttribute.Should().BeOfType<StringLengthAttribute>();
             error.ValidationResult.MemberNames.Should().BeEquivalentTo("StringProperty");
-            error.Value.Should().Be(instance.StemObjectProperty.StringProperty);
+            error.Value.Should().Be(instance.StemObjectProperty!.StringProperty);
         }
 
         [Obsolete("The method under test is deprecated.")]
@@ -267,7 +258,7 @@ namespace Loom.DataAnnotations
         {
             var instance = new RootObject
             {
-                StemObjectProperty =
+                StemObjectProperty = new StemObject
                 {
                     StringProperty = "f to the o to the o",
                 },
@@ -308,7 +299,7 @@ namespace Loom.DataAnnotations
         {
             var instance = new RootObject
             {
-                StemObjectProperty =
+                StemObjectProperty = new StemObject
                 {
                     LeafObjectProperty = new LeafObject
                     {
@@ -447,7 +438,7 @@ namespace Loom.DataAnnotations
         {
             var instance = new RootObject
             {
-                StemObjectProperty =
+                StemObjectProperty = new StemObject
                 {
                     BaseInt32Property = -1,
                 },
@@ -472,7 +463,7 @@ namespace Loom.DataAnnotations
         {
             var instance = new RootObject
             {
-                StemObjectProperty =
+                StemObjectProperty = new StemObject
                 {
                     BaseInt32Property = -1,
                 },
@@ -495,7 +486,7 @@ namespace Loom.DataAnnotations
                     new RootObject
                     {
                         Int32Property = -1,
-                        StemObjectProperty = { BaseInt32Property = -1 },
+                        StemObjectProperty = new StemObject { BaseInt32Property = -1 },
                     },
                     new[] { string.Empty, "StemObjectProperty" },
                     new[] { "Int32Property", "BaseInt32Property" },
@@ -544,7 +535,7 @@ namespace Loom.DataAnnotations
                     new RootObject
                     {
                         Int32Property = -1,
-                        StemObjectProperty = { BaseInt32Property = -1 },
+                        StemObjectProperty = new StemObject { BaseInt32Property = -1 },
                     },
                     "Int32Property",
                 };
@@ -572,12 +563,12 @@ namespace Loom.DataAnnotations
             object instance, string expectedMemberName)
         {
             // Act
-            bool successful = ObjectValidator.TryValidate(instance, out ValidationResult validationResult);
+            bool successful = ObjectValidator.TryValidate(instance, out ValidationResult? validationResult);
 
             // Assert
             successful.Should().BeFalse();
             validationResult.Should().NotBe(ValidationResult.Success);
-            validationResult.MemberNames.Should().BeEquivalentTo(expectedMemberName);
+            validationResult!.MemberNames.Should().BeEquivalentTo(expectedMemberName);
         }
 
         public static IEnumerable<object[]> FIXTURE_given_multiple_errors_then_collecting_TryValidate_invokes_collector_function_for_all_errors
@@ -589,7 +580,7 @@ namespace Loom.DataAnnotations
                     new RootObject
                     {
                         Int32Property = -1,
-                        StemObjectProperty = { BaseInt32Property = -1 },
+                        StemObjectProperty = new StemObject { BaseInt32Property = -1 },
                     },
                     new[]
                     {

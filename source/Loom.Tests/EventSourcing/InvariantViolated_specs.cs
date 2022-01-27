@@ -25,7 +25,7 @@ namespace Loom.EventSourcing
             StreamCommand<Command1> command, Exception exception)
         {
             var expectedError = new ActivityError(
-                exception.GetType().FullName,
+                exception.GetType().FullName!,
                 exception.Message,
                 exception.StackTrace);
 
