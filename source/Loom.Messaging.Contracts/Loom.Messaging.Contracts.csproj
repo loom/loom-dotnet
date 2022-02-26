@@ -11,7 +11,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>Loom.Messaging.Contracts</PackageId>
     <Description>Provides contract types for messaging.</Description>
-    <Version>1.2.0</Version>
+    <Version>1.3.0</Version>
     <Authors>Gyuwon</Authors>
     <Copyright>Copyright (c) 2019 Yi Gyuwon</Copyright>
     <PackageProjectUrl>https://github.com/loom/loom-dotnet</PackageProjectUrl>

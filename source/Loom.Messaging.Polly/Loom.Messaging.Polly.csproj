@@ -11,7 +11,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>Loom.Messaging.Polly</PackageId>
     <Description>Transient fault handling extensions for asynchronous messaging using Polly.</Description>
-    <Version>1.2.0</Version>
+    <Version>1.3.0</Version>
     <Authors>Gyuwon</Authors>
     <Copyright>Copyright (c) 2019 Yi Gyuwon</Copyright>
     <PackageProjectUrl>https://github.com/loom/loom-dotnet</PackageProjectUrl>
@@ -30,6 +30,10 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Loom.Messaging.Abstraction" Version="1.3.0" Exclude="*" />
   </ItemGroup>
 
   <ItemGroup>
