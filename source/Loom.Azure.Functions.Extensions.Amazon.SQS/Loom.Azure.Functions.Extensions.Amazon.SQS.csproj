@@ -8,8 +8,22 @@
     <CodeAnalysisRuleSet>..\RuleSets\Loom.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageId>Loom.Azure.Functions.Extensions.Amazon.SQS</PackageId>
+    <Description></Description>
+    <Version>0.0.1</Version>
+    <Authors>Gyuwon</Authors>
+    <Copyright>Copyright (c) 2022 Yi Gyuwon</Copyright>
+    <PackageProjectUrl>https://github.com/loom/loom-dotnet</PackageProjectUrl>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="AWSSDK.SQS" Version="3.7.2.76" />
+    <PackageReference Include="Microsoft.Azure.WebJobs" Version="3.0.33" />
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="6.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
