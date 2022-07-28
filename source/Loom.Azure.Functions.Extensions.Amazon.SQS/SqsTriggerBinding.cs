@@ -11,15 +11,18 @@ internal class SqsTriggerBinding : ITriggerBinding
 {
     private readonly string _accessKeyId;
     private readonly string _secretAccessKey;
+    private readonly string? _region;
     private readonly string _queueUrl;
 
     public SqsTriggerBinding(
         string accessKeyId,
         string secretAccessKey,
+        string? region,
         string queueUrl)
     {
         _accessKeyId = accessKeyId;
         _secretAccessKey = secretAccessKey;
+        _region = region;
         _queueUrl = queueUrl;
     }
 
@@ -40,9 +43,10 @@ internal class SqsTriggerBinding : ITriggerBinding
 
     public Task<IListener> CreateListenerAsync(ListenerFactoryContext context)
     {
-        SqsListener listener = new(
+        var listener = SqsListener.Create(
             _accessKeyId,
             _secretAccessKey,
+            _region,
             _queueUrl,
             context.Executor);
 

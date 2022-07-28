@@ -9,11 +9,13 @@ public sealed class SqsTriggerAttribute : Attribute
     public SqsTriggerAttribute(
         string accessKeyId,
         string secretAccessKey,
-        string queueUrl)
+        string queueUrl,
+        string? region = null)
     {
         AccessKeyId = accessKeyId;
         SecretAccessKey = secretAccessKey;
         QueueUrl = queueUrl;
+        Region = region;
     }
 
     public string AccessKeyId { get; }
@@ -21,4 +23,6 @@ public sealed class SqsTriggerAttribute : Attribute
     public string SecretAccessKey { get; }
 
     public string QueueUrl { get; }
+
+    public string? Region { get; }
 }

@@ -1,4 +1,5 @@
-﻿using Amazon.SQS;
+﻿using Amazon;
+using Amazon.SQS;
 using Amazon.SQS.Model;
 using Microsoft.Azure.WebJobs.Host.Executors;
 using Microsoft.Azure.WebJobs.Host.Listeners;
@@ -15,16 +16,31 @@ internal class SqsListener : IListener
     private readonly TimeSpan _maximumInterval = TimeSpan.FromSeconds(5);
     private bool _disposed = false;
 
-    public SqsListener(
-        string accessKeyId,
-        string secretAccessKey,
+    private SqsListener(
+        AmazonSQSClient client,
         string queueUrl,
         ITriggeredFunctionExecutor executor)
     {
-        _client = new AmazonSQSClient(accessKeyId, secretAccessKey);
+        _client = client;
         _queueUrl = queueUrl;
         _executor = executor;
     }
+
+    public static SqsListener Create(
+        string accessKeyId,
+        string secretAccessKey,
+        string? region,
+        string queueUrl,
+        ITriggeredFunctionExecutor executor)
+    {
+        AmazonSQSClient client = region == null
+            ? new(accessKeyId, secretAccessKey)
+            : new(accessKeyId, secretAccessKey, ResolveRegionEndpoint(region));
+        return new(client, queueUrl, executor);
+    }
+
+    private static RegionEndpoint ResolveRegionEndpoint(string region)
+        => RegionEndpoint.GetBySystemName(region);
 
     public Task StartAsync(CancellationToken cancellationToken)
     {

@@ -47,8 +47,13 @@ internal class SqsTriggerBindingProvider : ITriggerBindingProvider
         return new SqsTriggerBinding(
             GetValue(attribute.AccessKeyId),
             GetValue(attribute.SecretAccessKey),
+            TryGetValue(attribute.Region),
             GetValue(attribute.QueueUrl));
     }
 
-    private string GetValue(string name) => _nameResolver.Resolve(name) ?? name;
+    private string GetValue(string name)
+        => _nameResolver.Resolve(name) ?? name;
+
+    private string? TryGetValue(string? name)
+        => name == null ? null : GetValue(name);
 }

@@ -12,6 +12,7 @@ public class SqsTriggerFunction
         [SqsTrigger(
             accessKeyId: "Amazon:SQS:AccessKeyId",
             secretAccessKey: "Amazon:SQS:SecretAccessId",
+            region: "ap-northeast-2",
             queueUrl: "https://sqs.ap-northeast-2.amazonaws.com/151869951925/test-member-event-queue")]
         Message message,
         ILogger logger)
