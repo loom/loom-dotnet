@@ -101,12 +101,9 @@ internal class SqsListener : IListener
             .TryExecuteAsync(input, cancellationToken)
             .ConfigureAwait(false);
 
-        if (result.Succeeded)
-        {
-            await _client
-                .DeleteMessageAsync(_queueUrl, message.ReceiptHandle, cancellationToken)
-                .ConfigureAwait(false);
-        }
+        await _client
+            .DeleteMessageAsync(_queueUrl, message.ReceiptHandle, cancellationToken)
+            .ConfigureAwait(false);
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
