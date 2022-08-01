@@ -97,7 +97,7 @@ internal class SqsListener : IListener
     {
         var input = new TriggeredFunctionData { TriggerValue = message };
 
-        FunctionResult result = await _executor
+        await _executor
             .TryExecuteAsync(input, cancellationToken)
             .ConfigureAwait(false);
 
