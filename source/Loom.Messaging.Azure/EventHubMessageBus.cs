@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -32,11 +31,6 @@ namespace Loom.Messaging.Azure
 
             foreach (EventData eventData in messages.Select(_converter.ConvertToEvent))
             {
-                if (TryGetLocale() is string locale)
-                {
-                    eventData.Properties["Locale"] = locale;
-                }
-
                 if (batch.TryAdd(eventData) == false)
                 {
                     await _producer
@@ -56,22 +50,6 @@ namespace Loom.Messaging.Azure
                 await _producer
                     .SendAsync(batch, cancellationToken)
                     .ConfigureAwait(continueOnCapturedContext: false);
-            }
-        }
-
-        private static string? TryGetLocale()
-        {
-            if (CultureInfo.CurrentUICulture != CultureInfo.InvariantCulture)
-            {
-                return CultureInfo.CurrentUICulture.Name;
-            }
-            else if (CultureInfo.CurrentCulture != CultureInfo.InvariantCulture)
-            {
-                return CultureInfo.CurrentCulture.Name;
-            }
-            else
-            {
-                return null;
             }
         }
     }
