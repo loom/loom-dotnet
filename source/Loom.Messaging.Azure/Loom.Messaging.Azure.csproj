@@ -10,7 +10,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>Loom.Messaging.Azure</PackageId>
     <Description>Microsoft Azure based messaging service implementations.</Description>
-    <Version>1.5.0</Version>
+    <Version>1.5.1</Version>
     <Authors>Gyuwon</Authors>
     <Copyright>Copyright (c) 2019 Yi Gyuwon</Copyright>
     <PackageProjectUrl>https://github.com/loom/loom-dotnet</PackageProjectUrl>
