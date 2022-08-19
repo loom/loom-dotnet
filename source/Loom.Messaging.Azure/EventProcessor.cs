@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Azure.Messaging.EventHubs;
@@ -35,8 +34,6 @@ namespace Loom.Messaging.Azure
                 {
                     if (_converter.TryConvertToMessage(eventData) is Message message)
                     {
-                        ConfigureCulture(eventData);
-
                         if (_handler.CanHandle(message))
                         {
                             await _handler.Handle(message, cancellationToken)
@@ -62,28 +59,6 @@ namespace Loom.Messaging.Azure
             if (exceptions != null)
             {
                 throw new AggregateException(innerExceptions: exceptions);
-            }
-        }
-
-        private static void ConfigureCulture(EventData eventData)
-        {
-            CultureInfo culture = GetCulture(eventData);
-            CultureInfo.CurrentCulture = culture;
-            CultureInfo.CurrentUICulture = culture;
-        }
-
-        private static CultureInfo GetCulture(EventData eventData)
-        {
-            if (eventData.Properties.TryGetValue("Locale", out object? value) &&
-                value is string locale)
-            {
-                return string.IsNullOrWhiteSpace(locale)
-                    ? CultureInfo.InvariantCulture
-                    : new(locale);
-            }
-            else
-            {
-                return CultureInfo.InvariantCulture;
             }
         }
     }
