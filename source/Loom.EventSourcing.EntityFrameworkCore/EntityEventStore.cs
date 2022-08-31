@@ -114,10 +114,16 @@ namespace Loom.EventSourcing.EntityFrameworkCore
                     }
                 }
 
+                Foo();
+
                 await context.SaveChangesAsync(cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
             }
 
             Task PublishPendingEvents() => _publisher.PublishEvents(stateType, streamId, cancellationToken);
+        }
+
+        protected virtual void Foo()
+        {
         }
 
         private string ResolveName(object source) => ResolveName(source.GetType());
