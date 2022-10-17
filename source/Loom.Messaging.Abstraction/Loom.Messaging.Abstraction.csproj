@@ -11,9 +11,9 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageId>Loom.Messaging.Abstraction</PackageId>
     <Description>Abstraction layer for asynchronous messaging.</Description>
-    <Version>1.4.0</Version>
+    <Version>1.4.1</Version>
     <Authors>Gyuwon</Authors>
-    <Copyright>Copyright (c) 2019 Yi Gyuwon</Copyright>
+    <Copyright>Copyright (c) 2022 Yi Gyuwon</Copyright>
     <PackageProjectUrl>https://github.com/loom/loom-dotnet</PackageProjectUrl>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <IncludeSymbols>true</IncludeSymbols>
