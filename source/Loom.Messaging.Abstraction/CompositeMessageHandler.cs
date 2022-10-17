@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,12 +17,16 @@ namespace Loom.Messaging
 
         public Task Handle(Message message, CancellationToken cancellationToken = default)
         {
-            IEnumerable<Task> tasks =
-                from handler in _handlers
-                where handler.CanHandle(message)
-                select handler.Handle(message, cancellationToken);
+            return Task.WhenAll(_handlers.Select(TryHandle));
 
-            return Task.WhenAll(tasks);
+            async Task TryHandle(IMessageHandler handler)
+            {
+                if (handler.CanHandle(message))
+                {
+                    await handler.Handle(message, cancellationToken)
+                                 .ConfigureAwait(continueOnCapturedContext: false);
+                }
+            }
         }
     }
 }
